@@ -6,16 +6,39 @@ import 'url_generator.dart' as gen;
 import 'parser_db.dart' as db;
 
 class LightshotParser {
+  bool downloading = true;
+  bool alreadyExists = false;
   late final db.DataBase database;
   late final Directory photosDirectory;
+  late final Directory databaseDirectory;
+  static final LightshotParser _instance = LightshotParser._();
 
-  LightshotParser({required this.photosDirectory}) {
-    // It is necessary in order not to be banned immediately
-    HttpClient client = HttpClient();
-    client.userAgent =
-        'Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0';
-    if (!photosDirectory.existsSync()) photosDirectory.create();
-    database = db.DataBase();
+  LightshotParser._();
+
+  factory LightshotParser(
+      {required photosDirectory,
+      required databaseDirectory,
+      bool downloading = true}) {
+    if (_instance.alreadyExists == true) {
+      _instance.downloading = downloading;
+      log("The instance of LightshotParser already exists");
+    } else {
+      // It is necessary in order not to be banned immediately
+      HttpClient client = HttpClient();
+      client.userAgent =
+          'Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0';
+      if (!photosDirectory.existsSync()) {
+        photosDirectory.createSync(recursive: true);
+      }
+      _instance.photosDirectory = photosDirectory;
+      print(_instance.photosDirectory);
+      _instance.databaseDirectory = databaseDirectory;
+      _instance.database = db.DataBase(
+          fileDirectory: databaseDirectory, photosDirectory: photosDirectory);
+      _instance.alreadyExists = true;
+      log('The instance of LightshotParser created successfuly');
+    }
+    return _instance;
   }
 
   ///downloading image from {prnt.sc} url
@@ -26,7 +49,7 @@ class LightshotParser {
 
       switch (responseFromSite.statusCode) {
         case 503:
-          await Future.delayed(Duration(seconds: 10));
+          await Future.delayed(const Duration(seconds: 10));
           throw Exception('Server wants to ban this IP. Waiting');
         case 403:
           throw Exception('IP got banned');
@@ -66,14 +89,15 @@ class LightshotParser {
       }
 
       //Download the photo
-      await File('${url.pathSegments[url.pathSegments.length - 1]}'
+      await File("${photosDirectory.path}/"
+              '${url.pathSegments[url.pathSegments.length - 1]}'
               '${imageStringUrl.substring(imageStringUrl.lastIndexOf('.'))}')
           .writeAsBytes(responseFromImg.bodyBytes);
 
-      print('file $imageStringUrl from $url downloaded successful');
+      log('file $imageStringUrl from $url downloaded successful');
       return 1;
     } catch (e) {
-      print("There is an exception. $e with $url");
+      log("There is an exception. $e with $url");
       return 0;
     }
   }
@@ -98,6 +122,11 @@ class LightshotParser {
       i += await getImage(getUrl.current);
       database.addUrlRecord(getUrl.current);
       getUrl.moveNext();
+      if (!downloading) {
+        log('Parsing is canceled');
+        numOfImages = i.toInt();
+        break;
+      }
     }
     log("Successfully downloaded $numOfImages photos");
   }
