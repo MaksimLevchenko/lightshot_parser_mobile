@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class SettingsPage extends StatefulWidget {
-  SettingsPage({super.key});
+  const SettingsPage({super.key});
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -30,7 +30,7 @@ class _SettingsPageState extends State<SettingsPage> {
         hintText: "Enter the number of images to download",
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(width: 1.5),
+          borderSide: const BorderSide(width: 1.5),
         ),
       ),
       textInputAction: TextInputAction.next,
@@ -64,7 +64,7 @@ class _SettingsPageState extends State<SettingsPage> {
             });
           },
         ),
-        Text("Use new addresses"),
+        const Text("Use new addresses"),
       ],
     );
   }
@@ -80,7 +80,7 @@ class _SettingsPageState extends State<SettingsPage> {
             });
           },
         ),
-        Text("Use random addresses"),
+        const Text("Use random addresses"),
       ],
     );
   }
@@ -92,7 +92,7 @@ class _SettingsPageState extends State<SettingsPage> {
         hintText: "Enter the starting address",
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(width: 1.5),
+          borderSide: const BorderSide(width: 1.5),
         ),
       ),
       maxLength: _useNewAddress ? 12 : 6,
@@ -127,41 +127,43 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Settings"),
+        title: const Text("Settings"),
         centerTitle: true,
       ),
       body: SafeArea(
-        minimum: EdgeInsets.all(16),
+        minimum: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
             children: [
               _numOfImagesFormField(),
-              SizedBox(height: 5),
+              const SizedBox(height: 5),
               _useNewAddressCheckbox(),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               _useRandomAddressCheckbox(),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               _startingAddressFormField(),
               ElevatedButton(
                 onPressed: _saveSettings,
-                child: Text("Save"),
+                child: const Text("Save"),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton(
                     style: ButtonStyle(
-                        fixedSize: MaterialStateProperty.all(Size(150, 30))),
-                    child: Text('Recreate database'),
+                        fixedSize:
+                            MaterialStateProperty.all(const Size(150, 30))),
+                    child: const Text('Recreate database'),
                     onPressed: () {},
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   ElevatedButton(
                     style: ButtonStyle(
-                        fixedSize: MaterialStateProperty.all(Size(150, 30))),
+                        fixedSize:
+                            MaterialStateProperty.all(const Size(150, 30))),
                     onPressed: () {},
-                    child: Text('Clear images'),
+                    child: const Text('Clear images'),
                   ),
                 ],
               ),
