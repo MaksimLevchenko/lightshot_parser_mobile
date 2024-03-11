@@ -1,7 +1,15 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:lightshot_parser_mobile/parser/parser_db.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
+  final Directory photoDirectory;
+  final Directory databaseDirectory;
+  const SettingsPage(
+      {super.key,
+      required Directory this.photoDirectory,
+      required Directory this.databaseDirectory});
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -155,14 +163,23 @@ class _SettingsPageState extends State<SettingsPage> {
                         fixedSize:
                             MaterialStateProperty.all(const Size(150, 30))),
                     child: const Text('Recreate database'),
-                    onPressed: () {},
+                    onPressed: () {
+                      DataBase db = DataBase(
+                          fileDirectory: widget.databaseDirectory,
+                          photosDirectory: widget.photoDirectory);
+                      db.parseFolder(widget.photoDirectory);
+                    },
                   ),
                   const SizedBox(width: 10),
                   ElevatedButton(
                     style: ButtonStyle(
                         fixedSize:
                             MaterialStateProperty.all(const Size(150, 30))),
-                    onPressed: () {},
+                    onPressed: () {
+                      widget.photoDirectory.listSync().forEach((element) {
+                        element.deleteSync(recursive: true);
+                      });
+                    },
                     child: const Text('Clear images'),
                   ),
                 ],
