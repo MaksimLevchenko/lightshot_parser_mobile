@@ -112,9 +112,14 @@ class _MainPageState extends State<MainPage> {
           IconButton(
             onPressed: () {
               Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (BuildContext context) => SettingsPage()));
+                context,
+                MaterialPageRoute(
+                  builder: (BuildContext context) => SettingsPage(
+                    photoDirectory: this.photosDirectory,
+                    databaseDirectory: this.databaseDirectory,
+                  ),
+                ),
+              );
             },
             icon: Icon(Icons.settings),
           )
