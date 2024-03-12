@@ -107,7 +107,8 @@ class LightshotParser {
   /// Downloads numOfImages in new if newAddresses urls
   /// starting from startingUrl. If startingUrl == '' uses random Url
   /// iterator, otherwise - contractor Url iterator
-  void parse(int numOfImages, bool newAddresses, String startingUrl) async {
+  Future<bool> parse(
+      int numOfImages, bool newAddresses, String startingUrl) async {
     var getUrl = startingUrl == ''
         ? gen.GetRandomUrl(newAddresses)
         : gen.GetNextUrl(newAddresses, startingUrl);
@@ -129,5 +130,7 @@ class LightshotParser {
       }
     }
     log("Successfully downloaded $numOfImages photos");
+    downloading = false;
+    return true;
   }
 }
