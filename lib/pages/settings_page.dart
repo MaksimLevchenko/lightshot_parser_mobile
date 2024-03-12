@@ -97,7 +97,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  _useRandomAddressCheckbox() {
+  Row _useRandomAddressCheckbox() {
     return Row(
       children: [
         Checkbox(
