@@ -156,7 +156,20 @@ class _SettingsPageState extends State<SettingsPage> {
       _formKey.currentState!.save();
       _saveSettingsInFile();
       log('form saved');
+      ScaffoldMessenger.of(context)
+          .showSnackBar(_snackBar(message: "Settings saved"));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(_snackBar(
+          message: "Please enter the correct data", color: Colors.red));
     }
+  }
+
+  SnackBar _snackBar({required String message, Color color = Colors.green}) {
+    return SnackBar(
+      content: Center(child: Text(message)),
+      duration: const Duration(seconds: 2),
+      backgroundColor: color,
+    );
   }
 
   @override
