@@ -25,6 +25,7 @@ class MainPage extends StatelessWidget {
       if (file.existsSync()) {
         final String jsonString = file.readAsStringSync();
         final Map<String, dynamic> settings = json.decode(jsonString);
+        //TODO: implement settings
         //numOfImages = int.parse(settings[]);
         //newAddresses = settings[bool.parse(settings['newAddresses'])];
         //startingUrl = settings['startingUrl'];
