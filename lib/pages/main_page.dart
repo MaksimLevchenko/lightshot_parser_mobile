@@ -110,6 +110,7 @@ class _MainPageState extends State<MainPage> {
   }
 
   void _startDownloading() {
+    _loadSettings();
     LightshotParser parser = LightshotParser(
         photosDirectory: this.photosDirectory,
         databaseDirectory: this.databaseDirectory,
@@ -117,6 +118,7 @@ class _MainPageState extends State<MainPage> {
     setState(() {
       _downloading = true;
     });
+
     parser.parse(numOfImages, newAddresses, startingUrl).then((_) {
       setState(() {
         _downloading = false;
