@@ -33,15 +33,14 @@ class _MainPageState extends State<MainPage> {
   Future<Directory> _appDocDir = getApplicationDocumentsDirectory();
 
   void _loadSettings() {
-    _appDocDir.then((value) {
-      final File file = File('${value.path}/settings.json');
+    _appDocDir.then((value) async {
+      final File file = File('${value.path}/lightshot_parser/settings.json');
       if (file.existsSync()) {
-        final String jsonString = file.readAsStringSync();
-        final Map<String, dynamic> settings = json.decode(jsonString);
-        //TODO: implement settings
-        //numOfImages = int.parse(settings[]);
-        //newAddresses = settings[bool.parse(settings['newAddresses'])];
-        //startingUrl = settings['startingUrl'];
+        final Future<String> jsonString = file.readAsString();
+        final Map<String, dynamic> settings = json.decode(await jsonString);
+        numOfImages = int.parse(settings['numOfImages']);
+        newAddresses = settings['newAddresses'];
+        startingUrl = settings['startingUrl'];
       } else {
         numOfImages = 10;
         newAddresses = false;
@@ -54,6 +53,7 @@ class _MainPageState extends State<MainPage> {
     return FutureBuilder(
       future: Future.wait([downloadDirectoryPath]),
       builder: (BuildContext context, snapshot) {
+        _loadSettings();
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
             child: CircularProgressIndicator(),
@@ -91,6 +91,7 @@ class _MainPageState extends State<MainPage> {
               onPressed: () {},
               child: _gallery(),
             ),
+            const SizedBox(height: 16),
             _downloading
                 ? ElevatedButton(
                     onPressed: _stopDownloading,
@@ -116,7 +117,7 @@ class _MainPageState extends State<MainPage> {
     setState(() {
       _downloading = true;
     });
-    parser.parse(100, false, '');
+    parser.parse(numOfImages, newAddresses, startingUrl);
   }
 
   void _stopDownloading() {

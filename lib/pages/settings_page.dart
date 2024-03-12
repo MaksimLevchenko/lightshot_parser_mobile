@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -25,25 +26,21 @@ class _SettingsPageState extends State<SettingsPage> {
 
   bool _useNewAddress = false;
   bool _useRandomAddress = false;
+  late String _numOfImages;
+  late String _startingUrl;
 
-  void _clearSettingsFile() async {
+  void _saveSettingsInFile() async {
     final Directory directory = await _appDocDir;
-    final File file = File('${directory.path}/settings.json');
-    file.open(mode: FileMode.writeOnly);
-  }
-
-  void _saveValue(var value, {required String name}) async {
-    Directory directory = await _appDocDir;
-    final File file = File('${directory.path}/settings.json');
-    final jsonValue = json.encode({name: name, value: value.toString()});
-    await file.writeAsString(jsonValue, mode: FileMode.writeOnlyAppend);
-  }
-
-  void _onSave() {
-    if (_formKey.currentState!.validate()) {
-      _clearSettingsFile();
-      _formKey.currentState!.save();
-    }
+    final File file =
+        await File('${directory.path}/lightshot_parser/settings.json')
+            .create(recursive: true);
+    log('saving in ${file.path}');
+    final Map<String, dynamic> settings = {
+      'numOfImages': _numOfImages,
+      'newAddresses': _useNewAddress,
+      'startingUrl': _startingUrl,
+    };
+    file.writeAsString(json.encode(settings));
   }
 
   @override
@@ -80,6 +77,7 @@ class _SettingsPageState extends State<SettingsPage> {
           return null;
         }
       },
+      onSaved: (newValue) => _numOfImages = newValue!,
     );
   }
 
@@ -127,8 +125,11 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
       maxLength: _useNewAddress ? 12 : 6,
       controller: _startingAddressController,
-      enabled: _useRandomAddress,
+      enabled: !_useRandomAddress,
       validator: (value) {
+        if (_useRandomAddress) {
+          return null;
+        }
         value = value ?? '';
         RegExp mask = _useNewAddress
             ? RegExp(r'^[a-zA-Z0-9_-]{12}$')
@@ -144,12 +145,17 @@ class _SettingsPageState extends State<SettingsPage> {
           return null;
         }
       },
+      onSaved: (newValue) => _startingUrl = _useRandomAddress ? '' : newValue!,
     );
   }
 
   void _saveSettings() {
+    log('starting save func');
     if (_formKey.currentState!.validate()) {
+      log('validate starting complete');
       _formKey.currentState!.save();
+      _saveSettingsInFile();
+      log('form saved');
     }
   }
 
@@ -177,6 +183,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 onPressed: _saveSettings,
                 child: const Text("Save"),
               ),
+              const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
