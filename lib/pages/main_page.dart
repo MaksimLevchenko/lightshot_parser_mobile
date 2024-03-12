@@ -125,9 +125,6 @@ class _MainPageState extends State<MainPage> {
   }
 
   void _stopDownloading() {
-    setState(() {
-      _downloading = false;
-    });
     LightshotParser(
         photosDirectory: this.photosDirectory,
         databaseDirectory: this.databaseDirectory,
