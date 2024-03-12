@@ -1,6 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:lightshot_parser_mobile/parser/parser_db.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -18,11 +19,32 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   final _formKey = GlobalKey<FormState>();
 
+  final Future<Directory> _appDocDir = getApplicationDocumentsDirectory();
   final _numOfImagesController = TextEditingController();
   final _startingAddressController = TextEditingController();
 
   bool _useNewAddress = false;
   bool _useRandomAddress = false;
+
+  void _clearSettingsFile() async {
+    final Directory directory = await _appDocDir;
+    final File file = File('${directory.path}/settings.json');
+    file.open(mode: FileMode.writeOnly);
+  }
+
+  void _saveValue(var value, {required String name}) async {
+    Directory directory = await _appDocDir;
+    final File file = File('${directory.path}/settings.json');
+    final jsonValue = json.encode({name: name, value: value.toString()});
+    await file.writeAsString(jsonValue, mode: FileMode.writeOnlyAppend);
+  }
+
+  void _onSave() {
+    if (_formKey.currentState!.validate()) {
+      _clearSettingsFile();
+      _formKey.currentState!.save();
+    }
+  }
 
   @override
   void dispose() {
