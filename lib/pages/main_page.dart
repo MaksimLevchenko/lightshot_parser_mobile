@@ -117,7 +117,11 @@ class _MainPageState extends State<MainPage> {
     setState(() {
       _downloading = true;
     });
-    parser.parse(numOfImages, newAddresses, startingUrl);
+    parser.parse(numOfImages, newAddresses, startingUrl).then((_) {
+      setState(() {
+        _downloading = false;
+      });
+    });
   }
 
   void _stopDownloading() {
