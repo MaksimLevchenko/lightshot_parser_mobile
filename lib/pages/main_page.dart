@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -21,8 +22,32 @@ class _MainPageState extends State<MainPage> {
   Future<Directory?> downloadDirectoryPath = getDownloadsDirectory();
   bool _downloading = false;
 
+  late int numOfImages;
+  late bool newAddresses;
+  late String startingUrl;
+
   Widget _gallery() {
     return Placeholder();
+  }
+
+  Future<Directory> _appDocDir = getApplicationDocumentsDirectory();
+
+  void _loadSettings() {
+    _appDocDir.then((value) {
+      final File file = File('${value.path}/settings.json');
+      if (file.existsSync()) {
+        final String jsonString = file.readAsStringSync();
+        final Map<String, dynamic> settings = json.decode(jsonString);
+        //TODO: implement settings
+        //numOfImages = int.parse(settings[]);
+        //newAddresses = settings[bool.parse(settings['newAddresses'])];
+        //startingUrl = settings['startingUrl'];
+      } else {
+        numOfImages = 10;
+        newAddresses = false;
+        startingUrl = '';
+      }
+    });
   }
 
   Widget _futureCheck(Widget child) {
