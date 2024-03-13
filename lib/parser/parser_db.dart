@@ -30,6 +30,10 @@ class DataBase {
     }
   }
 
+  int numOfDownloadedPhotos(Directory photosDirectory) {
+    return photosDirectory.listSync().length;
+  }
+
   bool inDb(String fileName) {
     return _db.contains(fileName);
   }
