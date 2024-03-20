@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:lightshot_parser_mobile/pages/settings_page.dart';
 import 'package:lightshot_parser_mobile/parser/parser.dart';
+import 'package:lightshot_parser_mobile/parser/parser_db.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -27,18 +28,25 @@ class _MainPageState extends State<MainPage> {
   late String startingUrl;
 
   Widget _gallery() {
-    return Placeholder();
+    return Builder(builder: (context) {
+      DataBase db = DataBase(
+          photosDirectory: photosDirectory, fileDirectory: databaseDirectory);
+      if (db.numOfDownloadedPhotos() < 15) {
+        return const Placeholder();
+      }
+      return const Placeholder();
+    });
   }
 
-  Future<Directory> _appDocDir = getApplicationDocumentsDirectory();
+  final Future<Directory> _appDocDir = getApplicationDocumentsDirectory();
 
-  void _loadSettings() {
-    _appDocDir.then((value) async {
+  Future<bool> _loadSettings() async {
+    await _appDocDir.then((value) async {
       final File file = File('${value.path}/lightshot_parser/settings.json');
       if (file.existsSync()) {
         final Future<String> jsonString = file.readAsString();
         final Map<String, dynamic> settings = json.decode(await jsonString);
-        numOfImages = int.parse(settings['numOfImages']);
+        numOfImages = settings['numOfImages'];
         newAddresses = settings['newAddresses'];
         startingUrl = settings['startingUrl'];
       } else {
@@ -47,6 +55,7 @@ class _MainPageState extends State<MainPage> {
         startingUrl = '';
       }
     });
+    return true;
   }
 
   Widget _futureCheck(Widget child) {
@@ -55,7 +64,7 @@ class _MainPageState extends State<MainPage> {
       builder: (BuildContext context, snapshot) {
         _loadSettings();
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
+          return const Center(
             child: CircularProgressIndicator(),
           );
         }
@@ -65,14 +74,14 @@ class _MainPageState extends State<MainPage> {
           );
         }
         if (!snapshot.hasData) {
-          return Center(
+          return const Center(
             child: Text('No download folder found'),
           );
         }
-        print('${snapshot.data![0]!.path}/LightshotParser/Photos');
-        this.photosDirectory =
+        log('download to ${snapshot.data![0]!.path}/LightshotParser/Photos');
+        photosDirectory =
             Directory('${snapshot.data![0]!.path}/LightshotParser/Photos');
-        this.databaseDirectory =
+        databaseDirectory =
             Directory('${snapshot.data![0]!.path}/LightshotParser/');
 
         return child;
@@ -82,7 +91,7 @@ class _MainPageState extends State<MainPage> {
 
   Widget _mainScreen() {
     return SafeArea(
-      minimum: EdgeInsets.all(16),
+      minimum: const EdgeInsets.all(16),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -95,13 +104,13 @@ class _MainPageState extends State<MainPage> {
             _downloading
                 ? ElevatedButton(
                     onPressed: _stopDownloading,
-                    child: Text('Cancel'),
+                    child: const Text('Cancel'),
                   )
                 : ElevatedButton(
                     onPressed: () {
                       _startDownloading();
                     },
-                    child: Text('Download'),
+                    child: const Text('Download'),
                   ),
           ],
         ),
@@ -112,8 +121,8 @@ class _MainPageState extends State<MainPage> {
   void _startDownloading() {
     _loadSettings();
     LightshotParser parser = LightshotParser(
-        photosDirectory: this.photosDirectory,
-        databaseDirectory: this.databaseDirectory,
+        photosDirectory: photosDirectory,
+        databaseDirectory: databaseDirectory,
         downloading: true);
     setState(() {
       _downloading = true;
@@ -128,8 +137,8 @@ class _MainPageState extends State<MainPage> {
 
   void _stopDownloading() {
     LightshotParser(
-        photosDirectory: this.photosDirectory,
-        databaseDirectory: this.databaseDirectory,
+        photosDirectory: photosDirectory,
+        databaseDirectory: databaseDirectory,
         downloading: false);
   }
 
@@ -144,16 +153,16 @@ class _MainPageState extends State<MainPage> {
                 context,
                 MaterialPageRoute(
                   builder: (BuildContext context) => SettingsPage(
-                    photoDirectory: this.photosDirectory,
-                    databaseDirectory: this.databaseDirectory,
+                    photoDirectory: photosDirectory,
+                    databaseDirectory: databaseDirectory,
                   ),
                 ),
               );
             },
-            icon: Icon(Icons.settings),
+            icon: const Icon(Icons.settings),
           )
         ],
-        title: Text('Lightshot Parser'),
+        title: const Text('Lightshot Parser'),
         centerTitle: true,
       ),
       body: _futureCheck(_mainScreen()),
