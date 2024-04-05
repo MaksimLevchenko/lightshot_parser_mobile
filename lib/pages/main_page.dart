@@ -9,6 +9,8 @@ import 'package:lightshot_parser_mobile/parser/parser.dart';
 import 'package:lightshot_parser_mobile/parser/parser_db.dart';
 import 'package:path_provider/path_provider.dart';
 
+const _imageSize = 300.0;
+
 class MainPage extends StatelessWidget {
   final Future<Directory> _appDocDir = getApplicationDocumentsDirectory();
   final Future<Directory?> _downloadDirectoryPath = getDownloadsDirectory();
@@ -77,7 +79,7 @@ class MainPage extends StatelessWidget {
           children: [
             SizedBox(
               width: double.infinity,
-              height: 512,
+              height: _imageSize,
               child: _GalleryBuilder(
                   photosDirectory: _photosDirectory,
                   databaseDirectory: _databaseDirectory),
@@ -170,8 +172,8 @@ class _GalleryBuilder extends StatelessWidget {
             photoDirectory: photosDirectory, numOfPhotos: downloadedPhotosNum);
       }
       return Container(
-        width: 200,
-        height: 512,
+        width: _imageSize,
+        height: _imageSize,
         child: Center(child: Text('NoPhoto')),
       );
     });
@@ -218,9 +220,10 @@ class _GalleryWithPhotos extends StatelessWidget {
             },
             itemBuilder: (context, index) {
               return Container(
-                width: 512,
-                decoration:
-                    BoxDecoration(border: Border.all(color: Colors.green)),
+                width: _imageSize,
+                decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black),
+                    color: Colors.grey),
                 child: Image.file(snapshot.data![index]),
               );
             },
