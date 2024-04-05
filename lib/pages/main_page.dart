@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:lightshot_parser_mobile/pages/settings_page.dart';
 import 'package:lightshot_parser_mobile/parser/parser.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -30,7 +29,7 @@ class _MainPageState extends State<MainPage> {
     return Placeholder();
   }
 
-  Future<Directory> _appDocDir = getApplicationDocumentsDirectory();
+  final Future<Directory> _appDocDir = getApplicationDocumentsDirectory();
 
   void _loadSettings() {
     _appDocDir.then((value) async {
