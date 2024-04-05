@@ -31,7 +31,7 @@ class LightshotParser {
         photosDirectory.createSync(recursive: true);
       }
       _instance.photosDirectory = photosDirectory;
-      print(_instance.photosDirectory);
+      log('photo dir: ${_instance.photosDirectory.toString()}');
       _instance.databaseDirectory = databaseDirectory;
       _instance.database = db.DataBase(
           fileDirectory: databaseDirectory, photosDirectory: photosDirectory);

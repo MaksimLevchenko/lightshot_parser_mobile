@@ -8,9 +8,10 @@ class DataBase {
 
   DataBase({required this.fileDirectory, required this.photosDirectory}) {
     _dbFile = File(fileDirectory.path + r'db.txt');
+    _dbFile.createSync(recursive: true);
+    photosDirectory.createSync(recursive: true);
     if (!_dbFile.existsSync()) {
-      _dbFile.createSync(recursive: true);
-      parseFolder(photosDirectory);
+      parseFolder();
     }
 
     var dbLines = _dbFile.readAsLinesSync();
@@ -19,7 +20,7 @@ class DataBase {
     }
   }
 
-  parseFolder(Directory photosDirectory) {
+  parseFolder() {
     _db.clear();
     _dbFile.writeAsStringSync('', mode: FileMode.write);
 
@@ -28,6 +29,10 @@ class DataBase {
       var filePath = dbLines[i].toString();
       addRecord(filePath.substring(16, filePath.lastIndexOf('.')));
     }
+  }
+
+  int numOfDownloadedPhotos() {
+    return photosDirectory.listSync().length;
   }
 
   bool inDb(String fileName) {
