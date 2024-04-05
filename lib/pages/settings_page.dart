@@ -36,7 +36,7 @@ class SettingsPage extends StatelessWidget {
         _numOfImages = 10;
         _useNewAddresses = false;
         _startingUrl = '';
-        _useRandomAddress = _startingUrl == '' ? true : false;
+        _useRandomAddress = true;
       }
     });
     return true;
@@ -87,22 +87,20 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _useNewAddressCheckbox() {
-    return StatefulBuilder(builder: (context, setState) {
-      return Row(
-        children: [
-          Checkbox(
-            value: _useNewAddresses,
-            onChanged: (value) {
-              setState(
-                () => _useNewAddresses = value!,
-              );
-            },
-          ),
-          const Text("Use new addresses"),
-        ],
-      );
-    });
+  Widget _useNewAddressCheckbox(Function setState) {
+    return Row(
+      children: [
+        Checkbox(
+          value: _useNewAddresses,
+          onChanged: (value) {
+            setState(
+              () => _useNewAddresses = value!,
+            );
+          },
+        ),
+        const Text("Use new addresses"),
+      ],
+    );
   }
 
   Widget _useRandomAddressCheckbox(Function setState) {
@@ -207,11 +205,11 @@ class SettingsPage extends StatelessWidget {
                   children: [
                     _numOfImagesFormField(),
                     const SizedBox(height: 5),
-                    _useNewAddressCheckbox(),
-                    const SizedBox(height: 10),
                     StatefulBuilder(builder: (context, setState) {
                       return Column(
                         children: [
+                          _useNewAddressCheckbox(setState),
+                          const SizedBox(height: 10),
                           _useRandomAddressCheckbox(setState),
                           const SizedBox(height: 16),
                           _startingAddressFormField(),
