@@ -73,31 +73,44 @@ class MainPage extends StatelessWidget {
   Widget _mainScreen() {
     return SafeArea(
       minimum: const EdgeInsets.all(16),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: double.infinity,
-              height: _imageSize,
-              child: _GalleryBuilder(
-                  photosDirectory: _photosDirectory,
-                  databaseDirectory: _databaseDirectory),
-            ),
-            const SizedBox(height: 16),
-            _downloading
-                ? ElevatedButton(
-                    onPressed: _stopDownloading,
-                    child: const Text('Cancel'),
-                  )
-                : ElevatedButton(
-                    onPressed: () {
-                      _startDownloading();
-                    },
-                    child: const Text('Download'),
-                  ),
-          ],
-        ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Row(
+            children: [
+              IconButton(
+                onPressed: () {},
+                icon: Icon(Icons.refresh),
+                color: Colors.pink,
+              ),
+              const Expanded(child: SizedBox()),
+              TextButton(
+                onPressed: () {},
+                child: Text('See all'),
+              ),
+            ],
+          ),
+          SizedBox(
+            width: double.infinity,
+            height: _imageSize,
+            child: _GalleryBuilder(
+                photosDirectory: _photosDirectory,
+                databaseDirectory: _databaseDirectory),
+          ),
+          const SizedBox(height: 16),
+          _downloading
+              ? ElevatedButton(
+                  onPressed: _stopDownloading,
+                  child: const Text('Cancel'),
+                )
+              : ElevatedButton(
+                  onPressed: () {
+                    _startDownloading();
+                  },
+                  child: const Text('Download'),
+                ),
+        ],
       ),
     );
   }
@@ -195,7 +208,7 @@ class _GalleryWithPhotos extends StatelessWidget {
     entities.sort((FileSystemEntity first, FileSystemEntity second) {
       FileStat statFirst = first.statSync();
       FileStat statSecond = second.statSync();
-      return statFirst.modified.compareTo(statSecond.modified);
+      return statSecond.modified.compareTo(statFirst.modified);
     });
 
     return entities.cast();
