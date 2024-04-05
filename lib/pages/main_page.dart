@@ -23,19 +23,6 @@ class MainPage extends StatelessWidget {
 
   MainPage({super.key});
 
-  Future<List<File>> _getFilesListByDate(Directory directory) async {
-    List<File> files = [];
-    List<FileSystemEntity> entities = directory.listSync();
-
-    entities.sort((FileSystemEntity first, FileSystemEntity second) {
-      FileStat statFirst = first.statSync();
-      FileStat statSecond = second.statSync();
-      return statFirst.modified.compareTo(statSecond.modified);
-    });
-
-    return files;
-  }
-
   void _loadSettings(Directory settingsDir) {
     final File file =
         File('${settingsDir.path}/lightshot_parser/settings.json');
@@ -200,25 +187,45 @@ class _GalleryWithPhotos extends StatelessWidget {
   final Directory photoDirectory;
   final int numOfPhotos;
 
+  Future<List<File>> _getFilesListByDate(Directory directory) async {
+    List<FileSystemEntity> entities = directory.listSync();
+
+    entities.sort((FileSystemEntity first, FileSystemEntity second) {
+      FileStat statFirst = first.statSync();
+      FileStat statSecond = second.statSync();
+      return statFirst.modified.compareTo(statSecond.modified);
+    });
+
+    return entities.cast();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-      itemCount: min(15, numOfPhotos),
-      physics: const BouncingScrollPhysics(),
-      shrinkWrap: true,
-      separatorBuilder: (context, index) {
-        return const SizedBox(
-          width: 10,
-        );
-      },
-      itemBuilder: (context, index) {
-        return Container(
-          width: 512,
-          decoration: BoxDecoration(border: Border.all(color: Colors.green)),
-          child: Text('$index'),
-        );
-      },
-      scrollDirection: Axis.horizontal,
-    );
+    return FutureBuilder<List<File>>(
+        future: _getFilesListByDate(photoDirectory),
+        builder: (context, snapshot) {
+          if (snapshot.hasData == false) {
+            return CircularProgressIndicator();
+          }
+          return ListView.separated(
+            itemCount: min(15, numOfPhotos),
+            physics: const BouncingScrollPhysics(),
+            shrinkWrap: true,
+            separatorBuilder: (context, index) {
+              return const SizedBox(
+                width: 10,
+              );
+            },
+            itemBuilder: (context, index) {
+              return Container(
+                width: 512,
+                decoration:
+                    BoxDecoration(border: Border.all(color: Colors.green)),
+                child: Image.file(snapshot.data![index]),
+              );
+            },
+            scrollDirection: Axis.horizontal,
+          );
+        });
   }
 }
