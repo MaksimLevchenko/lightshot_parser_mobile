@@ -8,45 +8,43 @@ import 'package:lightshot_parser_mobile/parser/parser_db.dart';
 class SettingsPage extends StatelessWidget {
   final Directory photoDirectory;
   final Directory databaseDirectory;
+  final Directory settingsDirectory;
   SettingsPage(
       {super.key,
       required this.photoDirectory,
-      required this.databaseDirectory});
+      required this.databaseDirectory,
+      required this.settingsDirectory});
 
   final _formKey = GlobalKey<FormState>();
-
-  final Future<Directory> _appDocDir = getApplicationDocumentsDirectory();
 
   late bool _useNewAddresses;
   late bool _useRandomAddress;
   late int _numOfImages;
   late String _startingUrl;
 
-  Future<bool> _loadSettingsFromFile() async {
-    await _appDocDir.then((value) async {
-      final File file = File('${value.path}/lightshot_parser/settings.json');
-      if (await file.exists()) {
-        final Future<String> jsonString = file.readAsString();
-        final Map<String, dynamic> settings = json.decode(await jsonString);
-        _numOfImages = settings['numOfImages'] ?? 10;
-        _useNewAddresses = settings['newAddresses'] ?? false;
-        _startingUrl = settings['startingUrl'] ?? "";
-        _useRandomAddress = _startingUrl == "" ? true : false;
-      } else {
-        _numOfImages = 10;
-        _useNewAddresses = false;
-        _startingUrl = '';
-        _useRandomAddress = true;
-      }
-    });
+  Future<bool> _loadSettingsFromFile(Directory settingsDir) async {
+    final File file =
+        File('${settingsDir.path}/lightshot_parser/settings.json');
+    if (file.existsSync()) {
+      final String jsonString = await file.readAsString();
+      final Map<String, dynamic> settings = json.decode(jsonString);
+      _numOfImages = settings['numOfImages'] ?? 10;
+      _useNewAddresses = settings['newAddresses'] ?? false;
+      _startingUrl = settings['startingUrl'] ?? "";
+      _useRandomAddress = _startingUrl == "" ? true : false;
+    } else {
+      _numOfImages = 10;
+      _useNewAddresses = false;
+      _startingUrl = '';
+      _useRandomAddress = true;
+    }
     return true;
   }
 
-  void _saveSettingsInFile() async {
-    final Directory directory = await _appDocDir;
-    final File file =
-        await File('${directory.path}/lightshot_parser/settings.json')
-            .create(recursive: true);
+  void _saveSettingsInFile() {
+    final Directory directory = settingsDirectory;
+    final File file = File('${directory.path}/lightshot_parser/settings.json');
+    file.createSync(recursive: true);
     log('settings in ${file.path}');
     final Map<String, dynamic> settings = {
       'numOfImages': _numOfImages,
@@ -190,7 +188,7 @@ class SettingsPage extends StatelessWidget {
         child: Form(
           key: _formKey,
           child: FutureBuilder(
-              future: _loadSettingsFromFile(),
+              future: _loadSettingsFromFile(settingsDirectory),
               builder: (context, snapshot) {
                 if (snapshot.connectionState != ConnectionState.done) {
                   return const Center(child: CircularProgressIndicator());
