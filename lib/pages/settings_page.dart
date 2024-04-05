@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:lightshot_parser_mobile/parser/parser_db.dart';
 
 class SettingsPage extends StatelessWidget {

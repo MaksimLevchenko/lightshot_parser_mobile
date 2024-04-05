@@ -81,13 +81,13 @@ class MainPage extends StatelessWidget {
             children: [
               IconButton(
                 onPressed: () {},
-                icon: Icon(Icons.refresh),
+                icon: const Icon(Icons.refresh),
                 color: Colors.pink,
               ),
               const Expanded(child: SizedBox()),
               TextButton(
                 onPressed: () {},
-                child: Text('See all'),
+                child: const Text('See all'),
               ),
             ],
           ),
@@ -184,7 +184,7 @@ class _GalleryBuilder extends StatelessWidget {
         return _GalleryWithPhotos(
             photoDirectory: photosDirectory, numOfPhotos: downloadedPhotosNum);
       }
-      return Container(
+      return const SizedBox(
         width: _imageSize,
         height: _imageSize,
         child: Center(child: Text('NoPhoto')),
@@ -220,7 +220,7 @@ class _GalleryWithPhotos extends StatelessWidget {
         future: _getFilesListByDate(photoDirectory),
         builder: (context, snapshot) {
           if (snapshot.hasData == false) {
-            return CircularProgressIndicator();
+            return const CircularProgressIndicator();
           }
           return ListView.separated(
             itemCount: min(15, numOfPhotos),
