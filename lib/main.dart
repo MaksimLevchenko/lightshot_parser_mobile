@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lightshot_parser_mobile/pages/main_page.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(MaterialApp(
     home: MainPage(),
     theme: ThemeData.from(

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer' as dev;
 import 'dart:io';
 import 'dart:math';
 
@@ -12,10 +11,10 @@ import 'package:path_provider/path_provider.dart';
 
 class MainPage extends StatelessWidget {
   final Future<Directory> _appDocDir = getApplicationDocumentsDirectory();
-  Directory photosDirectory = Directory('');
-  Directory databaseDirectory = Directory('');
-
-  Future<Directory?> downloadDirectoryPath = getDownloadsDirectory();
+  final Future<Directory?> _downloadDirectoryPath = getDownloadsDirectory();
+  late Directory _photosDirectory;
+  late Directory _databaseDirectory;
+  late Directory _settingsDirectory;
 
   bool _downloading = false;
   late int numOfImages;
@@ -26,10 +25,8 @@ class MainPage extends StatelessWidget {
 
   Future<List<File>> _getFilesListByDate(Directory directory) async {
     List<File> files = [];
-    // Получаем список файлов в каталоге
     List<FileSystemEntity> entities = directory.listSync();
 
-    // Сортируем список файлов по времени последнего изменения
     entities.sort((FileSystemEntity first, FileSystemEntity second) {
       FileStat statFirst = first.statSync();
       FileStat statSecond = second.statSync();
@@ -39,69 +36,26 @@ class MainPage extends StatelessWidget {
     return files;
   }
 
-  Widget _galleryWithPhoto(Directory photoDirectory, int numOfPhotos) {
-    return ListView.separated(
-      itemCount: min(15, numOfPhotos),
-      physics: const BouncingScrollPhysics(),
-      shrinkWrap: true,
-      separatorBuilder: (context, index) {
-        return const SizedBox(
-          width: 10,
-        );
-      },
-      itemBuilder: (context, index) {
-        return Container(
-          width: 512,
-          decoration: BoxDecoration(border: Border.all(color: Colors.green)),
-          child: Text('$index'),
-        );
-      },
-      scrollDirection: Axis.horizontal,
-    );
+  void _loadSettings(Directory settingsDir) {
+    final File file =
+        File('${settingsDir.path}/lightshot_parser/settings.json');
+    if (file.existsSync()) {
+      final String jsonString = file.readAsStringSync();
+      final Map<String, dynamic> settings = json.decode(jsonString);
+      numOfImages = settings['numOfImages'];
+      newAddresses = settings['newAddresses'];
+      startingUrl = settings['startingUrl'];
+    } else {
+      numOfImages = 10;
+      newAddresses = false;
+      startingUrl = '';
+    }
   }
 
-  Widget _gallery() {
-    return Builder(builder: (context) {
-      DataBase db = DataBase(
-          photosDirectory: photosDirectory, fileDirectory: databaseDirectory);
-      int downloadedPhotosNum = db.numOfDownloadedPhotos();
-      if (downloadedPhotosNum > 0) {
-        return _galleryWithPhoto(photosDirectory, downloadedPhotosNum);
-      }
-      return ListView(
-        scrollDirection: Axis.horizontal,
-        children: const [
-          ListTile(
-            title: Text('NoPhoto'),
-          )
-        ],
-      );
-    });
-  }
-
-  Future<bool> _loadSettings() async {
-    await _appDocDir.then((value) async {
-      final File file = File('${value.path}/lightshot_parser/settings.json');
-      if (file.existsSync()) {
-        final Future<String> jsonString = file.readAsString();
-        final Map<String, dynamic> settings = json.decode(await jsonString);
-        numOfImages = settings['numOfImages'];
-        newAddresses = settings['newAddresses'];
-        startingUrl = settings['startingUrl'];
-      } else {
-        numOfImages = 10;
-        newAddresses = false;
-        startingUrl = '';
-      }
-    });
-    return true;
-  }
-
-  Widget _getDirectories(Widget child) {
+  Widget _waitForDirectories(Function child) {
     return FutureBuilder(
-      future: Future.wait([downloadDirectoryPath]),
+      future: Future.wait([_downloadDirectoryPath, _appDocDir]),
       builder: (BuildContext context, snapshot) {
-        _loadSettings();
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
             child: CircularProgressIndicator(),
@@ -112,19 +66,17 @@ class MainPage extends StatelessWidget {
             child: Text('Error: ${snapshot.error}'),
           );
         }
-        if (!snapshot.hasData) {
-          return const Center(
-            child: Text('No download folder found'),
-          );
+        if (snapshot.connectionState == ConnectionState.done) {
+          _databaseDirectory = snapshot.data![0]!;
+          _photosDirectory = Directory(_databaseDirectory.path + r'/Photos');
+          _settingsDirectory = snapshot.data![1]!;
+          _loadSettings(_settingsDirectory);
+          return child();
         }
-        dev.log(
-            'download to ${snapshot.data![0]!.path}/LightshotParser/Photos');
-        photosDirectory =
-            Directory('${snapshot.data![0]!.path}/LightshotParser/Photos');
-        databaseDirectory =
-            Directory('${snapshot.data![0]!.path}/LightshotParser/');
 
-        return child;
+        return const Center(
+          child: Text('No download folder found'),
+        );
       },
     );
   }
@@ -137,9 +89,11 @@ class MainPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(
-              width: 1500,
+              width: double.infinity,
               height: 512,
-              child: _gallery(),
+              child: _GalleryBuilder(
+                  photosDirectory: _photosDirectory,
+                  databaseDirectory: _databaseDirectory),
             ),
             const SizedBox(height: 16),
             _downloading
@@ -160,10 +114,10 @@ class MainPage extends StatelessWidget {
   }
 
   void _startDownloading() {
-    _loadSettings();
+    _loadSettings(_settingsDirectory);
     LightshotParser parser = LightshotParser(
-        photosDirectory: photosDirectory,
-        databaseDirectory: databaseDirectory,
+        photosDirectory: _photosDirectory,
+        databaseDirectory: _databaseDirectory,
         downloading: true);
     _downloading = true;
     parser.parse(numOfImages, newAddresses, startingUrl).then((_) {
@@ -173,8 +127,8 @@ class MainPage extends StatelessWidget {
 
   void _stopDownloading() {
     LightshotParser(
-        photosDirectory: photosDirectory,
-        databaseDirectory: databaseDirectory,
+        photosDirectory: _photosDirectory,
+        databaseDirectory: _databaseDirectory,
         downloading: false);
   }
 
@@ -189,8 +143,9 @@ class MainPage extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (BuildContext context) => SettingsPage(
-                    photoDirectory: photosDirectory,
-                    databaseDirectory: databaseDirectory,
+                    photoDirectory: _photosDirectory,
+                    databaseDirectory: _databaseDirectory,
+                    settingsDirectory: _settingsDirectory,
                   ),
                 ),
               );
@@ -201,7 +156,69 @@ class MainPage extends StatelessWidget {
         title: const Text('Lightshot Parser'),
         centerTitle: true,
       ),
-      body: _getDirectories(_mainScreen()),
+      body: _waitForDirectories(
+        _mainScreen,
+      ),
+    );
+  }
+}
+
+class _GalleryBuilder extends StatelessWidget {
+  const _GalleryBuilder({
+    required this.photosDirectory,
+    required this.databaseDirectory,
+  });
+
+  final Directory photosDirectory;
+  final Directory databaseDirectory;
+
+  @override
+  Widget build(BuildContext context) {
+    return Builder(builder: (context) {
+      DataBase db = DataBase(
+          photosDirectory: photosDirectory, fileDirectory: databaseDirectory);
+      int downloadedPhotosNum = db.numOfDownloadedPhotos();
+      if (downloadedPhotosNum > 0) {
+        return _GalleryWithPhotos(
+            photoDirectory: photosDirectory, numOfPhotos: downloadedPhotosNum);
+      }
+      return Container(
+        width: 200,
+        height: 512,
+        child: Center(child: Text('NoPhoto')),
+      );
+    });
+  }
+}
+
+class _GalleryWithPhotos extends StatelessWidget {
+  const _GalleryWithPhotos({
+    required this.photoDirectory,
+    required this.numOfPhotos,
+  });
+
+  final Directory photoDirectory;
+  final int numOfPhotos;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      itemCount: min(15, numOfPhotos),
+      physics: const BouncingScrollPhysics(),
+      shrinkWrap: true,
+      separatorBuilder: (context, index) {
+        return const SizedBox(
+          width: 10,
+        );
+      },
+      itemBuilder: (context, index) {
+        return Container(
+          width: 512,
+          decoration: BoxDecoration(border: Border.all(color: Colors.green)),
+          child: Text('$index'),
+        );
+      },
+      scrollDirection: Axis.horizontal,
     );
   }
 }
