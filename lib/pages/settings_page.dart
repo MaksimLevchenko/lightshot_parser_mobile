@@ -160,14 +160,14 @@ class SettingsPage extends StatelessWidget {
       _saveSettingsInFile();
       log('form saved');
       ScaffoldMessenger.of(context)
-          .showSnackBar(_snackBar(message: "Settings saved"));
+          .showSnackBar(_getSnackBar(message: "Settings saved"));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(_snackBar(
+      ScaffoldMessenger.of(context).showSnackBar(_getSnackBar(
           message: "Please enter the correct data", color: Colors.red));
     }
   }
 
-  SnackBar _snackBar({required String message, Color color = Colors.green}) {
+  SnackBar _getSnackBar({required String message, Color color = Colors.green}) {
     return SnackBar(
       content: Center(child: Text(message)),
       duration: const Duration(seconds: 2),
