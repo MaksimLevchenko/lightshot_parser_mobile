@@ -1,13 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
+import 'dart:math' hide log;
+import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:lightshot_parser_mobile/pages/settings_page.dart';
 import 'package:lightshot_parser_mobile/parser/parser.dart';
 import 'package:lightshot_parser_mobile/parser/parser_db.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:lightshot_parser_mobile/parser/url_generator.dart' as gen;
 
 const _imageSize = 300.0;
 
@@ -17,13 +20,78 @@ class MainPage extends StatelessWidget {
   late Directory _photosDirectory;
   late Directory _databaseDirectory;
   late Directory _settingsDirectory;
+  double progress = 0;
 
   bool _downloading = false;
-  late int numOfImages;
+  late int wantedNumOfImages;
   late bool newAddresses;
   late String startingUrl;
 
   MainPage({super.key});
+
+  Future<void> _beginDownloading(
+      BuildContext context, Function setState) async {
+    _loadSettings(_settingsDirectory);
+    var generator = startingUrl == ''
+        ? gen.GetRandomUrl(newAddresses)
+        : gen.GetNextUrl(newAddresses, startingUrl);
+    LightshotParser parser = LightshotParser(
+        photosDirectory: _photosDirectory,
+        databaseDirectory: _databaseDirectory);
+    _downloading = true;
+    for (int downloadedImages = 0; downloadedImages < wantedNumOfImages;) {
+      if (_downloading == false) break;
+      try {
+        downloadedImages +=
+            await parser.downloadOneImage(generator.current) ? 1 : 0;
+        parser.database.addUrlRecord(generator.current);
+        generator.moveNext();
+      } on CouldntConnectException {
+        log('Coudnt connect to server');
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(_getSnackBar(
+            message: 'Download error. Try to change VPN',
+            color: Colors.red,
+          ));
+        }
+        break;
+      } on NoPhotoException {
+        log('no photo on ${generator.current}');
+        parser.database.addUrlRecord(generator.current);
+        generator.moveNext();
+      } catch (e) {
+        log(e.toString());
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            _getSnackBar(
+              message: 'Unknown error: $e, please contact to the dev',
+              color: Colors.red,
+            ),
+          );
+        }
+      }
+      setState(() {
+        progress = downloadedImages / wantedNumOfImages;
+      });
+    }
+    setState(() {
+      _downloading = false;
+      progress = 0;
+    });
+  }
+
+  void _stopDownloading() {
+    _downloading = false;
+    progress = 0;
+  }
+
+  SnackBar _getSnackBar({required String message, Color color = Colors.green}) {
+    return SnackBar(
+      content: Center(child: Text(message)),
+      duration: const Duration(seconds: 2),
+      backgroundColor: color,
+    );
+  }
 
   void _loadSettings(Directory settingsDir) {
     final File file =
@@ -31,11 +99,11 @@ class MainPage extends StatelessWidget {
     if (file.existsSync()) {
       final String jsonString = file.readAsStringSync();
       final Map<String, dynamic> settings = json.decode(jsonString);
-      numOfImages = settings['numOfImages'];
+      wantedNumOfImages = (settings['numOfImages']);
       newAddresses = settings['newAddresses'];
       startingUrl = settings['startingUrl'];
     } else {
-      numOfImages = 10;
+      wantedNumOfImages = 10;
       newAddresses = false;
       startingUrl = '';
     }
@@ -60,7 +128,7 @@ class MainPage extends StatelessWidget {
           _photosDirectory = Directory(_databaseDirectory.path + r'/Photos');
           _settingsDirectory = snapshot.data![1]!;
           _loadSettings(_settingsDirectory);
-          return child();
+          return child(context);
         }
 
         return const Center(
@@ -70,7 +138,7 @@ class MainPage extends StatelessWidget {
     );
   }
 
-  Widget _mainScreen() {
+  Widget _mainScreen(BuildContext context) {
     return SafeArea(
       minimum: const EdgeInsets.all(16),
       child: Column(
@@ -99,39 +167,38 @@ class MainPage extends StatelessWidget {
                 databaseDirectory: _databaseDirectory),
           ),
           const SizedBox(height: 16),
-          _downloading
-              ? ElevatedButton(
-                  onPressed: _stopDownloading,
-                  child: const Text('Cancel'),
-                )
-              : ElevatedButton(
-                  onPressed: () {
-                    _startDownloading();
-                  },
-                  child: const Text('Download'),
-                ),
+          StatefulBuilder(builder: (context, setState) {
+            return Column(
+              children: [
+                _downloading
+                    ? Column(
+                        children: [
+                          LinearProgressIndicator(value: progress),
+                          Text(
+                              'Downloaded ${(progress * wantedNumOfImages).round()} of $wantedNumOfImages'),
+                          SizedBox(height: 30)
+                        ],
+                      )
+                    : const SizedBox(height: 50),
+                _downloading
+                    ? ElevatedButton(
+                        onPressed: () => setState(() {
+                          _stopDownloading();
+                        }),
+                        child: const Text('Cancel'),
+                      )
+                    : ElevatedButton(
+                        onPressed: () => setState(() {
+                          _beginDownloading(context, setState);
+                        }),
+                        child: const Text('Download'),
+                      ),
+              ],
+            );
+          }),
         ],
       ),
     );
-  }
-
-  void _startDownloading() {
-    _loadSettings(_settingsDirectory);
-    LightshotParser parser = LightshotParser(
-        photosDirectory: _photosDirectory,
-        databaseDirectory: _databaseDirectory,
-        downloading: true);
-    _downloading = true;
-    parser.parse(numOfImages, newAddresses, startingUrl).then((_) {
-      _downloading = false;
-    });
-  }
-
-  void _stopDownloading() {
-    LightshotParser(
-        photosDirectory: _photosDirectory,
-        databaseDirectory: _databaseDirectory,
-        downloading: false);
   }
 
   @override
