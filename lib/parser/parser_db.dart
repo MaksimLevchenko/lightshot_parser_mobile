@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 class DataBase {
@@ -5,19 +6,33 @@ class DataBase {
   late final Directory photosDirectory;
   late final File _dbFile;
   final Set<String> _db = {};
+  static final DataBase _instance = DataBase._();
+  bool alreadyExists = false;
 
-  DataBase({required this.fileDirectory, required this.photosDirectory}) {
-    _dbFile = File(fileDirectory.path + r'db.txt');
-    _dbFile.createSync(recursive: true);
-    photosDirectory.createSync(recursive: true);
-    if (!_dbFile.existsSync()) {
-      parseFolder();
-    }
+  DataBase._();
 
-    var dbLines = _dbFile.readAsLinesSync();
-    for (int i = 0; i < dbLines.length; i++) {
-      _db.add(dbLines[i].toString());
+  factory DataBase(
+      {required Directory fileDirectory, required Directory photosDirectory}) {
+    if (_instance.alreadyExists == true) {
+      log("The instance of Database already exists");
+    } else {
+      _instance.fileDirectory = fileDirectory;
+      _instance.photosDirectory = photosDirectory;
+      _instance._dbFile = File(fileDirectory.path + r'db.txt');
+      _instance._dbFile.createSync(recursive: true);
+      photosDirectory.createSync(recursive: true);
+      if (!_instance._dbFile.existsSync()) {
+        _instance.parseFolder();
+      }
+
+      var dbLines = _instance._dbFile.readAsLinesSync();
+      for (int i = 0; i < dbLines.length; i++) {
+        _instance._db.add(dbLines[i].toString());
+      }
+      _instance.alreadyExists = true;
+      log('The instance of database created successfuly');
     }
+    return _instance;
   }
 
   parseFolder() {
