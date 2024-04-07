@@ -34,8 +34,8 @@ class LightshotParser {
       // It is necessary in order not to be banned immediately
       _instance.userClient.userAgent =
           'Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0';
-      _instance.userClient.idleTimeout = Duration(seconds: 5);
-      _instance.userClient.connectionTimeout = Duration(seconds: 5);
+      _instance.userClient.idleTimeout = const Duration(seconds: 5);
+      _instance.userClient.connectionTimeout = const Duration(seconds: 5);
       _instance.userClient.maxConnectionsPerHost = 1;
       if (!photosDirectory.existsSync()) {
         photosDirectory.createSync(recursive: true);
