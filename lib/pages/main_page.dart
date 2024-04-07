@@ -20,7 +20,7 @@ class MainPage extends StatelessWidget {
   late Directory _photosDirectory;
   late Directory _databaseDirectory;
   late Directory _settingsDirectory;
-  double progress = 0;
+  double _progress = 0;
 
   bool _downloading = false;
   late int wantedNumOfImages;
@@ -71,18 +71,19 @@ class MainPage extends StatelessWidget {
         }
       }
       setState(() {
-        progress = downloadedImages / wantedNumOfImages;
+        _progress = downloadedImages / wantedNumOfImages;
       });
     }
+    await Future.delayed(const Duration(milliseconds: 500));
     setState(() {
       _downloading = false;
-      progress = 0;
+      _progress = 0;
     });
   }
 
   void _stopDownloading() {
     _downloading = false;
-    progress = 0;
+    _progress = 0;
   }
 
   SnackBar _getSnackBar({required String message, Color color = Colors.green}) {
@@ -173,10 +174,20 @@ class MainPage extends StatelessWidget {
                 _downloading
                     ? Column(
                         children: [
-                          LinearProgressIndicator(value: progress),
+                          TweenAnimationBuilder<double>(
+                            duration: const Duration(milliseconds: 500),
+                            curve: Curves.easeInOut,
+                            tween: Tween<double>(
+                              begin: 0,
+                              end: _progress,
+                            ),
+                            builder: (context, value, _) =>
+                                LinearProgressIndicator(value: value),
+                          ),
+                          SizedBox(height: 10),
                           Text(
-                              'Downloaded ${(progress * wantedNumOfImages).round()} of $wantedNumOfImages'),
-                          SizedBox(height: 30)
+                              'Downloaded ${(_progress * wantedNumOfImages).round()} of $wantedNumOfImages'),
+                          SizedBox(height: 20)
                         ],
                       )
                     : const SizedBox(height: 50),
