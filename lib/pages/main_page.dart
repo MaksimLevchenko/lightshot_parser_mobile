@@ -5,7 +5,6 @@ import 'dart:math' hide log;
 import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:lightshot_parser_mobile/pages/settings_page.dart';
 import 'package:lightshot_parser_mobile/parser/parser.dart';
 import 'package:lightshot_parser_mobile/parser/parser_db.dart';
@@ -21,6 +20,7 @@ class MainPage extends StatelessWidget {
   late Directory _databaseDirectory;
   late Directory _settingsDirectory;
   double _progress = 0;
+  final galleryKey = GlobalKey();
 
   bool _downloading = false;
   late int wantedNumOfImages;
@@ -149,7 +149,9 @@ class MainPage extends StatelessWidget {
           Row(
             children: [
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  galleryKey.currentState!.setState(() {});
+                },
                 icon: const Icon(Icons.refresh),
                 color: Colors.pink,
               ),
@@ -160,13 +162,17 @@ class MainPage extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(
-            width: double.infinity,
-            height: _imageSize,
-            child: _GalleryBuilder(
-                photosDirectory: _photosDirectory,
-                databaseDirectory: _databaseDirectory),
-          ),
+          StatefulBuilder(
+              key: galleryKey,
+              builder: (context, setState) {
+                return SizedBox(
+                  width: double.infinity,
+                  height: _imageSize,
+                  child: _GalleryBuilder(
+                      photosDirectory: _photosDirectory,
+                      databaseDirectory: _databaseDirectory),
+                );
+              }),
           const SizedBox(height: 16),
           StatefulBuilder(builder: (context, setState) {
             return Column(
@@ -184,10 +190,10 @@ class MainPage extends StatelessWidget {
                             builder: (context, value, _) =>
                                 LinearProgressIndicator(value: value),
                           ),
-                          SizedBox(height: 10),
+                          const SizedBox(height: 10),
                           Text(
                               'Downloaded ${(_progress * wantedNumOfImages).round()} of $wantedNumOfImages'),
-                          SizedBox(height: 20)
+                          const SizedBox(height: 20)
                         ],
                       )
                     : const SizedBox(height: 50),
@@ -254,20 +260,18 @@ class _GalleryBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Builder(builder: (context) {
-      DataBase db = DataBase(
-          photosDirectory: photosDirectory, fileDirectory: databaseDirectory);
-      int downloadedPhotosNum = db.numOfDownloadedPhotos();
-      if (downloadedPhotosNum > 0) {
-        return _GalleryWithPhotos(
-            photoDirectory: photosDirectory, numOfPhotos: downloadedPhotosNum);
-      }
-      return const SizedBox(
-        width: _imageSize,
-        height: _imageSize,
-        child: Center(child: Text('NoPhoto')),
-      );
-    });
+    DataBase db = DataBase(
+        photosDirectory: photosDirectory, fileDirectory: databaseDirectory);
+    int downloadedPhotosNum = db.numOfDownloadedPhotos();
+    if (downloadedPhotosNum > 0) {
+      return _GalleryWithPhotos(
+          photoDirectory: photosDirectory, numOfPhotos: downloadedPhotosNum);
+    }
+    return const SizedBox(
+      width: _imageSize,
+      height: _imageSize,
+      child: Center(child: Text('NoPhoto')),
+    );
   }
 }
 
