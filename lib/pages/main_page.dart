@@ -29,7 +29,7 @@ class MainPage extends StatelessWidget {
 
   MainPage({super.key});
 
-  Future<void> _beginDownloading(
+  Future<bool> _beginDownloading(
       BuildContext context, Function setState) async {
     _loadSettings(_settingsDirectory);
     var generator = startingUrl == ''
@@ -39,11 +39,15 @@ class MainPage extends StatelessWidget {
         photosDirectory: _photosDirectory,
         databaseDirectory: _databaseDirectory);
     _downloading = true;
-    for (int downloadedImages = 0; downloadedImages < wantedNumOfImages;) {
+    File? downloadedPhoto;
+    for (int numOfDownloadedImages = 0;
+        numOfDownloadedImages < wantedNumOfImages;) {
       if (_downloading == false) break;
       try {
-        downloadedImages +=
-            await parser.downloadOneImage(generator.current) ? 1 : 0;
+        downloadedPhoto = await parser.downloadOneImage(generator.current);
+        if (downloadedPhoto != null) {
+          numOfDownloadedImages++;
+        }
         parser.database.addUrlRecord(generator.current);
         generator.moveNext();
       } on CouldntConnectException {
@@ -54,7 +58,11 @@ class MainPage extends StatelessWidget {
             color: Colors.red,
           ));
         }
-        break;
+        setState(() {
+          _downloading = false;
+          _progress = 0;
+        });
+        return false;
       } on NoPhotoException {
         log('no photo on ${generator.current}');
         parser.database.addUrlRecord(generator.current);
@@ -69,9 +77,14 @@ class MainPage extends StatelessWidget {
             ),
           );
         }
+        setState(() {
+          _downloading = false;
+          _progress = 0;
+        });
+        return false;
       }
       setState(() {
-        _progress = downloadedImages / wantedNumOfImages;
+        _progress = numOfDownloadedImages / wantedNumOfImages;
       });
     }
     await Future.delayed(const Duration(milliseconds: 500));
@@ -79,6 +92,7 @@ class MainPage extends StatelessWidget {
       _downloading = false;
       _progress = 0;
     });
+    return true;
   }
 
   void _stopDownloading() {
@@ -267,10 +281,21 @@ class _GalleryBuilder extends StatelessWidget {
       return _GalleryWithPhotos(
           photoDirectory: photosDirectory, numOfPhotos: downloadedPhotosNum);
     }
-    return const SizedBox(
+    return SizedBox(
       width: _imageSize,
       height: _imageSize,
-      child: Center(child: Text('NoPhoto')),
+      child: Center(
+        child: Card(
+          clipBehavior: Clip.hardEdge,
+          child: InkWell(
+            splashColor: Colors.pink.withAlpha(30),
+            onTap: () {},
+            child: Center(
+              child: Text('No photos'),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
