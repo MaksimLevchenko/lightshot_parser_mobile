@@ -6,6 +6,7 @@ import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
 import 'package:lightshot_parser_mobile/pages/gallery.dart';
+import 'package:lightshot_parser_mobile/pages/photo_page.dart';
 import 'package:lightshot_parser_mobile/pages/settings_page.dart';
 import 'package:lightshot_parser_mobile/parser/parser.dart';
 import 'package:lightshot_parser_mobile/parser/parser_db.dart';
@@ -278,11 +279,13 @@ class _GalleryBuilder extends StatelessWidget {
 
   Widget _photoRow(int numOfPhotos) {
     final photosByDate = _db.getFilesListByDate();
+    photosByDate.removeRange(min(15, photosByDate.length), photosByDate.length);
     return StreamBuilder<File>(
         stream: _imagesStream,
         builder: (context, streamSnapshot) {
           if (streamSnapshot.hasData) {
             photosByDate.insert(0, streamSnapshot.data!);
+            photosByDate.removeLast();
           }
           return ListView.separated(
             itemCount: min(15, numOfPhotos),
@@ -299,7 +302,18 @@ class _GalleryBuilder extends StatelessWidget {
                 clipBehavior: Clip.hardEdge,
                 child: InkWell(
                   splashColor: Colors.pink.withAlpha(30),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (BuildContext context) => PhotoViewerPage(
+                          galleryItems: photosByDate,
+                          startIndex: index,
+                          imageStream: _imagesStream,
+                        ),
+                      ),
+                    );
+                  },
                   onLongPress: () {},
                   child: Container(
                     padding: const EdgeInsets.all(16),
@@ -312,10 +326,10 @@ class _GalleryBuilder extends StatelessWidget {
                           return child;
                         }
                         return AnimatedOpacity(
-                          child: child,
                           opacity: frame == null ? 0 : 1,
-                          duration: const Duration(microseconds: 500),
+                          duration: const Duration(milliseconds: 500),
                           curve: Curves.easeOut,
+                          child: child,
                         );
                       },
                     ),
