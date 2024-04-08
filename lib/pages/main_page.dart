@@ -304,7 +304,21 @@ class _GalleryBuilder extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     width: _imageSize,
-                    child: Image.file(photosByDate[index]),
+                    child: Image.file(
+                      photosByDate[index],
+                      frameBuilder:
+                          (context, child, frame, wasSynchronouslyLoaded) {
+                        if (wasSynchronouslyLoaded) {
+                          return child;
+                        }
+                        return AnimatedOpacity(
+                          child: child,
+                          opacity: frame == null ? 0 : 1,
+                          duration: const Duration(microseconds: 500),
+                          curve: Curves.easeOut,
+                        );
+                      },
+                    ),
                   ),
                 ),
               );

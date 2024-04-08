@@ -40,7 +40,7 @@ class GalleryPage extends StatelessWidget {
                       return AnimatedOpacity(
                         child: child,
                         opacity: frame == null ? 0 : 1,
-                        duration: const Duration(seconds: 1),
+                        duration: const Duration(milliseconds: 500),
                         curve: Curves.easeOut,
                       );
                     },
