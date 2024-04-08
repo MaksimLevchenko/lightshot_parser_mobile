@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable, invalid_use_of_protected_member
+
 import 'dart:developer';
 import 'dart:io';
 
@@ -9,18 +11,14 @@ import 'package:share_plus/share_plus.dart';
 
 class PhotoViewerPage extends StatelessWidget {
   PhotoViewerPage(
-      {super.key,
-      required this.galleryItems,
-      required int startIndex,
-      required Stream<File> imageStream})
-      : _startIndex = startIndex,
-        _imageStream = imageStream,
+      {super.key, required List<File> galleryItems, required int startIndex})
+      : _galleryItems = List.from(galleryItems),
+        _startIndex = startIndex,
         currentIndex = startIndex;
 
-  final Stream<File> _imageStream;
   final GlobalKey<State<StatefulWidget>> statefulKey =
       GlobalKey<State<StatefulWidget>>();
-  final List<File> galleryItems;
+  final List<File> _galleryItems;
   final int _startIndex;
   int currentIndex;
 
@@ -78,11 +76,11 @@ class PhotoViewerPage extends StatelessWidget {
             TextButton(
               onPressed: () {
                 isImageDeleted = true;
-                log('${galleryItems.length}');
+                log('${_galleryItems.length}');
                 image.deleteSync();
-                galleryItems.removeAt(currentIndex);
+                _galleryItems.removeAt(currentIndex);
                 statefulKey.currentState!.setState(() {});
-                log('${galleryItems.length}');
+                log('${_galleryItems.length}');
                 Navigator.of(context).pop(); // Close the dialog
                 ScaffoldMessenger.of(context).showSnackBar(
                   _getSnackBar(
@@ -102,25 +100,24 @@ class PhotoViewerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white70,
       appBar: AppBar(
         title: const Text('Photo Viewer'),
         actions: [
           IconButton(
             onPressed: () {
-              saveImage(galleryItems[currentIndex], context);
+              saveImage(_galleryItems[currentIndex], context);
             },
             icon: const Icon(Icons.download),
           ),
           IconButton(
             onPressed: () {
-              shareImage(galleryItems[currentIndex], context);
+              shareImage(_galleryItems[currentIndex], context);
             },
             icon: const Icon(Icons.share),
           ),
           IconButton(
             onPressed: () {
-              deleteImage(galleryItems[currentIndex], context);
+              deleteImage(_galleryItems[currentIndex], context);
             },
             icon: const Icon(Icons.delete),
           ),
@@ -133,13 +130,13 @@ class PhotoViewerPage extends StatelessWidget {
               scrollPhysics: const BouncingScrollPhysics(),
               builder: (BuildContext context, int index) {
                 return PhotoViewGalleryPageOptions(
-                  imageProvider: FileImage(galleryItems[index]),
+                  imageProvider: FileImage(_galleryItems[index]),
                   initialScale: PhotoViewComputedScale.contained * 0.9,
                   maxScale: PhotoViewComputedScale.contained * 3.0,
                   minScale: PhotoViewComputedScale.contained * 0.8,
                 );
               },
-              itemCount: galleryItems.length,
+              itemCount: _galleryItems.length,
               loadingBuilder: (context, event) => Center(
                 child: SizedBox(
                   width: 20.0,

@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -21,11 +23,11 @@ class MainPage extends StatelessWidget {
   late Directory _photosDirectory;
   late Directory _databaseDirectory;
   late Directory _settingsDirectory;
+  bool downloading = false;
   double _progress = 0;
   final StreamController<File> _imagesStream =
       StreamController<File>.broadcast();
 
-  bool _downloading = false;
   late int _wantedNumOfImages;
   late bool _newAddresses;
   late String _startingUrl;
@@ -33,7 +35,7 @@ class MainPage extends StatelessWidget {
   MainPage({super.key});
 
   Future<bool> _beginDownloading(
-      BuildContext context, Function setState) async {
+      BuildContext context, Function setProgressBarState) async {
     _loadSettings(_settingsDirectory);
     var generator = _startingUrl == ''
         ? gen.GetRandomUrl(_newAddresses)
@@ -41,11 +43,11 @@ class MainPage extends StatelessWidget {
     LightshotParser parser = LightshotParser(
         photosDirectory: _photosDirectory,
         databaseDirectory: _databaseDirectory);
-    _downloading = true;
+    downloading = true;
     File? downloadedPhoto;
     for (int numOfDownloadedImages = 0;
         numOfDownloadedImages < _wantedNumOfImages;) {
-      if (_downloading == false) break;
+      if (downloading == false) break;
       try {
         downloadedPhoto = await parser.downloadOneImage(generator.current);
         if (downloadedPhoto != null) {
@@ -57,13 +59,13 @@ class MainPage extends StatelessWidget {
       } on CouldntConnectException {
         log('Coudnt connect to server');
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(_getSnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(getSnackBar(
             message: 'Download error. Try to change VPN',
             color: Colors.red,
           ));
         }
-        setState(() {
-          _downloading = false;
+        setProgressBarState(() {
+          downloading = false;
           _progress = 0;
         });
         return false;
@@ -75,40 +77,32 @@ class MainPage extends StatelessWidget {
         log(e.toString());
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            _getSnackBar(
+            getSnackBar(
               message: 'Unknown error: $e, please contact to the dev',
               color: Colors.red,
             ),
           );
         }
-        setState(() {
-          _downloading = false;
+        setProgressBarState(() {
+          downloading = false;
           _progress = 0;
         });
         return false;
       }
-      setState(() {
+      setProgressBarState(() {
         _progress = numOfDownloadedImages / _wantedNumOfImages;
       });
     }
-    if (_downloading) await Future.delayed(const Duration(milliseconds: 500));
-    setState(() {
-      _downloading = false;
+    if (downloading) await Future.delayed(const Duration(milliseconds: 500));
+    setProgressBarState(() {
+      downloading = false;
       _progress = 0;
     });
     return true;
   }
 
   void _stopDownloading() {
-    _downloading = false;
-  }
-
-  SnackBar _getSnackBar({required String message, Color color = Colors.green}) {
-    return SnackBar(
-      content: Center(child: Text(message)),
-      duration: const Duration(seconds: 2),
-      backgroundColor: color,
-    );
+    downloading = false;
   }
 
   void _loadSettings(Directory settingsDir) {
@@ -195,10 +189,10 @@ class MainPage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           // Download button and progress bar
-          StatefulBuilder(builder: (context, setState) {
+          StatefulBuilder(builder: (context, setProgressBarState) {
             return Column(
               children: [
-                _downloading
+                downloading
                     ? Column(
                         children: [
                           TweenAnimationBuilder<double>(
@@ -218,16 +212,16 @@ class MainPage extends StatelessWidget {
                         ],
                       )
                     : const SizedBox(height: 50),
-                _downloading
+                downloading
                     ? ElevatedButton(
-                        onPressed: () => setState(() {
+                        onPressed: () => setProgressBarState(() {
                           _stopDownloading();
                         }),
                         child: const Text('Cancel'),
                       )
                     : ElevatedButton(
-                        onPressed: () => setState(() {
-                          _beginDownloading(context, setState);
+                        onPressed: () => setProgressBarState(() {
+                          _beginDownloading(context, setProgressBarState);
                         }),
                         child: const Text('Download'),
                       ),
@@ -270,29 +264,26 @@ class MainPage extends StatelessWidget {
   }
 }
 
-class _GalleryBuilder extends StatefulWidget {
-  const _GalleryBuilder({
+class _GalleryBuilder extends StatelessWidget {
+  _GalleryBuilder({
     required Stream<File> imagesStream,
   }) : _imagesStream = imagesStream;
   final Stream<File> _imagesStream;
+  final GlobalKey<State<StatefulWidget>> statefulKey =
+      GlobalKey<State<StatefulWidget>>();
 
-  @override
-  State<_GalleryBuilder> createState() => _GalleryBuilderState();
-}
-
-class _GalleryBuilderState extends State<_GalleryBuilder> {
   final DataBase _db = DataBase.getInstance();
 
   Widget _photoRow(int numOfPhotos) {
-    final photosByDate = _db.getFilesListByDate();
+    List<File> photosByDate = _db.getFilesListByDate();
     photosByDate.removeRange(min(15, photosByDate.length), photosByDate.length);
-    return StreamBuilder<File>(
-        stream: widget._imagesStream,
-        builder: (context, streamSnapshot) {
-          if (streamSnapshot.hasData) {
-            photosByDate.insert(0, streamSnapshot.data!);
-            photosByDate.removeLast();
-          }
+    _imagesStream.listen((event) {
+      photosByDate.insert(0, event);
+      statefulKey.currentState?.setState(() {});
+    });
+    return StatefulBuilder(
+        key: statefulKey,
+        builder: (context, setGalleryState) {
           return ListView.separated(
             itemCount: min(15, numOfPhotos),
             physics: const BouncingScrollPhysics(),
@@ -315,10 +306,11 @@ class _GalleryBuilderState extends State<_GalleryBuilder> {
                         builder: (BuildContext context) => PhotoViewerPage(
                           galleryItems: photosByDate,
                           startIndex: index,
-                          imageStream: widget._imagesStream,
                         ),
                       ),
-                    ).then((value) => setState(() {}));
+                    ).then((value) {
+                      setGalleryState(() {});
+                    });
                   },
                   onLongPress: () {},
                   child: Container(
@@ -373,4 +365,12 @@ class _GalleryBuilderState extends State<_GalleryBuilder> {
       ),
     );
   }
+}
+
+SnackBar getSnackBar({required String message, Color color = Colors.green}) {
+  return SnackBar(
+    content: Center(child: Text(message)),
+    duration: const Duration(seconds: 2),
+    backgroundColor: color,
+  );
 }

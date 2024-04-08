@@ -3,16 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:lightshot_parser_mobile/pages/photo_page.dart';
 import 'package:lightshot_parser_mobile/parser/parser_db.dart';
 
-class GalleryPage extends StatefulWidget {
+class GalleryPage extends StatelessWidget {
   final Stream<File> imageStream;
+  final GlobalKey<State<StatefulWidget>> galleryKey =
+      GlobalKey<State<StatefulWidget>>();
+  GalleryPage({super.key, required this.imageStream});
 
-  const GalleryPage({super.key, required this.imageStream});
-
-  @override
-  State<GalleryPage> createState() => _GalleryPageState();
-}
-
-class _GalleryPageState extends State<GalleryPage> {
   final DataBase _db = DataBase.getInstance();
 
   @override
@@ -22,49 +18,57 @@ class _GalleryPageState extends State<GalleryPage> {
       appBar: AppBar(
         title: const Text('Gallery'),
       ),
-      body: StreamBuilder<File>(
-        stream: widget.imageStream,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            final newImage = snapshot.data!;
-            images = [newImage, ...images];
-          }
-          return GridView.count(
-            crossAxisCount: 3,
-            children: List.generate(images.length, (index) {
-              return InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (BuildContext context) => PhotoViewerPage(
-                        galleryItems: images,
-                        startIndex: index,
-                        imageStream: widget.imageStream,
+      body: Builder(builder: (context) {
+        imageStream.listen((event) {
+          images.insert(0, event);
+          galleryKey.currentState?.setState(() {});
+        });
+        return StatefulBuilder(
+            key: galleryKey,
+            builder: (context, setGalleryState) {
+              return GridView.count(
+                crossAxisCount: 3,
+                children: List.generate(images.length, (index) {
+                  return InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (BuildContext context) => PhotoViewerPage(
+                            galleryItems: images,
+                            startIndex: index,
+                          ),
+                        ),
+                      ).then((value) => setGalleryState(() {
+                            images = _db.getFilesListByDate();
+                          }));
+                    },
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.white70,
+                      ),
+                      padding: const EdgeInsets.all(8.0),
+                      child: Image.file(
+                        images[index],
+                        frameBuilder:
+                            (context, child, frame, wasSynchronouslyLoaded) {
+                          if (wasSynchronouslyLoaded) {
+                            return child;
+                          }
+                          return AnimatedOpacity(
+                            opacity: frame == null ? 0 : 1,
+                            duration: const Duration(milliseconds: 500),
+                            curve: Curves.easeOut,
+                            child: child,
+                          );
+                        },
                       ),
                     ),
-                  ).then((value) => setState(() {}));
-                },
-                child: Image.file(
-                  images[index],
-                  frameBuilder:
-                      (context, child, frame, wasSynchronouslyLoaded) {
-                    if (wasSynchronouslyLoaded) {
-                      return child;
-                    }
-                    return AnimatedOpacity(
-                      opacity: frame == null ? 0 : 1,
-                      duration: const Duration(milliseconds: 500),
-                      curve: Curves.easeOut,
-                      child: child,
-                    );
-                  },
-                ),
+                  );
+                }),
               );
-            }),
-          );
-        },
-      ),
+            });
+      }),
     );
   }
 }
