@@ -20,7 +20,7 @@ class PhotoViewerPage extends StatelessWidget {
   int currentIndex = 0;
 
   Future<bool> saveImage(File image, BuildContext context) async {
-    await Permission.storage.request().then((value) {
+    await Permission.manageExternalStorage.request().then((value) {
       if (value.isGranted) {
         final String path = image.path;
         final String fileName = path.substring(path.lastIndexOf('/') + 1);
