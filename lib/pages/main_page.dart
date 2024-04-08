@@ -87,7 +87,7 @@ class MainPage extends StatelessWidget {
         _progress = numOfDownloadedImages / wantedNumOfImages;
       });
     }
-    await Future.delayed(const Duration(milliseconds: 500));
+    if (_downloading) await Future.delayed(const Duration(milliseconds: 500));
     setState(() {
       _downloading = false;
       _progress = 0;
