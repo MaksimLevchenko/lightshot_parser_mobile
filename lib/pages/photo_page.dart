@@ -24,7 +24,10 @@ class PhotoViewerPage extends StatelessWidget {
       if (value.isGranted) {
         final String path = image.path;
         final String fileName = path.substring(path.lastIndexOf('/') + 1);
-        final String newPath = '/storage/emulated/0/Download/$fileName';
+        final String newPath = '/storage/emulated/0/Download/Parser/$fileName';
+        final Directory downloadDir =
+            Directory('/storage/emulated/0/Download/Parser');
+        downloadDir.createSync(recursive: true);
         image.copy(newPath).then((value) {
           ScaffoldMessenger.of(context).showSnackBar(
             _getSnackBar(
