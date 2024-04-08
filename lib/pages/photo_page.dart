@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import 'package:share_plus/share_plus.dart';
 
 class PhotoViewerPage extends StatelessWidget {
   PhotoViewerPage(
@@ -22,6 +23,12 @@ class PhotoViewerPage extends StatelessWidget {
   final List<File> galleryItems;
   final int _startIndex;
   int currentIndex;
+
+  bool shareImage(File image, BuildContext context) {
+    Share.shareXFiles([XFile(image.path)],
+        text: 'Check out this image from Lightshot Parser');
+    return true;
+  }
 
   Future<bool> saveImage(File image, BuildContext context) async {
     await Permission.manageExternalStorage.request().then((value) {
@@ -106,7 +113,9 @@ class PhotoViewerPage extends StatelessWidget {
             icon: const Icon(Icons.download),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              shareImage(galleryItems[currentIndex], context);
+            },
             icon: const Icon(Icons.share),
           ),
           IconButton(

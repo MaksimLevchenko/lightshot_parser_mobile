@@ -3,11 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:lightshot_parser_mobile/pages/photo_page.dart';
 import 'package:lightshot_parser_mobile/parser/parser_db.dart';
 
-class GalleryPage extends StatelessWidget {
+class GalleryPage extends StatefulWidget {
   final Stream<File> imageStream;
-  final DataBase _db = DataBase.getInstance();
 
-  GalleryPage({super.key, required this.imageStream});
+  const GalleryPage({super.key, required this.imageStream});
+
+  @override
+  State<GalleryPage> createState() => _GalleryPageState();
+}
+
+class _GalleryPageState extends State<GalleryPage> {
+  final DataBase _db = DataBase.getInstance();
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +23,7 @@ class GalleryPage extends StatelessWidget {
         title: const Text('Gallery'),
       ),
       body: StreamBuilder<File>(
-        stream: imageStream,
+        stream: widget.imageStream,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             final newImage = snapshot.data!;
@@ -34,10 +40,10 @@ class GalleryPage extends StatelessWidget {
                       builder: (BuildContext context) => PhotoViewerPage(
                         galleryItems: images,
                         startIndex: index,
-                        imageStream: imageStream,
+                        imageStream: widget.imageStream,
                       ),
                     ),
-                  );
+                  ).then((value) => setState(() {}));
                 },
                 child: Image.file(
                   images[index],

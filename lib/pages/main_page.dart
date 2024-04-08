@@ -270,18 +270,24 @@ class MainPage extends StatelessWidget {
   }
 }
 
-class _GalleryBuilder extends StatelessWidget {
-  _GalleryBuilder({
+class _GalleryBuilder extends StatefulWidget {
+  const _GalleryBuilder({
     required Stream<File> imagesStream,
   }) : _imagesStream = imagesStream;
   final Stream<File> _imagesStream;
+
+  @override
+  State<_GalleryBuilder> createState() => _GalleryBuilderState();
+}
+
+class _GalleryBuilderState extends State<_GalleryBuilder> {
   final DataBase _db = DataBase.getInstance();
 
   Widget _photoRow(int numOfPhotos) {
     final photosByDate = _db.getFilesListByDate();
     photosByDate.removeRange(min(15, photosByDate.length), photosByDate.length);
     return StreamBuilder<File>(
-        stream: _imagesStream,
+        stream: widget._imagesStream,
         builder: (context, streamSnapshot) {
           if (streamSnapshot.hasData) {
             photosByDate.insert(0, streamSnapshot.data!);
@@ -309,10 +315,10 @@ class _GalleryBuilder extends StatelessWidget {
                         builder: (BuildContext context) => PhotoViewerPage(
                           galleryItems: photosByDate,
                           startIndex: index,
-                          imageStream: _imagesStream,
+                          imageStream: widget._imagesStream,
                         ),
                       ),
-                    );
+                    ).then((value) => setState(() {}));
                   },
                   onLongPress: () {},
                   child: Container(
