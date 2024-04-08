@@ -52,7 +52,7 @@ class LightshotParser {
   }
 
   ///downloading image from {prnt.sc} url
-  Future<void> getImage(Uri url) async {
+  Future<File> getImage(Uri url) async {
     late final HttpClientResponse responseFromSite;
     try {
       responseFromSite = await (await userClient.getUrl(url)).close();
@@ -99,20 +99,22 @@ class LightshotParser {
     }
 
     //Download the photo
-    await File("${photosDirectory.path}/"
+    File downloadedFile = await File("${photosDirectory.path}/"
             '${url.pathSegments[url.pathSegments.length - 1]}'
             '${imageStringUrl.substring(imageStringUrl.lastIndexOf('.'))}')
         .writeAsBytes(responseFromImg.bodyBytes);
 
     log('file $imageStringUrl from $url downloaded successful');
+
+    return downloadedFile;
   }
 
-  Future<bool> downloadOneImage(Uri imageUrl) async {
+  Future<File?> downloadOneImage(Uri imageUrl) async {
     if (database.urlInDb(imageUrl)) {
       log('The page $imageUrl is already checked');
-      return false;
+      return null;
     }
-    await getImage(imageUrl);
-    return true;
+    File downloadedFile = await getImage(imageUrl);
+    return downloadedFile;
   }
 }
