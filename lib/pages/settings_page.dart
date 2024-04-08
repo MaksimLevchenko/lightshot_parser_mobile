@@ -5,14 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:lightshot_parser_mobile/parser/parser_db.dart';
 
 class SettingsPage extends StatelessWidget {
-  final Directory photoDirectory;
-  final Directory databaseDirectory;
-  final Directory settingsDirectory;
+  final Directory _photoDirectory;
+  final Directory _databaseDirectory;
+  final Directory _settingsDirectory;
   SettingsPage(
       {super.key,
-      required this.photoDirectory,
-      required this.databaseDirectory,
-      required this.settingsDirectory});
+      required Directory photoDirectory,
+      required Directory databaseDirectory,
+      required Directory settingsDirectory})
+      : _settingsDirectory = settingsDirectory,
+        _databaseDirectory = databaseDirectory,
+        _photoDirectory = photoDirectory;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -41,7 +44,7 @@ class SettingsPage extends StatelessWidget {
   }
 
   void _saveSettingsInFile() {
-    final Directory directory = settingsDirectory;
+    final Directory directory = _settingsDirectory;
     final File file = File('${directory.path}/lightshot_parser/settings.json');
     file.createSync(recursive: true);
     log('settings in ${file.path}');
@@ -187,7 +190,7 @@ class SettingsPage extends StatelessWidget {
         child: Form(
           key: _formKey,
           child: FutureBuilder(
-              future: _loadSettingsFromFile(settingsDirectory),
+              future: _loadSettingsFromFile(_settingsDirectory),
               builder: (context, snapshot) {
                 if (snapshot.connectionState != ConnectionState.done) {
                   return const Center(child: CircularProgressIndicator());
@@ -230,8 +233,8 @@ class SettingsPage extends StatelessWidget {
                           child: const Text('Recreate database'),
                           onPressed: () {
                             DataBase db = DataBase(
-                                fileDirectory: databaseDirectory,
-                                photosDirectory: photoDirectory);
+                                fileDirectory: _databaseDirectory,
+                                photosDirectory: _photoDirectory);
                             db.parseFolder();
                           },
                         ),
@@ -241,7 +244,7 @@ class SettingsPage extends StatelessWidget {
                               fixedSize: MaterialStateProperty.all(
                                   const Size(150, 30))),
                           onPressed: () {
-                            photoDirectory.listSync().forEach((element) {
+                            _photoDirectory.listSync().forEach((element) {
                               element.deleteSync(recursive: true);
                             });
                           },
