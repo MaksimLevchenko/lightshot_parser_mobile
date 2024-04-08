@@ -11,6 +11,13 @@ class DataBase {
 
   DataBase._();
 
+  static DataBase getInstance() {
+    if (_instance.alreadyExists == false) {
+      throw Exception('The instance of Database does not exist');
+    }
+    return _instance;
+  }
+
   factory DataBase(
       {required Directory fileDirectory, required Directory photosDirectory}) {
     if (_instance.alreadyExists == true) {
@@ -35,7 +42,19 @@ class DataBase {
     return _instance;
   }
 
-  parseFolder() {
+  List<File> getFilesListByDate() {
+    List<FileSystemEntity> entities = photosDirectory.listSync();
+
+    entities.sort((FileSystemEntity first, FileSystemEntity second) {
+      FileStat statFirst = first.statSync();
+      FileStat statSecond = second.statSync();
+      return statSecond.modified.compareTo(statFirst.modified);
+    });
+
+    return entities.cast();
+  }
+
+  void parseFolder() {
     _db.clear();
     _dbFile.writeAsStringSync('', mode: FileMode.write);
 
@@ -54,12 +73,12 @@ class DataBase {
     return _db.contains(fileName);
   }
 
-  addRecord(String fileName) {
+  void addRecord(String fileName) {
     _dbFile.writeAsStringSync('$fileName\n', mode: FileMode.append);
     _db.add(fileName);
   }
 
-  addUrlRecord(Uri url) {
+  void addUrlRecord(Uri url) {
     addRecord(url.pathSegments[0]);
   }
 
