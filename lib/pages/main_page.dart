@@ -20,7 +20,6 @@ class MainPage extends StatelessWidget {
   late Directory _databaseDirectory;
   late Directory _settingsDirectory;
   double _progress = 0;
-  //TODO remove broadcast
   final StreamController<File> imagesStream =
       StreamController<File>.broadcast();
 
@@ -268,49 +267,6 @@ class _GalleryBuilder extends StatelessWidget {
   final Directory photosDirectory;
   final Directory databaseDirectory;
 
-  @override
-  Widget build(BuildContext context) {
-    DataBase db = DataBase(
-        photosDirectory: photosDirectory, fileDirectory: databaseDirectory);
-    int downloadedPhotosNum = db.numOfDownloadedPhotos();
-    if (downloadedPhotosNum > 0) {
-      return _GalleryWithPhotos(
-          imagesStream: imagesStream,
-          photoDirectory: photosDirectory,
-          numOfPhotos: downloadedPhotosNum);
-    }
-    return SizedBox(
-      width: _imageSize,
-      height: _imageSize,
-      child: Center(
-        child: Card(
-          color: Colors.white70,
-          clipBehavior: Clip.hardEdge,
-          child: InkWell(
-            splashColor: Colors.pink.withAlpha(30),
-            onTap: () {},
-            onLongPress: () {},
-            child: const Center(
-              child: Text('No photos'),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _GalleryWithPhotos extends StatelessWidget {
-  const _GalleryWithPhotos({
-    required this.imagesStream,
-    required this.photoDirectory,
-    required this.numOfPhotos,
-  });
-
-  final Stream<File> imagesStream;
-  final Directory photoDirectory;
-  final int numOfPhotos;
-
   Future<List<File>> _getFilesListByDate(Directory directory) async {
     List<FileSystemEntity> entities = directory.listSync();
 
@@ -323,10 +279,9 @@ class _GalleryWithPhotos extends StatelessWidget {
     return entities.cast();
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _photoRow(int numOfPhotos) {
     return FutureBuilder<List<File>>(
-        future: _getFilesListByDate(photoDirectory),
+        future: _getFilesListByDate(photosDirectory),
         builder: (context, snapshot) {
           if (snapshot.hasData == false) {
             return const CircularProgressIndicator();
@@ -366,5 +321,33 @@ class _GalleryWithPhotos extends StatelessWidget {
                 );
               });
         });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    DataBase db = DataBase(
+        photosDirectory: photosDirectory, fileDirectory: databaseDirectory);
+    int downloadedPhotosNum = db.numOfDownloadedPhotos();
+    if (downloadedPhotosNum > 0) {
+      return _photoRow(downloadedPhotosNum);
+    }
+    return SizedBox(
+      width: _imageSize,
+      height: _imageSize,
+      child: Center(
+        child: Card(
+          color: Colors.white70,
+          clipBehavior: Clip.hardEdge,
+          child: InkWell(
+            splashColor: Colors.pink.withAlpha(30),
+            onTap: () {},
+            onLongPress: () {},
+            child: const Center(
+              child: Text('No photos'),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
