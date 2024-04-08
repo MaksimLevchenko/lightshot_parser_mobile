@@ -20,7 +20,9 @@ class MainPage extends StatelessWidget {
   late Directory _databaseDirectory;
   late Directory _settingsDirectory;
   double _progress = 0;
-  final galleryKey = GlobalKey();
+  //TODO remove broadcast
+  final StreamController<File> imagesStream =
+      StreamController<File>.broadcast();
 
   bool _downloading = false;
   late int wantedNumOfImages;
@@ -47,6 +49,7 @@ class MainPage extends StatelessWidget {
         downloadedPhoto = await parser.downloadOneImage(generator.current);
         if (downloadedPhoto != null) {
           numOfDownloadedImages++;
+          imagesStream.add(downloadedPhoto);
         }
         parser.database.addUrlRecord(generator.current);
         generator.moveNext();
@@ -97,7 +100,6 @@ class MainPage extends StatelessWidget {
 
   void _stopDownloading() {
     _downloading = false;
-    _progress = 0;
   }
 
   SnackBar _getSnackBar({required String message, Color color = Colors.green}) {
@@ -162,13 +164,6 @@ class MainPage extends StatelessWidget {
         children: [
           Row(
             children: [
-              IconButton(
-                onPressed: () {
-                  galleryKey.currentState!.setState(() {});
-                },
-                icon: const Icon(Icons.refresh),
-                color: Colors.pink,
-              ),
               const Expanded(child: SizedBox()),
               TextButton(
                 onPressed: () {},
@@ -176,18 +171,17 @@ class MainPage extends StatelessWidget {
               ),
             ],
           ),
-          StatefulBuilder(
-              key: galleryKey,
-              builder: (context, setState) {
-                return SizedBox(
-                  width: double.infinity,
-                  height: _imageSize,
-                  child: _GalleryBuilder(
-                      photosDirectory: _photosDirectory,
-                      databaseDirectory: _databaseDirectory),
-                );
-              }),
+          // Gallery widget
+          SizedBox(
+            width: double.infinity,
+            height: _imageSize,
+            child: _GalleryBuilder(
+                imagesStream: imagesStream.stream,
+                photosDirectory: _photosDirectory,
+                databaseDirectory: _databaseDirectory),
+          ),
           const SizedBox(height: 16),
+          // Download button and progress bar
           StatefulBuilder(builder: (context, setState) {
             return Column(
               children: [
@@ -265,10 +259,12 @@ class MainPage extends StatelessWidget {
 
 class _GalleryBuilder extends StatelessWidget {
   const _GalleryBuilder({
+    required this.imagesStream,
     required this.photosDirectory,
     required this.databaseDirectory,
   });
 
+  final Stream<File> imagesStream;
   final Directory photosDirectory;
   final Directory databaseDirectory;
 
@@ -279,18 +275,22 @@ class _GalleryBuilder extends StatelessWidget {
     int downloadedPhotosNum = db.numOfDownloadedPhotos();
     if (downloadedPhotosNum > 0) {
       return _GalleryWithPhotos(
-          photoDirectory: photosDirectory, numOfPhotos: downloadedPhotosNum);
+          imagesStream: imagesStream,
+          photoDirectory: photosDirectory,
+          numOfPhotos: downloadedPhotosNum);
     }
     return SizedBox(
       width: _imageSize,
       height: _imageSize,
       child: Center(
         child: Card(
+          color: Colors.white70,
           clipBehavior: Clip.hardEdge,
           child: InkWell(
             splashColor: Colors.pink.withAlpha(30),
             onTap: () {},
-            child: Center(
+            onLongPress: () {},
+            child: const Center(
               child: Text('No photos'),
             ),
           ),
@@ -302,10 +302,12 @@ class _GalleryBuilder extends StatelessWidget {
 
 class _GalleryWithPhotos extends StatelessWidget {
   const _GalleryWithPhotos({
+    required this.imagesStream,
     required this.photoDirectory,
     required this.numOfPhotos,
   });
 
+  final Stream<File> imagesStream;
   final Directory photoDirectory;
   final int numOfPhotos;
 
@@ -329,26 +331,40 @@ class _GalleryWithPhotos extends StatelessWidget {
           if (snapshot.hasData == false) {
             return const CircularProgressIndicator();
           }
-          return ListView.separated(
-            itemCount: min(15, numOfPhotos),
-            physics: const BouncingScrollPhysics(),
-            shrinkWrap: true,
-            separatorBuilder: (context, index) {
-              return const SizedBox(
-                width: 10,
-              );
-            },
-            itemBuilder: (context, index) {
-              return Container(
-                width: _imageSize,
-                decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black),
-                    color: Colors.grey),
-                child: Image.file(snapshot.data![index]),
-              );
-            },
-            scrollDirection: Axis.horizontal,
-          );
+          return StreamBuilder<File>(
+              stream: imagesStream,
+              builder: (context, streamSnapshot) {
+                if (streamSnapshot.hasData) {
+                  snapshot.data!.insert(0, streamSnapshot.data!);
+                }
+                return ListView.separated(
+                  itemCount: min(15, numOfPhotos),
+                  physics: const BouncingScrollPhysics(),
+                  shrinkWrap: true,
+                  separatorBuilder: (context, index) {
+                    return const SizedBox(
+                      width: 10,
+                    );
+                  },
+                  itemBuilder: (context, index) {
+                    return Card(
+                      color: Colors.white70,
+                      clipBehavior: Clip.hardEdge,
+                      child: InkWell(
+                        splashColor: Colors.pink.withAlpha(30),
+                        onTap: () {},
+                        onLongPress: () {},
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          width: _imageSize,
+                          child: Image.file(snapshot.data![index]),
+                        ),
+                      ),
+                    );
+                  },
+                  scrollDirection: Axis.horizontal,
+                );
+              });
         });
   }
 }
