@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -12,12 +13,15 @@ class PhotoViewerPage extends StatelessWidget {
       required int startIndex,
       required Stream<File> imageStream})
       : _startIndex = startIndex,
-        _imageStream = imageStream;
+        _imageStream = imageStream,
+        currentIndex = startIndex;
 
   final Stream<File> _imageStream;
+  final GlobalKey<State<StatefulWidget>> statefulKey =
+      GlobalKey<State<StatefulWidget>>();
   final List<File> galleryItems;
   final int _startIndex;
-  int currentIndex = 0;
+  int currentIndex;
 
   Future<bool> saveImage(File image, BuildContext context) async {
     await Permission.manageExternalStorage.request().then((value) {
@@ -48,6 +52,46 @@ class PhotoViewerPage extends StatelessWidget {
     return true;
   }
 
+  bool deleteImage(File image, BuildContext context) {
+    bool isImageDeleted = false;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Deletion'),
+          content: const Text('Are you sure you want to delete this image?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                isImageDeleted = false;
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                isImageDeleted = true;
+                log('${galleryItems.length}');
+                image.deleteSync();
+                galleryItems.removeAt(currentIndex);
+                statefulKey.currentState!.setState(() {});
+                log('${galleryItems.length}');
+                Navigator.of(context).pop(); // Close the dialog
+                ScaffoldMessenger.of(context).showSnackBar(
+                  _getSnackBar(
+                    message: 'Image deleted',
+                  ),
+                );
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+    return isImageDeleted;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,39 +110,46 @@ class PhotoViewerPage extends StatelessWidget {
             icon: const Icon(Icons.share),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              deleteImage(galleryItems[currentIndex], context);
+            },
             icon: const Icon(Icons.delete),
           ),
         ],
       ),
-      body: PhotoViewGallery.builder(
-        scrollPhysics: const BouncingScrollPhysics(),
-        builder: (BuildContext context, int index) {
-          return PhotoViewGalleryPageOptions(
-            imageProvider: FileImage(galleryItems[index]),
-            initialScale: PhotoViewComputedScale.contained * 0.9,
-            maxScale: PhotoViewComputedScale.contained * 3.0,
-            minScale: PhotoViewComputedScale.contained * 0.8,
-          );
-        },
-        itemCount: galleryItems.length,
-        loadingBuilder: (context, event) => Center(
-          child: SizedBox(
-            width: 20.0,
-            height: 20.0,
-            child: CircularProgressIndicator(
-              value: event == null
-                  ? 0
-                  : event.cumulativeBytesLoaded / event.expectedTotalBytes!,
-            ),
-          ),
-        ),
-        backgroundDecoration: const BoxDecoration(color: Colors.white70),
-        pageController: PageController(initialPage: _startIndex),
-        onPageChanged: (index) {
-          currentIndex = index;
-        },
-      ),
+      body: StatefulBuilder(
+          key: statefulKey,
+          builder: (context, setState) {
+            return PhotoViewGallery.builder(
+              scrollPhysics: const BouncingScrollPhysics(),
+              builder: (BuildContext context, int index) {
+                return PhotoViewGalleryPageOptions(
+                  imageProvider: FileImage(galleryItems[index]),
+                  initialScale: PhotoViewComputedScale.contained * 0.9,
+                  maxScale: PhotoViewComputedScale.contained * 3.0,
+                  minScale: PhotoViewComputedScale.contained * 0.8,
+                );
+              },
+              itemCount: galleryItems.length,
+              loadingBuilder: (context, event) => Center(
+                child: SizedBox(
+                  width: 20.0,
+                  height: 20.0,
+                  child: CircularProgressIndicator(
+                    value: event == null
+                        ? 0
+                        : event.cumulativeBytesLoaded /
+                            event.expectedTotalBytes!,
+                  ),
+                ),
+              ),
+              backgroundDecoration: const BoxDecoration(color: Colors.white70),
+              pageController: PageController(initialPage: _startIndex),
+              onPageChanged: (index) {
+                currentIndex = index;
+              },
+            );
+          }),
     );
   }
 
