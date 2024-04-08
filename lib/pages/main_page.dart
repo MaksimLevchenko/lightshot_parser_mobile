@@ -5,6 +5,7 @@ import 'dart:math' hide log;
 import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
+import 'package:lightshot_parser_mobile/pages/gallery.dart';
 import 'package:lightshot_parser_mobile/pages/settings_page.dart';
 import 'package:lightshot_parser_mobile/parser/parser.dart';
 import 'package:lightshot_parser_mobile/parser/parser_db.dart';
@@ -20,35 +21,35 @@ class MainPage extends StatelessWidget {
   late Directory _databaseDirectory;
   late Directory _settingsDirectory;
   double _progress = 0;
-  final StreamController<File> imagesStream =
+  final StreamController<File> _imagesStream =
       StreamController<File>.broadcast();
 
   bool _downloading = false;
-  late int wantedNumOfImages;
-  late bool newAddresses;
-  late String startingUrl;
+  late int _wantedNumOfImages;
+  late bool _newAddresses;
+  late String _startingUrl;
 
   MainPage({super.key});
 
   Future<bool> _beginDownloading(
       BuildContext context, Function setState) async {
     _loadSettings(_settingsDirectory);
-    var generator = startingUrl == ''
-        ? gen.GetRandomUrl(newAddresses)
-        : gen.GetNextUrl(newAddresses, startingUrl);
+    var generator = _startingUrl == ''
+        ? gen.GetRandomUrl(_newAddresses)
+        : gen.GetNextUrl(_newAddresses, _startingUrl);
     LightshotParser parser = LightshotParser(
         photosDirectory: _photosDirectory,
         databaseDirectory: _databaseDirectory);
     _downloading = true;
     File? downloadedPhoto;
     for (int numOfDownloadedImages = 0;
-        numOfDownloadedImages < wantedNumOfImages;) {
+        numOfDownloadedImages < _wantedNumOfImages;) {
       if (_downloading == false) break;
       try {
         downloadedPhoto = await parser.downloadOneImage(generator.current);
         if (downloadedPhoto != null) {
           numOfDownloadedImages++;
-          imagesStream.add(downloadedPhoto);
+          _imagesStream.add(downloadedPhoto);
         }
         parser.database.addUrlRecord(generator.current);
         generator.moveNext();
@@ -86,7 +87,7 @@ class MainPage extends StatelessWidget {
         return false;
       }
       setState(() {
-        _progress = numOfDownloadedImages / wantedNumOfImages;
+        _progress = numOfDownloadedImages / _wantedNumOfImages;
       });
     }
     if (_downloading) await Future.delayed(const Duration(milliseconds: 500));
@@ -115,17 +116,17 @@ class MainPage extends StatelessWidget {
     if (file.existsSync()) {
       final String jsonString = file.readAsStringSync();
       final Map<String, dynamic> settings = json.decode(jsonString);
-      wantedNumOfImages = (settings['numOfImages']);
-      newAddresses = settings['newAddresses'];
-      startingUrl = settings['startingUrl'];
+      _wantedNumOfImages = (settings['numOfImages']);
+      _newAddresses = settings['newAddresses'];
+      _startingUrl = settings['startingUrl'];
     } else {
-      wantedNumOfImages = 10;
-      newAddresses = false;
-      startingUrl = '';
+      _wantedNumOfImages = 10;
+      _newAddresses = false;
+      _startingUrl = '';
     }
   }
 
-  Widget _waitForDirectories(Function child) {
+  Widget _createDatabaseAndFindFolders(Function child) {
     return FutureBuilder(
       future: Future.wait([_downloadDirectoryPath, _appDocDir]),
       builder: (BuildContext context, snapshot) {
@@ -142,6 +143,10 @@ class MainPage extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.done) {
           _databaseDirectory = snapshot.data![0]!;
           _photosDirectory = Directory(_databaseDirectory.path + r'/Photos');
+          DataBase(
+            fileDirectory: _databaseDirectory,
+            photosDirectory: _photosDirectory,
+          );
           _settingsDirectory = snapshot.data![1]!;
           _loadSettings(_settingsDirectory);
           return child(context);
@@ -165,7 +170,16 @@ class MainPage extends StatelessWidget {
             children: [
               const Expanded(child: SizedBox()),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (BuildContext context) => GalleryPage(
+                        imageStream: _imagesStream.stream,
+                      ),
+                    ),
+                  );
+                },
                 child: const Text('See all'),
               ),
             ],
@@ -175,9 +189,8 @@ class MainPage extends StatelessWidget {
             width: double.infinity,
             height: _imageSize,
             child: _GalleryBuilder(
-                imagesStream: imagesStream.stream,
-                photosDirectory: _photosDirectory,
-                databaseDirectory: _databaseDirectory),
+              imagesStream: _imagesStream.stream,
+            ),
           ),
           const SizedBox(height: 16),
           // Download button and progress bar
@@ -199,7 +212,7 @@ class MainPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 10),
                           Text(
-                              'Downloaded ${(_progress * wantedNumOfImages).round()} of $wantedNumOfImages'),
+                              'Downloaded ${(_progress * _wantedNumOfImages).round()} of $_wantedNumOfImages'),
                           const SizedBox(height: 20)
                         ],
                       )
@@ -249,7 +262,7 @@ class MainPage extends StatelessWidget {
         title: const Text('Lightshot Parser'),
         centerTitle: true,
       ),
-      body: _waitForDirectories(
+      body: _createDatabaseAndFindFolders(
         _mainScreen,
       ),
     );
@@ -257,77 +270,53 @@ class MainPage extends StatelessWidget {
 }
 
 class _GalleryBuilder extends StatelessWidget {
-  const _GalleryBuilder({
-    required this.imagesStream,
-    required this.photosDirectory,
-    required this.databaseDirectory,
-  });
-
-  final Stream<File> imagesStream;
-  final Directory photosDirectory;
-  final Directory databaseDirectory;
-
-  Future<List<File>> _getFilesListByDate(Directory directory) async {
-    List<FileSystemEntity> entities = directory.listSync();
-
-    entities.sort((FileSystemEntity first, FileSystemEntity second) {
-      FileStat statFirst = first.statSync();
-      FileStat statSecond = second.statSync();
-      return statSecond.modified.compareTo(statFirst.modified);
-    });
-
-    return entities.cast();
-  }
+  _GalleryBuilder({
+    required Stream<File> imagesStream,
+  }) : _imagesStream = imagesStream;
+  final Stream<File> _imagesStream;
+  final DataBase _db = DataBase.getInstance();
 
   Widget _photoRow(int numOfPhotos) {
-    return FutureBuilder<List<File>>(
-        future: _getFilesListByDate(photosDirectory),
-        builder: (context, snapshot) {
-          if (snapshot.hasData == false) {
-            return const CircularProgressIndicator();
+    final photosByDate = _db.getFilesListByDate();
+    return StreamBuilder<File>(
+        stream: _imagesStream,
+        builder: (context, streamSnapshot) {
+          if (streamSnapshot.hasData) {
+            photosByDate.insert(0, streamSnapshot.data!);
           }
-          return StreamBuilder<File>(
-              stream: imagesStream,
-              builder: (context, streamSnapshot) {
-                if (streamSnapshot.hasData) {
-                  snapshot.data!.insert(0, streamSnapshot.data!);
-                }
-                return ListView.separated(
-                  itemCount: min(15, numOfPhotos),
-                  physics: const BouncingScrollPhysics(),
-                  shrinkWrap: true,
-                  separatorBuilder: (context, index) {
-                    return const SizedBox(
-                      width: 10,
-                    );
-                  },
-                  itemBuilder: (context, index) {
-                    return Card(
-                      color: Colors.white70,
-                      clipBehavior: Clip.hardEdge,
-                      child: InkWell(
-                        splashColor: Colors.pink.withAlpha(30),
-                        onTap: () {},
-                        onLongPress: () {},
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          width: _imageSize,
-                          child: Image.file(snapshot.data![index]),
-                        ),
-                      ),
-                    );
-                  },
-                  scrollDirection: Axis.horizontal,
-                );
-              });
+          return ListView.separated(
+            itemCount: min(15, numOfPhotos),
+            physics: const BouncingScrollPhysics(),
+            shrinkWrap: true,
+            separatorBuilder: (context, index) {
+              return const SizedBox(
+                width: 10,
+              );
+            },
+            itemBuilder: (context, index) {
+              return Card(
+                color: Colors.white70,
+                clipBehavior: Clip.hardEdge,
+                child: InkWell(
+                  splashColor: Colors.pink.withAlpha(30),
+                  onTap: () {},
+                  onLongPress: () {},
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    width: _imageSize,
+                    child: Image.file(photosByDate[index]),
+                  ),
+                ),
+              );
+            },
+            scrollDirection: Axis.horizontal,
+          );
         });
   }
 
   @override
   Widget build(BuildContext context) {
-    DataBase db = DataBase(
-        photosDirectory: photosDirectory, fileDirectory: databaseDirectory);
-    int downloadedPhotosNum = db.numOfDownloadedPhotos();
+    int downloadedPhotosNum = _db.numOfDownloadedPhotos();
     if (downloadedPhotosNum > 0) {
       return _photoRow(downloadedPhotosNum);
     }
