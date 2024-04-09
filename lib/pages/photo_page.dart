@@ -2,8 +2,10 @@
 
 import 'dart:developer';
 import 'dart:io';
+import 'dart:math' hide log;
 
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
@@ -29,15 +31,24 @@ class PhotoViewerPage extends StatelessWidget {
   }
 
   Future<bool> saveImage(File image, BuildContext context) async {
-    await Permission.manageExternalStorage.request().then((value) {
+    await Permission.manageExternalStorage.request().then((value) async {
       if (value.isGranted) {
+        late final String fileName;
         final String path = image.path;
-        final String fileName = path.substring(path.lastIndexOf('/') + 1);
-        final String newPath = '/storage/emulated/0/Download/Parser/$fileName';
-        final Directory downloadDir =
-            Directory('/storage/emulated/0/Download/Parser');
+        if (path.substring(path.lastIndexOf(r'\') + 1).length <
+            path.substring(path.lastIndexOf(r'/') + 1).length) {
+          fileName = path.substring(path.lastIndexOf(r'\') + 1);
+        }
+        late final Directory downloadDir;
+        if (Platform.isAndroid) {
+          downloadDir = Directory('/storage/emulated/0/Download/');
+        } else {
+          downloadDir = await getDownloadsDirectory() ?? Directory.current;
+          log(downloadDir.path);
+        }
+        final String newPath = '${downloadDir.path}/$fileName';
         downloadDir.createSync(recursive: true);
-        image.copy(newPath).then((value) {
+        await image.copy(newPath).then((value) {
           ScaffoldMessenger.of(context).showSnackBar(
             _getSnackBar(
               message: 'Image saved to $newPath',
@@ -131,9 +142,9 @@ class PhotoViewerPage extends StatelessWidget {
               builder: (BuildContext context, int index) {
                 return PhotoViewGalleryPageOptions(
                   imageProvider: FileImage(_galleryItems[index]),
-                  initialScale: PhotoViewComputedScale.contained * 0.9,
-                  maxScale: PhotoViewComputedScale.contained * 3.0,
-                  minScale: PhotoViewComputedScale.contained * 0.8,
+                  initialScale: PhotoViewComputedScale.contained * 1,
+                  maxScale: PhotoViewComputedScale.contained * 4.0,
+                  minScale: PhotoViewComputedScale.contained * 1,
                 );
               },
               itemCount: _galleryItems.length,
