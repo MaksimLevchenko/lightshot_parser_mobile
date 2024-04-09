@@ -243,13 +243,14 @@ class MainPage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (BuildContext context) => SettingsPage(
-                    photoDirectory: _photosDirectory,
-                    databaseDirectory: _databaseDirectory,
-                    settingsDirectory: _settingsDirectory,
-                  ),
-                ),
-              );
+                    builder: (BuildContext context) => SettingsPage(
+                          photoDirectory: _photosDirectory,
+                          databaseDirectory: _databaseDirectory,
+                          settingsDirectory: _settingsDirectory,
+                        )),
+              ).then((_) {
+                _galleryStatefulKey.currentState?.setState(() {});
+              });
             },
             icon: const Icon(Icons.settings),
           )
@@ -264,26 +265,49 @@ class MainPage extends StatelessWidget {
   }
 }
 
+final GlobalKey<State<StatefulWidget>> _galleryStatefulKey =
+    GlobalKey<State<StatefulWidget>>();
+
 class _GalleryBuilder extends StatelessWidget {
   _GalleryBuilder({
     required Stream<File> imagesStream,
   }) : _imagesStream = imagesStream;
   final Stream<File> _imagesStream;
-  final GlobalKey<State<StatefulWidget>> statefulKey =
-      GlobalKey<State<StatefulWidget>>();
 
   final DataBase _db = DataBase.getInstance();
 
-  Widget _photoRow(int numOfPhotos) {
+  Widget _photoRow() {
     List<File> photosByDate = _db.getFilesListByDate();
+    int numOfPhotos = min(photosByDate.length, 15);
     photosByDate.removeRange(min(15, photosByDate.length), photosByDate.length);
     _imagesStream.listen((event) {
       photosByDate.insert(0, event);
-      statefulKey.currentState?.setState(() {});
+      _galleryStatefulKey.currentState?.setState(() {});
     });
     return StatefulBuilder(
-        key: statefulKey,
+        key: _galleryStatefulKey,
         builder: (context, setGalleryState) {
+          numOfPhotos = min(photosByDate.length, 15);
+          if (numOfPhotos == 0) {
+            return SizedBox(
+              width: _imageSize,
+              height: _imageSize,
+              child: Center(
+                child: Card(
+                  color: Colors.white70,
+                  clipBehavior: Clip.hardEdge,
+                  child: InkWell(
+                    splashColor: Colors.pink.withAlpha(30),
+                    onTap: () {},
+                    onLongPress: () {},
+                    child: const Center(
+                      child: Text('No photos'),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
           return ListView.separated(
             itemCount: min(15, numOfPhotos),
             physics: const BouncingScrollPhysics(),
@@ -342,28 +366,7 @@ class _GalleryBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int downloadedPhotosNum = _db.numOfDownloadedPhotos();
-    if (downloadedPhotosNum > 0) {
-      return _photoRow(downloadedPhotosNum);
-    }
-    return SizedBox(
-      width: _imageSize,
-      height: _imageSize,
-      child: Center(
-        child: Card(
-          color: Colors.white70,
-          clipBehavior: Clip.hardEdge,
-          child: InkWell(
-            splashColor: Colors.pink.withAlpha(30),
-            onTap: () {},
-            onLongPress: () {},
-            child: const Center(
-              child: Text('No photos'),
-            ),
-          ),
-        ),
-      ),
-    );
+    return _photoRow();
   }
 }
 
