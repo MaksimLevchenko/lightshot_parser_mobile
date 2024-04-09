@@ -249,7 +249,9 @@ class MainPage extends StatelessWidget {
                           settingsDirectory: _settingsDirectory,
                         )),
               ).then((_) {
-                _galleryStatefulKey.currentState?.setState(() {});
+                _galleryStatefulKey.currentState?.setState(() {
+                  _galleryStatefulKey.currentState?._updateGalleryList();
+                });
               });
             },
             icon: const Icon(Icons.settings),
@@ -265,8 +267,8 @@ class MainPage extends StatelessWidget {
   }
 }
 
-final GlobalKey<State<StatefulWidget>> _galleryStatefulKey =
-    GlobalKey<State<StatefulWidget>>();
+final GlobalKey<__RowBuilderState> _galleryStatefulKey =
+    GlobalKey<__RowBuilderState>();
 
 class _GalleryBuilder extends StatelessWidget {
   _GalleryBuilder({
@@ -278,90 +280,16 @@ class _GalleryBuilder extends StatelessWidget {
 
   Widget _photoRow() {
     List<File> photosByDate = _db.getFilesListByDate();
-    int numOfPhotos = min(photosByDate.length, 15);
+    int numOfPhotos = photosByDate.length;
     photosByDate.removeRange(min(15, photosByDate.length), photosByDate.length);
     _imagesStream.listen((event) {
       photosByDate.insert(0, event);
       _galleryStatefulKey.currentState?.setState(() {});
     });
-    return StatefulBuilder(
-        key: _galleryStatefulKey,
-        builder: (context, setGalleryState) {
-          numOfPhotos = min(photosByDate.length, 15);
-          if (numOfPhotos == 0) {
-            return SizedBox(
-              width: _imageSize,
-              height: _imageSize,
-              child: Center(
-                child: Card(
-                  color: Colors.white70,
-                  clipBehavior: Clip.hardEdge,
-                  child: InkWell(
-                    splashColor: Colors.pink.withAlpha(30),
-                    onTap: () {},
-                    onLongPress: () {},
-                    child: const Center(
-                      child: Text('No photos'),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }
-          return ListView.separated(
-            itemCount: min(15, numOfPhotos),
-            physics: const BouncingScrollPhysics(),
-            shrinkWrap: true,
-            separatorBuilder: (context, index) {
-              return const SizedBox(
-                width: 10,
-              );
-            },
-            itemBuilder: (context, index) {
-              return Card(
-                color: Colors.white70,
-                clipBehavior: Clip.hardEdge,
-                child: InkWell(
-                  splashColor: Colors.pink.withAlpha(30),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (BuildContext context) => PhotoViewerPage(
-                          galleryItems: photosByDate,
-                          startIndex: index,
-                        ),
-                      ),
-                    ).then((value) {
-                      setGalleryState(() {});
-                    });
-                  },
-                  onLongPress: () {},
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    width: _imageSize,
-                    child: Image.file(
-                      photosByDate[index],
-                      frameBuilder:
-                          (context, child, frame, wasSynchronouslyLoaded) {
-                        if (wasSynchronouslyLoaded) {
-                          return child;
-                        }
-                        return AnimatedOpacity(
-                          opacity: frame == null ? 0 : 1,
-                          duration: const Duration(milliseconds: 500),
-                          curve: Curves.easeOut,
-                          child: child,
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              );
-            },
-            scrollDirection: Axis.horizontal,
-          );
-        });
+    return _RowBuilder(
+      key: _galleryStatefulKey,
+      photosByDate: photosByDate,
+    );
   }
 
   @override
@@ -376,4 +304,100 @@ SnackBar getSnackBar({required String message, Color color = Colors.green}) {
     duration: const Duration(seconds: 2),
     backgroundColor: color,
   );
+}
+
+class _RowBuilder extends StatefulWidget {
+  _RowBuilder({super.key, required this.photosByDate});
+  List<File> photosByDate;
+
+  @override
+  State<_RowBuilder> createState() => __RowBuilderState();
+}
+
+class __RowBuilderState extends State<_RowBuilder> {
+  void _updateGalleryList() {
+    widget.photosByDate = DataBase.getInstance().getFilesListByDate();
+    widget.photosByDate.removeRange(
+        min(15, widget.photosByDate.length), widget.photosByDate.length);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Builder(builder: (context) {
+      int numOfPhotos = widget.photosByDate.length;
+      if (numOfPhotos == 0) {
+        return SizedBox(
+          width: _imageSize,
+          height: _imageSize,
+          child: Center(
+            child: Card(
+              color: Colors.white70,
+              clipBehavior: Clip.hardEdge,
+              child: InkWell(
+                splashColor: Colors.pink.withAlpha(30),
+                onTap: () {},
+                onLongPress: () {},
+                child: const Center(
+                  child: Text('No photos'),
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+      return ListView.separated(
+        itemCount: min(15, numOfPhotos),
+        physics: const BouncingScrollPhysics(),
+        shrinkWrap: true,
+        separatorBuilder: (context, index) {
+          return const SizedBox(
+            width: 10,
+          );
+        },
+        itemBuilder: (context, index) {
+          return Card(
+            color: Colors.white70,
+            clipBehavior: Clip.hardEdge,
+            child: InkWell(
+              splashColor: Colors.pink.withAlpha(30),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (BuildContext context) => PhotoViewerPage(
+                      galleryItems: widget.photosByDate,
+                      startIndex: index,
+                    ),
+                  ),
+                ).then((value) {
+                  setState(() {});
+                });
+              },
+              onLongPress: () {},
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                width: _imageSize,
+                child: Image.file(
+                  widget.photosByDate[index],
+                  frameBuilder:
+                      (context, child, frame, wasSynchronouslyLoaded) {
+                    if (wasSynchronouslyLoaded) {
+                      return child;
+                    }
+                    return AnimatedOpacity(
+                      opacity: frame == null ? 0 : 1,
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.easeOut,
+                      child: child,
+                    );
+                  },
+                ),
+              ),
+            ),
+          );
+        },
+        scrollDirection: Axis.horizontal,
+      );
+    });
+  }
 }
