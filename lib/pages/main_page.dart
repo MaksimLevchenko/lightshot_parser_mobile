@@ -16,13 +16,15 @@ import 'package:path_provider/path_provider.dart';
 import 'package:lightshot_parser_mobile/parser/url_generator.dart' as gen;
 
 const _imageSize = 300.0;
+bool needToUpdateGallery = false;
 
 class MainPage extends StatelessWidget {
   final Future<Directory> _appDocDir = getApplicationDocumentsDirectory();
-  final Future<Directory?> _downloadDirectoryPath = getDownloadsDirectory();
-  late Directory _photosDirectory;
-  late Directory _databaseDirectory;
-  late Directory _settingsDirectory;
+  final Future<Directory?> _downloadDirectoryPath =
+      getApplicationCacheDirectory();
+  late final Directory _photosDirectory;
+  late final Directory _databaseDirectory;
+  late final Directory _settingsDirectory;
   bool downloading = false;
   double _progress = 0;
   final StreamController<File> _imagesStream =
@@ -136,12 +138,13 @@ class MainPage extends StatelessWidget {
           );
         }
         if (snapshot.connectionState == ConnectionState.done) {
-          _databaseDirectory = snapshot.data![0]!;
-          _photosDirectory = Directory(_databaseDirectory.path + r'/Photos');
+          _databaseDirectory = snapshot.data![1]!;
+          _photosDirectory = Directory(snapshot.data![0]!.path + r'/Photos');
           DataBase(
-            fileDirectory: _databaseDirectory,
+            databaseFileDirectory: _databaseDirectory,
             photosDirectory: _photosDirectory,
           );
+          log('${_databaseDirectory.path} is database path');
           _settingsDirectory = snapshot.data![1]!;
           _loadSettings(_settingsDirectory);
           return child(context);
@@ -173,7 +176,15 @@ class MainPage extends StatelessWidget {
                         imageStream: _imagesStream.stream,
                       ),
                     ),
-                  );
+                  ).then((_) {
+                    needToUpdateGallery
+                        ? _galleryStatefulKey.currentState?.setState(() {
+                            _galleryStatefulKey.currentState
+                                ?._updateGalleryList();
+                          })
+                        : null;
+                    needToUpdateGallery = false;
+                  });
                 },
                 child: const Text('See all'),
               ),
@@ -249,9 +260,12 @@ class MainPage extends StatelessWidget {
                           settingsDirectory: _settingsDirectory,
                         )),
               ).then((_) {
-                _galleryStatefulKey.currentState?.setState(() {
-                  _galleryStatefulKey.currentState?._updateGalleryList();
-                });
+                needToUpdateGallery
+                    ? _galleryStatefulKey.currentState?.setState(() {
+                        _galleryStatefulKey.currentState?._updateGalleryList();
+                      })
+                    : null;
+                needToUpdateGallery = false;
               });
             },
             icon: const Icon(Icons.settings),
@@ -280,11 +294,15 @@ class _GalleryBuilder extends StatelessWidget {
 
   Widget _photoRow() {
     List<File> photosByDate = _db.getFilesListByDate();
-    int numOfPhotos = photosByDate.length;
     photosByDate.removeRange(min(15, photosByDate.length), photosByDate.length);
     _imagesStream.listen((event) {
       photosByDate.insert(0, event);
-      _galleryStatefulKey.currentState?.setState(() {});
+      needToUpdateGallery
+          ? _galleryStatefulKey.currentState?.setState(() {
+              _galleryStatefulKey.currentState?._updateGalleryList();
+            })
+          : null;
+      needToUpdateGallery = false;
     });
     return _RowBuilder(
       key: _galleryStatefulKey,
@@ -315,6 +333,10 @@ class _RowBuilder extends StatefulWidget {
 }
 
 class __RowBuilderState extends State<_RowBuilder> {
+  void setList(List<File> newPhotos) {
+    widget.photosByDate = newPhotos;
+  }
+
   void _updateGalleryList() {
     widget.photosByDate = DataBase.getInstance().getFilesListByDate();
     widget.photosByDate.removeRange(
@@ -369,8 +391,14 @@ class __RowBuilderState extends State<_RowBuilder> {
                       startIndex: index,
                     ),
                   ),
-                ).then((value) {
-                  setState(() {});
+                ).then((_) {
+                  needToUpdateGallery
+                      ? _galleryStatefulKey.currentState?.setState(() {
+                          _galleryStatefulKey.currentState
+                              ?._updateGalleryList();
+                        })
+                      : null;
+                  needToUpdateGallery = false;
                 });
               },
               onLongPress: () {},

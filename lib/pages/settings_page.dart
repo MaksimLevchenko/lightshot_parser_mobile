@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:lightshot_parser_mobile/pages/main_page.dart';
 import 'package:lightshot_parser_mobile/parser/parser_db.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -235,7 +236,7 @@ class SettingsPage extends StatelessWidget {
                           child: const Text('Recreate database'),
                           onPressed: () {
                             DataBase db = DataBase(
-                                fileDirectory: _databaseDirectory,
+                                databaseFileDirectory: _databaseDirectory,
                                 photosDirectory: _photoDirectory);
                             db.parseFolder();
                           },
@@ -246,6 +247,7 @@ class SettingsPage extends StatelessWidget {
                               fixedSize: MaterialStateProperty.all(
                                   const Size(150, 30))),
                           onPressed: () {
+                            needToUpdateGallery = true;
                             _photoDirectory.listSync().forEach((element) {
                               element.deleteSync(recursive: true);
                             });

@@ -2,9 +2,9 @@
 
 import 'dart:developer';
 import 'dart:io';
-import 'dart:math' hide log;
 
 import 'package:flutter/material.dart';
+import 'package:lightshot_parser_mobile/pages/main_page.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
@@ -92,6 +92,7 @@ class PhotoViewerPage extends StatelessWidget {
                 _galleryItems.removeAt(currentIndex);
                 statefulKey.currentState!.setState(() {});
                 log('${_galleryItems.length}');
+                needToUpdateGallery = true;
                 Navigator.of(context).pop(); // Close the dialog
                 ScaffoldMessenger.of(context).showSnackBar(
                   _getSnackBar(
