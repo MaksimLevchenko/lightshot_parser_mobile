@@ -38,10 +38,12 @@ class PhotoViewerPage extends StatelessWidget {
         if (path.substring(path.lastIndexOf(r'\') + 1).length <
             path.substring(path.lastIndexOf(r'/') + 1).length) {
           fileName = path.substring(path.lastIndexOf(r'\') + 1);
+        } else {
+          fileName = path.substring(path.lastIndexOf(r'/') + 1);
         }
         late final Directory downloadDir;
         if (Platform.isAndroid) {
-          downloadDir = Directory('/storage/emulated/0/Download/');
+          downloadDir = Directory('/storage/emulated/0/Download');
         } else {
           downloadDir = await getDownloadsDirectory() ?? Directory.current;
           log(downloadDir.path);
