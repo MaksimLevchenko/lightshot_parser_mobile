@@ -22,9 +22,9 @@ class MainPage extends StatelessWidget {
   final Future<Directory> _appDocDir = getApplicationDocumentsDirectory();
   final Future<Directory?> _downloadDirectoryPath =
       getApplicationCacheDirectory();
-  late final Directory _photosDirectory;
-  late final Directory _databaseDirectory;
-  late final Directory _settingsDirectory;
+  late Directory _photosDirectory;
+  late Directory _databaseDirectory;
+  late Directory _settingsDirectory;
   bool downloading = false;
   double _progress = 0;
   final StreamController<File> _imagesStream =
