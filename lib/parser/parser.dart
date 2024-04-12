@@ -44,7 +44,8 @@ class LightshotParser {
       log('photo dir: ${_instance.photosDirectory.toString()}');
       _instance.databaseDirectory = databaseDirectory;
       _instance.database = db.DataBase(
-          fileDirectory: databaseDirectory, photosDirectory: photosDirectory);
+          databaseFileDirectory: databaseDirectory,
+          photosDirectory: photosDirectory);
       _instance.alreadyExists = true;
       log('The instance of LightshotParser created successfuly');
     }

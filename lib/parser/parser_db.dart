@@ -2,7 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 
 class DataBase {
-  late final Directory fileDirectory;
+  late final Directory databaseFileDirectory;
   late final Directory photosDirectory;
   late final File _dbFile;
   final Set<String> _db = {};
@@ -19,14 +19,16 @@ class DataBase {
   }
 
   factory DataBase(
-      {required Directory fileDirectory, required Directory photosDirectory}) {
+      {required Directory databaseFileDirectory,
+      required Directory photosDirectory}) {
     if (_instance.alreadyExists == true) {
       log("The instance of Database already exists");
     } else {
-      _instance.fileDirectory = fileDirectory;
+      _instance.databaseFileDirectory = databaseFileDirectory;
       _instance.photosDirectory = photosDirectory;
-      _instance._dbFile = File(fileDirectory.path + r'db.txt');
+      _instance._dbFile = File(databaseFileDirectory.path + r'/db.txt');
       _instance._dbFile.createSync(recursive: true);
+
       photosDirectory.createSync(recursive: true);
       if (!_instance._dbFile.existsSync()) {
         _instance.parseFolder();
@@ -36,6 +38,7 @@ class DataBase {
       for (int i = 0; i < dbLines.length; i++) {
         _instance._db.add(dbLines[i].toString());
       }
+      log(_instance._dbFile.path);
       _instance.alreadyExists = true;
       log('The instance of database created successfuly');
     }
