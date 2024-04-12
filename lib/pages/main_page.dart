@@ -297,12 +297,9 @@ class _GalleryBuilder extends StatelessWidget {
     photosByDate.removeRange(min(15, photosByDate.length), photosByDate.length);
     _imagesStream.listen((event) {
       photosByDate.insert(0, event);
-      needToUpdateGallery
-          ? _galleryStatefulKey.currentState?.setState(() {
-              _galleryStatefulKey.currentState?._updateGalleryList();
-            })
-          : null;
-      needToUpdateGallery = false;
+      _galleryStatefulKey.currentState?.setState(() {
+        _galleryStatefulKey.currentState?._updateGalleryList();
+      });
     });
     return _RowBuilder(
       key: _galleryStatefulKey,
