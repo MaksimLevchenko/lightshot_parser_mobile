@@ -14,9 +14,11 @@ import 'package:lightshot_parser_mobile/parser/parser.dart';
 import 'package:lightshot_parser_mobile/parser/parser_db.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:lightshot_parser_mobile/parser/url_generator.dart' as gen;
+import "package:dio/dio.dart";
 
 const _imageSize = 300.0;
 bool needToUpdateGallery = false;
+var cancelToken = CancelToken();
 
 class MainPage extends StatelessWidget {
   final Future<Directory> _appDocDir = getApplicationDocumentsDirectory();
@@ -46,9 +48,14 @@ class MainPage extends StatelessWidget {
         photosDirectory: _photosDirectory,
         databaseDirectory: _databaseDirectory);
     downloading = true;
+    cancelToken = new CancelToken();
     File? downloadedPhoto;
-    for (int numOfDownloadedImages = 0;
-        numOfDownloadedImages < _wantedNumOfImages;) {
+    int numOfDownloadedImages = 0;
+    setProgressBarState(() {
+      _progress = 0;
+      numOfDownloadedImages = 0;
+    });
+    for (numOfDownloadedImages; numOfDownloadedImages < _wantedNumOfImages;) {
       if (downloading == false) break;
       try {
         downloadedPhoto = await parser.downloadOneImage(generator.current);
@@ -75,6 +82,9 @@ class MainPage extends StatelessWidget {
         log('no photo on ${generator.current}');
         parser.database.addUrlRecord(generator.current);
         generator.moveNext();
+      } on CancelledByUserException {
+        log('Download cancelled by user');
+        return false;
       } catch (e) {
         log(e.toString());
         if (context.mounted) {
@@ -105,6 +115,7 @@ class MainPage extends StatelessWidget {
 
   void _stopDownloading() {
     downloading = false;
+    cancelToken.cancel();
   }
 
   void _loadSettings(Directory settingsDir) {

@@ -1,13 +1,20 @@
 import 'dart:convert';
-import 'dart:developer';
+import 'dart:developer' show log;
 import 'dart:io';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
+import 'package:lightshot_parser_mobile/pages/main_page.dart';
 import "dart:core";
 import 'parser_db.dart' as db;
 
 class CouldntConnectException implements Exception {
   String cause;
   CouldntConnectException(this.cause);
+}
+
+class CancelledByUserException implements Exception {
+  String cause;
+  CancelledByUserException(this.cause);
 }
 
 class NoPhotoException implements Exception {
@@ -21,7 +28,10 @@ class LightshotParser {
   late final Directory photosDirectory;
   late final Directory databaseDirectory;
   static final LightshotParser _instance = LightshotParser._();
-  final HttpClient userClient = HttpClient();
+  final Dio userClient = Dio(BaseOptions(
+    connectTimeout: const Duration(seconds: 3),
+    receiveTimeout: const Duration(seconds: 7),
+  ));
 
   LightshotParser._();
 
@@ -31,12 +41,12 @@ class LightshotParser {
     if (_instance.alreadyExists == true) {
       log("The instance of LightshotParser already exists");
     } else {
-      // It is necessary in order not to be banned immediately
-      _instance.userClient.userAgent =
-          'Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0';
-      _instance.userClient.idleTimeout = const Duration(seconds: 5);
-      _instance.userClient.connectionTimeout = const Duration(seconds: 5);
-      _instance.userClient.maxConnectionsPerHost = 1;
+      _instance.userClient.interceptors
+          .add(InterceptorsWrapper(onRequest: (options, handler) {
+        options.headers['User-Agent'] =
+            'Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0';
+        return handler.next(options);
+      }));
       if (!photosDirectory.existsSync()) {
         photosDirectory.createSync(recursive: true);
       }
@@ -54,23 +64,23 @@ class LightshotParser {
 
   ///downloading image from {prnt.sc} url
   Future<File> getImage(Uri url) async {
-    late final HttpClientResponse responseFromSite;
+    late final Response<dynamic> responseFromSite;
     try {
-      responseFromSite = await (await userClient.getUrl(url)).close();
+      responseFromSite = await userClient.getUri(url);
     } catch (e) {
       throw CouldntConnectException('No vpn');
     }
     final RegExp imgPattern = RegExp(r'https.*((png)|(jpg)|(jpeg))');
 
-    switch (responseFromSite.statusCode) {
-      case 503:
-        throw CouldntConnectException('Server wants to ban this IP');
-      case 403:
-        throw CouldntConnectException('IP got banned');
-      case 200:
-        break;
-    }
-    final sourceCode = await responseFromSite.transform(utf8.decoder).join();
+    // switch (responseFromSite.statusCode) {
+    //   case 503:
+    //     throw CouldntConnectException('Server wants to ban this IP');
+    //   case 403:
+    //     throw CouldntConnectException('IP got banned');
+    //   case 200:
+    //     break;
+    // }
+    final sourceCode = responseFromSite.data.toString();
 
     //looking for a direct address to the file
     var imageStringUrl = imgPattern.stringMatch(sourceCode);
@@ -86,24 +96,46 @@ class LightshotParser {
       throw NoPhotoException("The photo is missing");
     }
 
-    var imageUrl = Uri.parse(imageStringUrl);
-    final responseFromImg = await http.get(imageUrl);
+    // var imageUrl = Uri.parse(imageStringUrl);
+    // final responseFromImg = await userClient.getUri(imageUrl);
 
-    if (responseFromImg.statusCode != 200) {
-      throw NoPhotoException(
-          "The photo is missing with ${responseFromImg.statusCode}");
-    }
+    // if (responseFromImg.statusCode != 200) {
+    //   throw NoPhotoException(
+    //       "The photo is missing with ${responseFromImg.statusCode}");
+    // }
 
     //We filter out the imgur stubs that have 503 bites size
-    if (responseFromImg.bodyBytes.length == 503) {
-      throw NoPhotoException("The photo $imageStringUrl is imgur stub");
+    // if (responseFromImg.data.bodyBytes.length == 503) {
+    //   throw NoPhotoException("The photo $imageStringUrl is imgur stub");
+    // }
+
+    // //Download the photo
+    // File downloadedFile = await File("${photosDirectory.path}/"
+    //         '${url.pathSegments[url.pathSegments.length - 1]}'
+    //         '${imageStringUrl.substring(imageStringUrl.lastIndexOf('.'))}')
+    //     .writeAsBytes(responseFromImg.bodyBytes);
+
+    final filePath = "${photosDirectory.path}/"
+        '${url.pathSegments[url.pathSegments.length - 1]}'
+        '${imageStringUrl.substring(imageStringUrl.lastIndexOf('.'))}';
+
+    try {
+      await userClient.download(imageStringUrl, filePath,
+          cancelToken: cancelToken);
+    } catch (e) {
+      if (cancelToken.isCancelled) {
+        log('The download of the file $imageStringUrl was canceled');
+        throw CancelledByUserException('The download of the file was canceled');
+      }
+      log('Error while downloading the file $imageStringUrl from $url');
+      throw NoPhotoException('No photo');
     }
 
-    //Download the photo
-    File downloadedFile = await File("${photosDirectory.path}/"
-            '${url.pathSegments[url.pathSegments.length - 1]}'
-            '${imageStringUrl.substring(imageStringUrl.lastIndexOf('.'))}')
-        .writeAsBytes(responseFromImg.bodyBytes);
+    File downloadedFile = File(filePath);
+    if (await downloadedFile.length() == 503) {
+      downloadedFile.deleteSync();
+      throw NoPhotoException("The photo $imageStringUrl is imgur stub");
+    }
 
     log('file $imageStringUrl from $url downloaded successful');
 
