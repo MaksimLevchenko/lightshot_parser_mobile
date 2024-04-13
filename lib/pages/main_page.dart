@@ -1,4 +1,4 @@
-// ignore_for_file: must_be_immutable
+// ignore_for_file: must_be_immutable, invalid_use_of_protected_member
 
 import 'dart:async';
 import 'dart:convert';
@@ -48,7 +48,7 @@ class MainPage extends StatelessWidget {
         photosDirectory: _photosDirectory,
         databaseDirectory: _databaseDirectory);
     downloading = true;
-    cancelToken = new CancelToken();
+    cancelToken = CancelToken();
     File? downloadedPhoto;
     int numOfDownloadedImages = 0;
     setProgressBarState(() {

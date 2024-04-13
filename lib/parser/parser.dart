@@ -1,8 +1,6 @@
-import 'dart:convert';
 import 'dart:developer' show log;
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
 import 'package:lightshot_parser_mobile/pages/main_page.dart';
 import "dart:core";
 import 'parser_db.dart' as db;

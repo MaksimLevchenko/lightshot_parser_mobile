@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_use_of_protected_member
+
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:lightshot_parser_mobile/pages/photo_page.dart';
