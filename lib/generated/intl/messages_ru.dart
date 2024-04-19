@@ -21,41 +21,44 @@ class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'ru';
 
   static String m0(images, wantedNumOfImages) =>
-      "Downloaded ${images} of ${wantedNumOfImages}";
+      "${Intl.plural(images, zero: 'Скачано 0 изображений из ${wantedNumOfImages}', one: 'Скачано 1 изображение из ${wantedNumOfImages}', few: 'Скачано ${images} изображения из ${wantedNumOfImages}', many: '', other: 'Скачано ${images} изображений из ${wantedNumOfImages}')}}";
 
-  static String m1(error) => "Error: ${error}";
+  static String m1(error) => "Ошибка: ${error}";
 
-  static String m2(newPath) => "Image saved to \$newPath";
+  static String m2(newPath) => "Изображение сохранено в ${newPath}";
 
-  static String m3(e) => "Unknown error: ${e}, please contact to the dev";
+  static String m3(e) =>
+      "Неизвестная ошибка: ${e}. Пожалуйста, обратитесь к разработчику";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
         "areYouSureYouWantToDeleteThisImage":
             MessageLookupByLibrary.simpleMessage(
-                "Are you sure you want to delete this image?"),
-        "cancel": MessageLookupByLibrary.simpleMessage("Cancel"),
+                "Вы уверены, что хотите удалить это изображение?"),
+        "cancel": MessageLookupByLibrary.simpleMessage("Отменить"),
         "confirmDeletion":
-            MessageLookupByLibrary.simpleMessage("Confirm Deletion"),
-        "delete": MessageLookupByLibrary.simpleMessage("Delete"),
-        "download": MessageLookupByLibrary.simpleMessage("Download"),
+            MessageLookupByLibrary.simpleMessage("Подтвердите удаление"),
+        "delete": MessageLookupByLibrary.simpleMessage("Удалить"),
+        "download": MessageLookupByLibrary.simpleMessage("Начать скачивание"),
         "downloadErrorTryToChangeVpn": MessageLookupByLibrary.simpleMessage(
-            "Download error. Try to change VPN"),
+            "Ошибка при загрузке. Попробуйте сменить VPN"),
         "downloadedImagesOfWantednumofimages": m0,
         "errorError": m1,
-        "galleryAppBar": MessageLookupByLibrary.simpleMessage("Gallery"),
-        "imageDeleted": MessageLookupByLibrary.simpleMessage("Image deleted"),
+        "galleryAppBar": MessageLookupByLibrary.simpleMessage("Галерея"),
+        "imageDeleted":
+            MessageLookupByLibrary.simpleMessage("Изображение удалено"),
         "imageSavedToPath": m2,
         "mainTitle": MessageLookupByLibrary.simpleMessage("Lightshot Parser"),
-        "noDownloadFolderFound":
-            MessageLookupByLibrary.simpleMessage("No download folder found"),
-        "noPhotos": MessageLookupByLibrary.simpleMessage("No photos"),
-        "permissionDenied":
-            MessageLookupByLibrary.simpleMessage("Permission denied"),
-        "photoViewer": MessageLookupByLibrary.simpleMessage("Photo Viewer"),
-        "seeAll": MessageLookupByLibrary.simpleMessage("See all"),
+        "noDownloadFolderFound": MessageLookupByLibrary.simpleMessage(
+            "Папка для загрузки не найдена"),
+        "noPhotos": MessageLookupByLibrary.simpleMessage("Изображений нет"),
+        "permissionDenied": MessageLookupByLibrary.simpleMessage(
+            "Разрешение отклонено пользователем"),
+        "photoViewer":
+            MessageLookupByLibrary.simpleMessage("Просмотр изображений"),
+        "seeAll": MessageLookupByLibrary.simpleMessage("Смотреть все"),
         "shareImage": MessageLookupByLibrary.simpleMessage(
-            "Check out this image from Lightshot Parser"),
+            "Посмотрите это изображение из Lightshot Parser!"),
         "unknownErrorEPleaseContactToTheDev": m3
       };
 }
