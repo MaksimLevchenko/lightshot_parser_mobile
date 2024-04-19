@@ -256,9 +256,11 @@ class SettingsPage extends StatelessWidget {
                                 photosDirectory: _photoDirectory);
                             db.parseFolder();
                           },
-                          child: Text(
-                            S.of(context).recreateDatabase,
-                            textAlign: TextAlign.center,
+                          child: FittedBox(
+                            child: Text(
+                              S.of(context).recreateDatabase,
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -270,9 +272,11 @@ class SettingsPage extends StatelessWidget {
                               element.deleteSync(recursive: true);
                             });
                           },
-                          child: Text(
-                            S.of(context).clearImages,
-                            textAlign: TextAlign.center,
+                          child: FittedBox(
+                            child: Text(
+                              S.of(context).clearImages,
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ),
                       ],
