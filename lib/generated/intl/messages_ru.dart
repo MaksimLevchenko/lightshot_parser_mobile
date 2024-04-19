@@ -25,8 +25,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m1(error) => "Ошибка: ${error}";
 
-  static String m2(error) =>
-      "Ошибка: ${error}\\nПожалуйста, попробуйте еще раз";
+  static String m2(error) => "Ошибка: ${error}\nПожалуйста, попробуйте еще раз";
 
   static String m3(newPath) => "Изображение сохранено в ${newPath}";
 
@@ -54,6 +53,14 @@ class MessageLookup extends MessageLookupByLibrary {
         "enterTheNumberOfImagesToDownload":
             MessageLookupByLibrary.simpleMessage(
                 "Введите количество изображений для загрузки"),
+        "enterTheProxyAddress":
+            MessageLookupByLibrary.simpleMessage("Enter the proxy address"),
+        "enterTheProxyLogin":
+            MessageLookupByLibrary.simpleMessage("Enter the proxy login"),
+        "enterTheProxyPassword":
+            MessageLookupByLibrary.simpleMessage("Enter the proxy password"),
+        "enterTheProxyPort":
+            MessageLookupByLibrary.simpleMessage("Enter the proxy port"),
         "enterTheStartingAddress":
             MessageLookupByLibrary.simpleMessage("Введите начальный адрес"),
         "errorError": m1,
@@ -77,15 +84,31 @@ class MessageLookup extends MessageLookupByLibrary {
             "Пожалуйста, введите адрес максимальной длины"),
         "pleaseEnterANumberGreaterThan0": MessageLookupByLibrary.simpleMessage(
             "Пожалуйста, введите число больше 0"),
+        "pleaseEnterAValidIpAddress": MessageLookupByLibrary.simpleMessage(
+            "Please enter a valid IP address"),
         "pleaseEnterAValidNumber":
             MessageLookupByLibrary.simpleMessage("Пожалуйста, введите число"),
+        "pleaseEnterAValidPort":
+            MessageLookupByLibrary.simpleMessage("Please enter a valid port"),
         "pleaseEnterTheCorrectData": MessageLookupByLibrary.simpleMessage(
             "Пожалуйста, введите правильные данные"),
         "pleaseEnterTheNumberOfImagesToDownload":
             MessageLookupByLibrary.simpleMessage(
                 "Пожалуйста, введите количество изображений для загрузки"),
+        "pleaseEnterTheProxyAddress": MessageLookupByLibrary.simpleMessage(
+            "Please enter the proxy address"),
+        "pleaseEnterTheProxyLogin": MessageLookupByLibrary.simpleMessage(
+            "Please enter the proxy login"),
+        "pleaseEnterTheProxyPassword": MessageLookupByLibrary.simpleMessage(
+            "Please enter the proxy password"),
+        "pleaseEnterTheProxyPort":
+            MessageLookupByLibrary.simpleMessage("Please enter the proxy port"),
         "pleaseEnterTheStartingAddress": MessageLookupByLibrary.simpleMessage(
             "Пожалуйста, введите начальный адрес"),
+        "proxyAddress": MessageLookupByLibrary.simpleMessage("Proxy address"),
+        "proxyLogin": MessageLookupByLibrary.simpleMessage("Proxy login"),
+        "proxyPassword": MessageLookupByLibrary.simpleMessage("Proxy password"),
+        "proxyPort": MessageLookupByLibrary.simpleMessage("Proxy port"),
         "recreateDatabase":
             MessageLookupByLibrary.simpleMessage("Пересоздать базу данных"),
         "save": MessageLookupByLibrary.simpleMessage("Сохранить"),
@@ -100,6 +123,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "unknownErrorEPleaseContactToTheDev": m5,
         "useNewAddresses":
             MessageLookupByLibrary.simpleMessage("Использовать новые адреса"),
+        "useProxy": MessageLookupByLibrary.simpleMessage("Use proxy"),
+        "useProxyAuth": MessageLookupByLibrary.simpleMessage("Use proxy auth"),
         "useRandomAddresses": MessageLookupByLibrary.simpleMessage(
             "Использовать случайные адреса")
       };
