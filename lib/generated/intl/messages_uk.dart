@@ -53,13 +53,13 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage(
                 "Введіть кількість зображень для завантаження"),
         "enterTheProxyAddress":
-            MessageLookupByLibrary.simpleMessage("Enter the proxy address"),
+            MessageLookupByLibrary.simpleMessage("Введіть адресу проксі"),
         "enterTheProxyLogin":
-            MessageLookupByLibrary.simpleMessage("Enter the proxy login"),
+            MessageLookupByLibrary.simpleMessage("Введіть логін проксі"),
         "enterTheProxyPassword":
-            MessageLookupByLibrary.simpleMessage("Enter the proxy password"),
+            MessageLookupByLibrary.simpleMessage("Введіть пароль проксі"),
         "enterTheProxyPort":
-            MessageLookupByLibrary.simpleMessage("Enter the proxy port"),
+            MessageLookupByLibrary.simpleMessage("Введіть порт проксі"),
         "enterTheStartingAddress":
             MessageLookupByLibrary.simpleMessage("Введіть початкову адресу"),
         "errorError": m1,
@@ -84,30 +84,30 @@ class MessageLookup extends MessageLookupByLibrary {
         "pleaseEnterANumberGreaterThan0": MessageLookupByLibrary.simpleMessage(
             "Будь ласка, введіть число більше 0"),
         "pleaseEnterAValidIpAddress": MessageLookupByLibrary.simpleMessage(
-            "Please enter a valid IP address"),
+            "Будь ласка, введіть правильну IP-адресу"),
         "pleaseEnterAValidNumber":
             MessageLookupByLibrary.simpleMessage("Будь ласка, введіть число"),
-        "pleaseEnterAValidPort":
-            MessageLookupByLibrary.simpleMessage("Please enter a valid port"),
+        "pleaseEnterAValidPort": MessageLookupByLibrary.simpleMessage(
+            "Будь ласка, введіть правильний порт"),
         "pleaseEnterTheCorrectData": MessageLookupByLibrary.simpleMessage(
             "Будь ласка, введіть правильні дані"),
         "pleaseEnterTheNumberOfImagesToDownload":
             MessageLookupByLibrary.simpleMessage(
                 "Будь ласка, введіть кількість зображень для завантаження"),
         "pleaseEnterTheProxyAddress": MessageLookupByLibrary.simpleMessage(
-            "Please enter the proxy address"),
+            "Будь ласка, введіть адресу проксі"),
         "pleaseEnterTheProxyLogin": MessageLookupByLibrary.simpleMessage(
-            "Please enter the proxy login"),
+            "Будь ласка, введіть логін проксі"),
         "pleaseEnterTheProxyPassword": MessageLookupByLibrary.simpleMessage(
-            "Please enter the proxy password"),
-        "pleaseEnterTheProxyPort":
-            MessageLookupByLibrary.simpleMessage("Please enter the proxy port"),
+            "Будь ласка, введіть пароль проксі"),
+        "pleaseEnterTheProxyPort": MessageLookupByLibrary.simpleMessage(
+            "Будь ласка, введіть порт проксі"),
         "pleaseEnterTheStartingAddress": MessageLookupByLibrary.simpleMessage(
             "Будь ласка, введіть початкову адресу"),
-        "proxyAddress": MessageLookupByLibrary.simpleMessage("Proxy address"),
-        "proxyLogin": MessageLookupByLibrary.simpleMessage("Proxy login"),
-        "proxyPassword": MessageLookupByLibrary.simpleMessage("Proxy password"),
-        "proxyPort": MessageLookupByLibrary.simpleMessage("Proxy port"),
+        "proxyAddress": MessageLookupByLibrary.simpleMessage("Адреса проксі"),
+        "proxyLogin": MessageLookupByLibrary.simpleMessage("Логін проксі"),
+        "proxyPassword": MessageLookupByLibrary.simpleMessage("Пароль проксі"),
+        "proxyPort": MessageLookupByLibrary.simpleMessage("Порт проксі"),
         "recreateDatabase":
             MessageLookupByLibrary.simpleMessage("Перебудувати базу даних"),
         "save": MessageLookupByLibrary.simpleMessage("Зберегти"),
@@ -122,8 +122,10 @@ class MessageLookup extends MessageLookupByLibrary {
         "unknownErrorEPleaseContactToTheDev": m5,
         "useNewAddresses":
             MessageLookupByLibrary.simpleMessage("Використовувати нові адреси"),
-        "useProxy": MessageLookupByLibrary.simpleMessage("Use proxy"),
-        "useProxyAuth": MessageLookupByLibrary.simpleMessage("Use proxy auth"),
+        "useProxy":
+            MessageLookupByLibrary.simpleMessage("Використовувати проксі"),
+        "useProxyAuth": MessageLookupByLibrary.simpleMessage(
+            "Використовувати автентифікацію проксі"),
         "useRandomAddresses": MessageLookupByLibrary.simpleMessage(
             "Використовуйте випадкові адреси")
       };
