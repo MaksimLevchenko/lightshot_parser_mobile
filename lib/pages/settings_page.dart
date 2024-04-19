@@ -3,9 +3,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:lightshot_parser_mobile/generated/l10n.dart';
 import 'package:lightshot_parser_mobile/pages/main_page.dart';
 import 'package:lightshot_parser_mobile/parser/parser_db.dart';
@@ -379,6 +377,35 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
+  // Widget _proxyTypeDropdown(Function setState) {
+  //   return DropdownButton<String>(
+  //     underline: Container(
+  //       height: 2,
+  //       color: Colors.pink[700],
+  //     ),
+  //     value: _proxyType != 'PROXY' ? _proxyType : 'HTTP',
+  //     onChanged: (String? newValue) {
+  //       log('Proxy type: $newValue');
+  //       if (newValue != 'HTTP') {
+  //         _proxyType = newValue!;
+  //         if (_proxyType == 'SOCKS5') {
+  //           _useProxyAuth = false;
+  //         }
+  //       } else {
+  //         _proxyType = 'PROXY';
+  //       }
+  //       setState(() {});
+  //     },
+  //     items: <String>['HTTP', 'HTTPS', 'SOCKS4', 'SOCKS5']
+  //         .map<DropdownMenuItem<String>>((String value) {
+  //       return DropdownMenuItem<String>(
+  //         value: value,
+  //         child: Text(value),
+  //       );
+  //     }).toList(),
+  //   );
+  // }
+
   @override
   Widget build(BuildContext context) {
     ButtonStyle settingsButtonStyle = ButtonStyle(
@@ -431,13 +458,20 @@ class SettingsPage extends StatelessWidget {
                         } else {
                           return Column(
                             children: [
-                              _useProxyCheckbox(context, setState),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  _useProxyCheckbox(context, setState),
+                                  // _proxyTypeDropdown(setState),
+                                ],
+                              ),
                               const SizedBox(height: 10),
                               _useProxyAuthCheckbox(context, setState),
                               const SizedBox(height: 16),
                               _proxyAddressForms(context),
                               _useProxyAuth
-                                  ? SizedBox(height: 16)
+                                  ? const SizedBox(height: 16)
                                   : Container(),
                               _useProxyAuth
                                   ? _proxyLoginForms(context)

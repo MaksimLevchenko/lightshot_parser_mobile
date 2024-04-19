@@ -1,6 +1,7 @@
 import 'dart:developer' show log;
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:lightshot_parser_mobile/pages/main_page.dart';
 import "dart:core";
 import 'parser_db.dart' as db;
@@ -33,12 +34,33 @@ class LightshotParser {
 
   LightshotParser._();
 
-  factory LightshotParser(
-      {required Directory photosDirectory,
-      required Directory databaseDirectory}) {
+  void setProxy(String? proxy, Dio userClient) {
+    HttpClient proxyClient;
+    if (proxy != null) {
+      proxyClient = HttpClient()
+        ..findProxy = (uri) {
+          return proxy;
+        };
+    } else {
+      proxyClient = HttpClient();
+    }
+    _instance.userClient.httpClientAdapter =
+        IOHttpClientAdapter(createHttpClient: () {
+      return proxyClient;
+    });
+    log(proxy ?? 'No proxy');
+  }
+
+  factory LightshotParser({
+    required Directory photosDirectory,
+    required Directory databaseDirectory,
+    String? proxy,
+  }) {
     if (_instance.alreadyExists == true) {
       log("The instance of LightshotParser already exists");
+      _instance.setProxy(proxy, _instance.userClient);
     } else {
+      _instance.setProxy(proxy, _instance.userClient);
       _instance.userClient.interceptors
           .add(InterceptorsWrapper(onRequest: (options, handler) {
         options.headers['User-Agent'] =
