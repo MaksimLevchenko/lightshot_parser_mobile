@@ -1,1 +1,21 @@
-{}
+{
+  "galleryAppBar": "Gallery",
+  "shareImage": "Check out this image from Lightshot Parser",
+  "imageSavedToPath": "Image saved to {newPath}",
+  "permissionDenied": "Permission denied",
+  "confirmDeletion": "Confirm Deletion",
+  "areYouSureYouWantToDeleteThisImage": "Are you sure you want to delete this image?",
+  "cancel": "Cancel",
+  "imageDeleted": "Image deleted",
+  "delete": "Delete",
+  "photoViewer": "Photo Viewer",
+  "downloadErrorTryToChangeVpn": "Download error. Try to change VPN",
+  "unknownErrorEPleaseContactToTheDev": "Unknown error: {e}, please contact to the dev",
+  "errorError": "Error: {error}",
+  "noDownloadFolderFound": "No download folder found",
+  "seeAll": "See all",
+  "downloadedImagesOfWantednumofimages": "Downloaded {images} of {wantedNumOfImages}",
+  "download": "Download",
+  "mainTitle": "Lightshot Parser",
+  "noPhotos": "No photos"
+}

@@ -2,6 +2,7 @@
 
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:lightshot_parser_mobile/generated/l10n.dart';
 import 'package:lightshot_parser_mobile/pages/photo_page.dart';
 import 'package:lightshot_parser_mobile/parser/parser_db.dart';
 
@@ -18,7 +19,7 @@ class GalleryPage extends StatelessWidget {
     List<File> images = _db.getFilesListByDate();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Gallery'),
+        title: Text(S.of(context).galleryAppBar),
       ),
       body: Builder(builder: (context) {
         imageStream.listen((event) {

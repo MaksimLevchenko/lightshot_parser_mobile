@@ -7,6 +7,7 @@ import 'dart:math' hide log;
 import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
+import 'package:lightshot_parser_mobile/generated/l10n.dart';
 import 'package:lightshot_parser_mobile/pages/gallery.dart';
 import 'package:lightshot_parser_mobile/pages/photo_page.dart';
 import 'package:lightshot_parser_mobile/pages/settings_page.dart';
@@ -69,7 +70,7 @@ class MainPage extends StatelessWidget {
         log('Coudnt connect to server');
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(getSnackBar(
-            message: 'Download error. Try to change VPN',
+            message: S.of(context).downloadErrorTryToChangeVpn,
             color: Colors.red,
           ));
         }
@@ -90,7 +91,7 @@ class MainPage extends StatelessWidget {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             getSnackBar(
-              message: 'Unknown error: $e, please contact to the dev',
+              message: S.of(context).unknownErrorEPleaseContactToTheDev(e),
               color: Colors.red,
             ),
           );
@@ -124,9 +125,16 @@ class MainPage extends StatelessWidget {
     if (file.existsSync()) {
       final String jsonString = file.readAsStringSync();
       final Map<String, dynamic> settings = json.decode(jsonString);
-      _wantedNumOfImages = (settings['numOfImages']);
-      _newAddresses = settings['newAddresses'];
-      _startingUrl = settings['startingUrl'];
+      try {
+        _wantedNumOfImages = (settings['numOfImages']);
+        _newAddresses = settings['newAddresses'];
+        _startingUrl = settings['startingUrl'];
+      } on Exception catch (e) {
+        log('Error while loading settings: $e');
+        _wantedNumOfImages = 10;
+        _newAddresses = false;
+        _startingUrl = '';
+      }
     } else {
       _wantedNumOfImages = 10;
       _newAddresses = false;
@@ -145,7 +153,7 @@ class MainPage extends StatelessWidget {
         }
         if (snapshot.hasError) {
           return Center(
-            child: Text('Error: ${snapshot.error}'),
+            child: Text(S.of(context).errorError(snapshot.error!)),
           );
         }
         if (snapshot.connectionState == ConnectionState.done) {
@@ -161,8 +169,8 @@ class MainPage extends StatelessWidget {
           return child(context);
         }
 
-        return const Center(
-          child: Text('No download folder found'),
+        return Center(
+          child: Text(S.of(context).noDownloadFolderFound),
         );
       },
     );
@@ -197,7 +205,7 @@ class MainPage extends StatelessWidget {
                     needToUpdateGallery = false;
                   });
                 },
-                child: const Text('See all'),
+                child: Text(S.of(context).seeAll),
               ),
             ],
           ),
@@ -228,8 +236,11 @@ class MainPage extends StatelessWidget {
                                 LinearProgressIndicator(value: value),
                           ),
                           const SizedBox(height: 10),
-                          Text(
-                              'Downloaded ${(_progress * _wantedNumOfImages).round()} of $_wantedNumOfImages'),
+                          Text(S
+                              .of(context)
+                              .downloadedImagesOfWantednumofimages(
+                                  (_progress * _wantedNumOfImages).round(),
+                                  _wantedNumOfImages)),
                           const SizedBox(height: 20)
                         ],
                       )
@@ -239,13 +250,13 @@ class MainPage extends StatelessWidget {
                         onPressed: () => setProgressBarState(() {
                           _stopDownloading();
                         }),
-                        child: const Text('Cancel'),
+                        child: Text(S.of(context).cancel),
                       )
                     : ElevatedButton(
                         onPressed: () => setProgressBarState(() {
                           _beginDownloading(context, setProgressBarState);
                         }),
-                        child: const Text('Download'),
+                        child: Text(S.of(context).download),
                       ),
               ],
             );
@@ -282,7 +293,7 @@ class MainPage extends StatelessWidget {
             icon: const Icon(Icons.settings),
           )
         ],
-        title: const Text('Lightshot Parser'),
+        title: Text(S.of(context).mainTitle),
         centerTitle: true,
       ),
       body: _createDatabaseAndFindFolders(
@@ -367,8 +378,8 @@ class __RowBuilderState extends State<_RowBuilder> {
                 splashColor: Colors.pink.withAlpha(30),
                 onTap: () {},
                 onLongPress: () {},
-                child: const Center(
-                  child: Text('No photos'),
+                child: Center(
+                  child: Text(S.of(context).noPhotos),
                 ),
               ),
             ),
