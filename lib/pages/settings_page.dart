@@ -34,10 +34,17 @@ class SettingsPage extends StatelessWidget {
     if (file.existsSync()) {
       final String jsonString = await file.readAsString();
       final Map<String, dynamic> settings = json.decode(jsonString);
-      _numOfImages = settings['numOfImages'] ?? 10;
-      _useNewAddresses = settings['newAddresses'] ?? false;
-      _startingUrl = settings['startingUrl'] ?? "";
-      _useRandomAddress = _startingUrl == "" ? true : false;
+      try {
+        _numOfImages = settings['numOfImages'] ?? 10;
+        _useNewAddresses = settings['newAddresses'] ?? false;
+        _startingUrl = settings['startingUrl'] ?? "";
+        _useRandomAddress = _startingUrl == "" ? true : false;
+      } on Exception {
+        _numOfImages = 10;
+        _useNewAddresses = false;
+        _startingUrl = '';
+        _useRandomAddress = true;
+      }
     } else {
       _numOfImages = 10;
       _useNewAddresses = false;
