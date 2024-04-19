@@ -480,7 +480,7 @@ class SettingsPage extends StatelessWidget {
                               _useProxyAuth
                                   ? _proxyLoginForms(context)
                                   : Container(),
-                              SizedBox(height: 32)
+                              const SizedBox(height: 32)
                             ],
                           );
                         }
