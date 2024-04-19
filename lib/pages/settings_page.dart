@@ -191,6 +191,12 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ButtonStyle settingsButtonStyle = ButtonStyle(
+      alignment: Alignment.center,
+      minimumSize: MaterialStateProperty.all(const Size(150, 30)),
+      maximumSize: MaterialStateProperty.all(const Size(150, 45)),
+      padding: MaterialStateProperty.all(const EdgeInsets.all(12)),
+    );
     return Scaffold(
       appBar: AppBar(
         title: Text(S.of(context).settings),
@@ -229,39 +235,45 @@ class SettingsPage extends StatelessWidget {
                       );
                     }),
                     ElevatedButton(
+                      style: settingsButtonStyle,
                       onPressed: () {
                         _saveSettings(context);
                       },
-                      child: Text(S.of(context).save),
+                      child: Text(
+                        S.of(context).save,
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         ElevatedButton(
-                          style: ButtonStyle(
-                              fixedSize: MaterialStateProperty.all(
-                                  const Size(150, 30))),
-                          child: Text(S.of(context).recreateDatabase),
+                          style: settingsButtonStyle,
                           onPressed: () {
                             DataBase db = DataBase(
                                 databaseFileDirectory: _databaseDirectory,
                                 photosDirectory: _photoDirectory);
                             db.parseFolder();
                           },
+                          child: Text(
+                            S.of(context).recreateDatabase,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                         const SizedBox(width: 10),
                         ElevatedButton(
-                          style: ButtonStyle(
-                              fixedSize: MaterialStateProperty.all(
-                                  const Size(150, 30))),
+                          style: settingsButtonStyle,
                           onPressed: () {
                             needToUpdateGallery = true;
                             _photoDirectory.listSync().forEach((element) {
                               element.deleteSync(recursive: true);
                             });
                           },
-                          child: Text(S.of(context).clearImages),
+                          child: Text(
+                            S.of(context).clearImages,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ],
                     ),
