@@ -12,7 +12,7 @@
   "@delete": {},
   "download": "Начать скачивание",
   "@download": {},
-  "downloadedImagesOfWantednumofimages": "{images, plural, zero{Скачано 0 изображений из {wantedNumOfImages}} one{Скачано 1 изображение из {wantedNumOfImages}} few{Скачано {images} изображения из {wantedNumOfImages}} many{} other{Скачано {images} изображений из {wantedNumOfImages}}}",
+  "downloadedImagesOfWantednumofimages": "{images, plural, zero{Скачано 0 изображений из {wantedNumOfImages}} one{Скачано 1 изображение из {wantedNumOfImages}} few{Скачано {images} изображения из {wantedNumOfImages}} many{Скачано {images} изображений из {wantedNumOfImages}} other{Скачано {images} изображений из {wantedNumOfImages}}}",
   "@downloadedImagesOfWantednumofimages": {
     "type": "int"
   },

@@ -12,7 +12,7 @@
   "@delete": {},
   "download": "Почати скачування",
   "@download": {},
-  "downloadedImagesOfWantednumofimages": "{images, plural, zero{Завантажено 0 зображень з {wantedNumOfImages}} one{Завантажено 1 зображення з {wantedNumOfImages}} few{Завантажено {images} зображень з {wantedNumOfImages}} many{} other{Завантажено {images} зображень з {wantedNumOfImages}}}",
+  "downloadedImagesOfWantednumofimages": "{images, plural, zero{Завантажено 0 зображень з {wantedNumOfImages}} one{Завантажено 1 зображення з {wantedNumOfImages}} few{Завантажено {images} зображень з {wantedNumOfImages}} many{Завантажено {images} зображень з {wantedNumOfImages}} other{Завантажено {images} зображень з {wantedNumOfImages}}}",
   "@downloadedImagesOfWantednumofimages": {
     "type": "int"
   },
