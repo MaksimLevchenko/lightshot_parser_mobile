@@ -25,11 +25,11 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m1(error) => "Помилка: ${error}";
 
-  static String m2(error) => "Error: ${error} \\nPlease try again";
+  static String m2(error) => "Помилка: ${error}\\nБудь ласка, спробуйте ще раз";
 
   static String m3(newPath) => "Зображення збережено в ${newPath}";
 
-  static String m4(mask) => "Please enter a address with only a ${mask}";
+  static String m4(mask) => "Будь ласка, введіть адресу лише з a ${mask}";
 
   static String m5(e) =>
       "Невідома помилка: ${e}. Будь ласка, зверніться до розробника";
@@ -40,7 +40,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage(
                 "Ви впевнені, що хочете видалити це зображення?"),
         "cancel": MessageLookupByLibrary.simpleMessage("Скасувати"),
-        "clearImages": MessageLookupByLibrary.simpleMessage("Clear images"),
+        "clearImages":
+            MessageLookupByLibrary.simpleMessage("Видалити всі зображення"),
         "confirmDeletion":
             MessageLookupByLibrary.simpleMessage("Підтвердьте видалення"),
         "delete": MessageLookupByLibrary.simpleMessage("Видалити"),
@@ -50,9 +51,9 @@ class MessageLookup extends MessageLookupByLibrary {
         "downloadedImagesOfWantednumofimages": m0,
         "enterTheNumberOfImagesToDownload":
             MessageLookupByLibrary.simpleMessage(
-                "Enter the number of images to download"),
+                "Введіть кількість зображень для завантаження"),
         "enterTheStartingAddress":
-            MessageLookupByLibrary.simpleMessage("Enter the starting address"),
+            MessageLookupByLibrary.simpleMessage("Введіть початкову адресу"),
         "errorError": m1,
         "errorErrorNpleaseTryAgain": m2,
         "galleryAppBar": MessageLookupByLibrary.simpleMessage("Галерея"),
@@ -63,40 +64,41 @@ class MessageLookup extends MessageLookupByLibrary {
         "noDownloadFolderFound": MessageLookupByLibrary.simpleMessage(
             "Папку для завантаження не знайдено"),
         "noPhotos": MessageLookupByLibrary.simpleMessage("Зображення немає"),
-        "numberOfImagesToDownload": MessageLookupByLibrary.simpleMessage(
-            "Number of images to download"),
+        "numberOfImagesToDownload":
+            MessageLookupByLibrary.simpleMessage("Бажана кількість зображень"),
         "permissionDenied": MessageLookupByLibrary.simpleMessage(
             "Дозвіл відхилено користувачем"),
         "photoViewer":
             MessageLookupByLibrary.simpleMessage("Перегляд зображень"),
         "pleaseEnterAAddressWithOnlyAMask": m4,
         "pleaseEnterAMaxLengthAddress": MessageLookupByLibrary.simpleMessage(
-            "Please enter a max length address"),
+            "Будь ласка, введіть адресу максимальної довжини"),
         "pleaseEnterANumberGreaterThan0": MessageLookupByLibrary.simpleMessage(
-            "Please enter a number greater than 0"),
+            "Будь ласка, введіть число більше 0"),
         "pleaseEnterAValidNumber":
-            MessageLookupByLibrary.simpleMessage("Please enter a valid number"),
+            MessageLookupByLibrary.simpleMessage("Будь ласка, введіть число"),
         "pleaseEnterTheCorrectData": MessageLookupByLibrary.simpleMessage(
-            "Please enter the correct data"),
+            "Будь ласка, введіть правильні дані"),
         "pleaseEnterTheNumberOfImagesToDownload":
             MessageLookupByLibrary.simpleMessage(
-                "Please enter the number of images to download"),
+                "Будь ласка, введіть кількість зображень для завантаження"),
         "pleaseEnterTheStartingAddress": MessageLookupByLibrary.simpleMessage(
-            "Please enter the starting address"),
+            "Будь ласка, введіть початкову адресу"),
         "recreateDatabase":
-            MessageLookupByLibrary.simpleMessage("Recreate database"),
-        "save": MessageLookupByLibrary.simpleMessage("Save"),
+            MessageLookupByLibrary.simpleMessage("Перебудувати базу даних"),
+        "save": MessageLookupByLibrary.simpleMessage("Зберегти"),
         "seeAll": MessageLookupByLibrary.simpleMessage("Дивитись все"),
-        "settings": MessageLookupByLibrary.simpleMessage("Settings"),
-        "settingsSaved": MessageLookupByLibrary.simpleMessage("Settings saved"),
+        "settings": MessageLookupByLibrary.simpleMessage("Налаштування"),
+        "settingsSaved":
+            MessageLookupByLibrary.simpleMessage("Налаштування збережені"),
         "shareImage": MessageLookupByLibrary.simpleMessage(
             "Подивіться це зображення з Lightshot Parser!"),
         "startingAddress":
-            MessageLookupByLibrary.simpleMessage("Starting address"),
+            MessageLookupByLibrary.simpleMessage("Початкова адреса"),
         "unknownErrorEPleaseContactToTheDev": m5,
         "useNewAddresses":
-            MessageLookupByLibrary.simpleMessage("Use new addresses"),
-        "useRandomAddresses":
-            MessageLookupByLibrary.simpleMessage("Use random addresses")
+            MessageLookupByLibrary.simpleMessage("Використовувати нові адреси"),
+        "useRandomAddresses": MessageLookupByLibrary.simpleMessage(
+            "Використовуйте випадкові адреси")
       };
 }

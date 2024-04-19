@@ -70,6 +70,16 @@ class S {
     );
   }
 
+  /// `Delete all images`
+  String get clearImages {
+    return Intl.message(
+      'Delete all images',
+      name: 'clearImages',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Confirm deletion`
   String get confirmDeletion {
     return Intl.message(
@@ -124,11 +134,41 @@ class S {
     );
   }
 
+  /// `Enter the number of images to download`
+  String get enterTheNumberOfImagesToDownload {
+    return Intl.message(
+      'Enter the number of images to download',
+      name: 'enterTheNumberOfImagesToDownload',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter the starting address`
+  String get enterTheStartingAddress {
+    return Intl.message(
+      'Enter the starting address',
+      name: 'enterTheStartingAddress',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Error: {error}`
   String errorError(Object error) {
     return Intl.message(
       'Error: $error',
       name: 'errorError',
+      desc: '',
+      args: [error],
+    );
+  }
+
+  /// `Error: {error} \nPlease try again`
+  String errorErrorNpleaseTryAgain(Object error) {
+    return Intl.message(
+      'Error: $error \\nPlease try again',
+      name: 'errorErrorNpleaseTryAgain',
       desc: '',
       args: [error],
     );
@@ -194,6 +234,16 @@ class S {
     );
   }
 
+  /// `The desired number of images`
+  String get numberOfImagesToDownload {
+    return Intl.message(
+      'The desired number of images',
+      name: 'numberOfImagesToDownload',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Permission denied`
   String get permissionDenied {
     return Intl.message(
@@ -214,11 +264,121 @@ class S {
     );
   }
 
+  /// `Please enter a address with only a {mask}`
+  String pleaseEnterAAddressWithOnlyAMask(Object mask) {
+    return Intl.message(
+      'Please enter a address with only a $mask',
+      name: 'pleaseEnterAAddressWithOnlyAMask',
+      desc: '',
+      args: [mask],
+    );
+  }
+
+  /// `Please enter a max length address`
+  String get pleaseEnterAMaxLengthAddress {
+    return Intl.message(
+      'Please enter a max length address',
+      name: 'pleaseEnterAMaxLengthAddress',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter a number greater than 0`
+  String get pleaseEnterANumberGreaterThan0 {
+    return Intl.message(
+      'Please enter a number greater than 0',
+      name: 'pleaseEnterANumberGreaterThan0',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter a number`
+  String get pleaseEnterAValidNumber {
+    return Intl.message(
+      'Please enter a number',
+      name: 'pleaseEnterAValidNumber',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter the correct data`
+  String get pleaseEnterTheCorrectData {
+    return Intl.message(
+      'Please enter the correct data',
+      name: 'pleaseEnterTheCorrectData',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter the number of images to download`
+  String get pleaseEnterTheNumberOfImagesToDownload {
+    return Intl.message(
+      'Please enter the number of images to download',
+      name: 'pleaseEnterTheNumberOfImagesToDownload',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter the starting address`
+  String get pleaseEnterTheStartingAddress {
+    return Intl.message(
+      'Please enter the starting address',
+      name: 'pleaseEnterTheStartingAddress',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recreate database`
+  String get recreateDatabase {
+    return Intl.message(
+      'Recreate database',
+      name: 'recreateDatabase',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Save`
+  String get save {
+    return Intl.message(
+      'Save',
+      name: 'save',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `See all`
   String get seeAll {
     return Intl.message(
       'See all',
       name: 'seeAll',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Settings`
+  String get settings {
+    return Intl.message(
+      'Settings',
+      name: 'settings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Settings saved`
+  String get settingsSaved {
+    return Intl.message(
+      'Settings saved',
+      name: 'settingsSaved',
       desc: '',
       args: [],
     );
@@ -234,6 +394,16 @@ class S {
     );
   }
 
+  /// `Starting address`
+  String get startingAddress {
+    return Intl.message(
+      'Starting address',
+      name: 'startingAddress',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Unknown error: {e}. Please contact to the dev`
   String unknownErrorEPleaseContactToTheDev(Object e) {
     return Intl.message(
@@ -241,16 +411,6 @@ class S {
       name: 'unknownErrorEPleaseContactToTheDev',
       desc: '',
       args: [e],
-    );
-  }
-
-  /// `Number of images to download`
-  String get numberOfImagesToDownload {
-    return Intl.message(
-      'Number of images to download',
-      name: 'numberOfImagesToDownload',
-      desc: '',
-      args: [],
     );
   }
 
@@ -269,166 +429,6 @@ class S {
     return Intl.message(
       'Use random addresses',
       name: 'useRandomAddresses',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Starting address`
-  String get startingAddress {
-    return Intl.message(
-      'Starting address',
-      name: 'startingAddress',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Enter the starting address`
-  String get enterTheStartingAddress {
-    return Intl.message(
-      'Enter the starting address',
-      name: 'enterTheStartingAddress',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Please enter the starting address`
-  String get pleaseEnterTheStartingAddress {
-    return Intl.message(
-      'Please enter the starting address',
-      name: 'pleaseEnterTheStartingAddress',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Please enter a max length address`
-  String get pleaseEnterAMaxLengthAddress {
-    return Intl.message(
-      'Please enter a max length address',
-      name: 'pleaseEnterAMaxLengthAddress',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Please enter a address with only a {mask}`
-  String pleaseEnterAAddressWithOnlyAMask(Object mask) {
-    return Intl.message(
-      'Please enter a address with only a $mask',
-      name: 'pleaseEnterAAddressWithOnlyAMask',
-      desc: '',
-      args: [mask],
-    );
-  }
-
-  /// `Settings saved`
-  String get settingsSaved {
-    return Intl.message(
-      'Settings saved',
-      name: 'settingsSaved',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Please enter the correct data`
-  String get pleaseEnterTheCorrectData {
-    return Intl.message(
-      'Please enter the correct data',
-      name: 'pleaseEnterTheCorrectData',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Settings`
-  String get settings {
-    return Intl.message(
-      'Settings',
-      name: 'settings',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Error: {error} \nPlease try again`
-  String errorErrorNpleaseTryAgain(Object error) {
-    return Intl.message(
-      'Error: $error \\nPlease try again',
-      name: 'errorErrorNpleaseTryAgain',
-      desc: '',
-      args: [error],
-    );
-  }
-
-  /// `Recreate database`
-  String get recreateDatabase {
-    return Intl.message(
-      'Recreate database',
-      name: 'recreateDatabase',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Clear images`
-  String get clearImages {
-    return Intl.message(
-      'Clear images',
-      name: 'clearImages',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Enter the number of images to download`
-  String get enterTheNumberOfImagesToDownload {
-    return Intl.message(
-      'Enter the number of images to download',
-      name: 'enterTheNumberOfImagesToDownload',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Please enter the number of images to download`
-  String get pleaseEnterTheNumberOfImagesToDownload {
-    return Intl.message(
-      'Please enter the number of images to download',
-      name: 'pleaseEnterTheNumberOfImagesToDownload',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Please enter a valid number`
-  String get pleaseEnterAValidNumber {
-    return Intl.message(
-      'Please enter a valid number',
-      name: 'pleaseEnterAValidNumber',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Please enter a number greater than 0`
-  String get pleaseEnterANumberGreaterThan0 {
-    return Intl.message(
-      'Please enter a number greater than 0',
-      name: 'pleaseEnterANumberGreaterThan0',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Save`
-  String get save {
-    return Intl.message(
-      'Save',
-      name: 'save',
       desc: '',
       args: [],
     );

@@ -25,11 +25,13 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m1(error) => "Ошибка: ${error}";
 
-  static String m2(error) => "Error: ${error} \\nPlease try again";
+  static String m2(error) =>
+      "Ошибка: ${error}\\nПожалуйста, попробуйте еще раз";
 
   static String m3(newPath) => "Изображение сохранено в ${newPath}";
 
-  static String m4(mask) => "Please enter a address with only a ${mask}";
+  static String m4(mask) =>
+      "Пожалуйста, введите адрес, состоящий только из ${mask}";
 
   static String m5(e) =>
       "Неизвестная ошибка: ${e}. Пожалуйста, обратитесь к разработчику";
@@ -40,7 +42,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage(
                 "Вы уверены, что хотите удалить это изображение?"),
         "cancel": MessageLookupByLibrary.simpleMessage("Отменить"),
-        "clearImages": MessageLookupByLibrary.simpleMessage("Clear images"),
+        "clearImages":
+            MessageLookupByLibrary.simpleMessage("Удалить все изображения"),
         "confirmDeletion":
             MessageLookupByLibrary.simpleMessage("Подтвердите удаление"),
         "delete": MessageLookupByLibrary.simpleMessage("Удалить"),
@@ -50,9 +53,9 @@ class MessageLookup extends MessageLookupByLibrary {
         "downloadedImagesOfWantednumofimages": m0,
         "enterTheNumberOfImagesToDownload":
             MessageLookupByLibrary.simpleMessage(
-                "Enter the number of images to download"),
+                "Введите количество изображений для загрузки"),
         "enterTheStartingAddress":
-            MessageLookupByLibrary.simpleMessage("Enter the starting address"),
+            MessageLookupByLibrary.simpleMessage("Введите начальный адрес"),
         "errorError": m1,
         "errorErrorNpleaseTryAgain": m2,
         "galleryAppBar": MessageLookupByLibrary.simpleMessage("Галерея"),
@@ -64,39 +67,40 @@ class MessageLookup extends MessageLookupByLibrary {
             "Папка для загрузки не найдена"),
         "noPhotos": MessageLookupByLibrary.simpleMessage("Изображений нет"),
         "numberOfImagesToDownload": MessageLookupByLibrary.simpleMessage(
-            "Number of images to download"),
+            "Желаемое количество картинок"),
         "permissionDenied": MessageLookupByLibrary.simpleMessage(
             "Разрешение отклонено пользователем"),
         "photoViewer":
             MessageLookupByLibrary.simpleMessage("Просмотр изображений"),
         "pleaseEnterAAddressWithOnlyAMask": m4,
         "pleaseEnterAMaxLengthAddress": MessageLookupByLibrary.simpleMessage(
-            "Please enter a max length address"),
+            "Пожалуйста, введите адрес максимальной длины"),
         "pleaseEnterANumberGreaterThan0": MessageLookupByLibrary.simpleMessage(
-            "Please enter a number greater than 0"),
+            "Пожалуйста, введите число больше 0"),
         "pleaseEnterAValidNumber":
-            MessageLookupByLibrary.simpleMessage("Please enter a valid number"),
+            MessageLookupByLibrary.simpleMessage("Пожалуйста, введите число"),
         "pleaseEnterTheCorrectData": MessageLookupByLibrary.simpleMessage(
-            "Please enter the correct data"),
+            "Пожалуйста, введите правильные данные"),
         "pleaseEnterTheNumberOfImagesToDownload":
             MessageLookupByLibrary.simpleMessage(
-                "Please enter the number of images to download"),
+                "Пожалуйста, введите количество изображений для загрузки"),
         "pleaseEnterTheStartingAddress": MessageLookupByLibrary.simpleMessage(
-            "Please enter the starting address"),
+            "Пожалуйста, введите начальный адрес"),
         "recreateDatabase":
-            MessageLookupByLibrary.simpleMessage("Recreate database"),
-        "save": MessageLookupByLibrary.simpleMessage("Save"),
+            MessageLookupByLibrary.simpleMessage("Пересоздать базу данных"),
+        "save": MessageLookupByLibrary.simpleMessage("Сохранить"),
         "seeAll": MessageLookupByLibrary.simpleMessage("Смотреть все"),
-        "settings": MessageLookupByLibrary.simpleMessage("Settings"),
-        "settingsSaved": MessageLookupByLibrary.simpleMessage("Settings saved"),
+        "settings": MessageLookupByLibrary.simpleMessage("Настройки"),
+        "settingsSaved":
+            MessageLookupByLibrary.simpleMessage("Настройки сохранены"),
         "shareImage": MessageLookupByLibrary.simpleMessage(
             "Посмотрите это изображение из Lightshot Parser!"),
         "startingAddress":
-            MessageLookupByLibrary.simpleMessage("Starting address"),
+            MessageLookupByLibrary.simpleMessage("Начальный адрес"),
         "unknownErrorEPleaseContactToTheDev": m5,
         "useNewAddresses":
-            MessageLookupByLibrary.simpleMessage("Use new addresses"),
-        "useRandomAddresses":
-            MessageLookupByLibrary.simpleMessage("Use random addresses")
+            MessageLookupByLibrary.simpleMessage("Использовать новые адреса"),
+        "useRandomAddresses": MessageLookupByLibrary.simpleMessage(
+            "Использовать случайные адреса")
       };
 }
