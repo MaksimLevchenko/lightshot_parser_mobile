@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:lightshot_parser_mobile/generated/l10n.dart';
 import 'package:lightshot_parser_mobile/pages/main_page.dart';
 import 'package:lightshot_parser_mobile/parser/parser_db.dart';
 
@@ -33,10 +34,17 @@ class SettingsPage extends StatelessWidget {
     if (file.existsSync()) {
       final String jsonString = await file.readAsString();
       final Map<String, dynamic> settings = json.decode(jsonString);
-      _numOfImages = settings['numOfImages'] ?? 10;
-      _useNewAddresses = settings['newAddresses'] ?? false;
-      _startingUrl = settings['startingUrl'] ?? "";
-      _useRandomAddress = _startingUrl == "" ? true : false;
+      try {
+        _numOfImages = settings['numOfImages'] ?? 10;
+        _useNewAddresses = settings['newAddresses'] ?? false;
+        _startingUrl = settings['startingUrl'] ?? "";
+        _useRandomAddress = _startingUrl == "" ? true : false;
+      } on Exception {
+        _numOfImages = 10;
+        _useNewAddresses = false;
+        _startingUrl = '';
+        _useRandomAddress = true;
+      }
     } else {
       _numOfImages = 10;
       _useNewAddresses = false;
@@ -59,11 +67,11 @@ class SettingsPage extends StatelessWidget {
     file.writeAsString(json.encode(settings));
   }
 
-  TextFormField _numOfImagesFormField() {
+  TextFormField _numOfImagesFormField(BuildContext context) {
     return TextFormField(
       decoration: InputDecoration(
-        labelText: "Number of images to download",
-        hintText: "Enter the number of images to download",
+        labelText: S.of(context).numberOfImagesToDownload,
+        hintText: S.of(context).enterTheNumberOfImagesToDownload,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(width: 1.5),
@@ -77,11 +85,11 @@ class SettingsPage extends StatelessWidget {
       validator: (value) {
         value = value ?? '';
         if (value.isEmpty) {
-          return "Please enter the number of images to download";
+          return S.of(context).pleaseEnterTheNumberOfImagesToDownload;
         } else if (int.tryParse(value) == null) {
-          return "Please enter a valid number";
+          return S.of(context).pleaseEnterAValidNumber;
         } else if (int.parse(value) < 1) {
-          return "Please enter a number greater than 0";
+          return S.of(context).pleaseEnterANumberGreaterThan0;
         } else {
           return null;
         }
@@ -90,7 +98,7 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _useNewAddressCheckbox(Function setState) {
+  Widget _useNewAddressCheckbox(BuildContext context, Function setState) {
     return Row(
       children: [
         Checkbox(
@@ -101,12 +109,12 @@ class SettingsPage extends StatelessWidget {
             );
           },
         ),
-        const Text("Use new addresses"),
+        Text(S.of(context).useNewAddresses),
       ],
     );
   }
 
-  Widget _useRandomAddressCheckbox(Function setState) {
+  Widget _useRandomAddressCheckbox(BuildContext context, Function setState) {
     return Row(
       children: [
         Checkbox(
@@ -117,16 +125,16 @@ class SettingsPage extends StatelessWidget {
             );
           },
         ),
-        const Text("Use random addresses"),
+        Text(S.of(context).useRandomAddresses),
       ],
     );
   }
 
-  TextFormField _startingAddressFormField() {
+  TextFormField _startingAddressFormField(BuildContext context) {
     return TextFormField(
       decoration: InputDecoration(
-        labelText: "Starting address",
-        hintText: "Enter the starting address",
+        labelText: S.of(context).startingAddress,
+        hintText: S.of(context).enterTheStartingAddress,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(width: 1.5),
@@ -144,12 +152,14 @@ class SettingsPage extends StatelessWidget {
             ? RegExp(r'^[a-zA-Z0-9_-]{12}$')
             : RegExp(r'^[a-z0-9]{6}$');
         if (value.isEmpty) {
-          return "Please enter the starting address";
+          return S.of(context).pleaseEnterTheStartingAddress;
         } else if ((_useNewAddresses && value.length != 12) ||
             (!_useNewAddresses && value.length != 6)) {
-          return "Please enter a max length address";
+          return S.of(context).pleaseEnterAMaxLengthAddress;
         } else if (!mask.hasMatch(value)) {
-          return "Please enter a address with only a ${_useNewAddresses ? '(a-z, A-Z, 0-9, _ and -)' : '(a-z, 0-9)'}";
+          String mask =
+              _useNewAddresses ? '(a-z, A-Z, 0-9, _ and -)' : '(a-z, 0-9)';
+          return S.of(context).pleaseEnterAAddressWithOnlyAMask(mask);
         } else {
           return null;
         }
@@ -159,17 +169,15 @@ class SettingsPage extends StatelessWidget {
   }
 
   void _saveSettings(BuildContext context) {
-    log('starting save func');
     if (_formKey.currentState!.validate()) {
-      log('validate starting complete');
       _formKey.currentState!.save();
       _saveSettingsInFile();
-      log('form saved');
+      log('Settings saved');
       ScaffoldMessenger.of(context)
-          .showSnackBar(_getSnackBar(message: "Settings saved"));
+          .showSnackBar(_getSnackBar(message: S.of(context).settingsSaved));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(_getSnackBar(
-          message: "Please enter the correct data", color: Colors.red));
+          message: S.of(context).pleaseEnterTheCorrectData, color: Colors.red));
     }
   }
 
@@ -183,9 +191,15 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ButtonStyle settingsButtonStyle = ButtonStyle(
+      alignment: Alignment.center,
+      minimumSize: MaterialStateProperty.all(const Size(150, 30)),
+      maximumSize: MaterialStateProperty.all(const Size(150, 45)),
+      padding: MaterialStateProperty.all(const EdgeInsets.all(12)),
+    );
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Settings"),
+        title: Text(S.of(context).settings),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -200,59 +214,66 @@ class SettingsPage extends StatelessWidget {
                 }
                 if (snapshot.hasError) {
                   return Center(
-                    child: Text(
-                        "Error: ${snapshot.error.toString()} \nPlease try again"),
+                    child: Text(S
+                        .of(context)
+                        .errorErrorNpleaseTryAgain(snapshot.error!)),
                   );
                 }
                 return Column(
                   children: [
-                    _numOfImagesFormField(),
+                    _numOfImagesFormField(context),
                     const SizedBox(height: 5),
                     StatefulBuilder(builder: (context, setState) {
                       return Column(
                         children: [
-                          _useNewAddressCheckbox(setState),
+                          _useNewAddressCheckbox(context, setState),
                           const SizedBox(height: 10),
-                          _useRandomAddressCheckbox(setState),
+                          _useRandomAddressCheckbox(context, setState),
                           const SizedBox(height: 16),
-                          _startingAddressFormField(),
+                          _startingAddressFormField(context),
                         ],
                       );
                     }),
                     ElevatedButton(
+                      style: settingsButtonStyle,
                       onPressed: () {
                         _saveSettings(context);
                       },
-                      child: const Text("Save"),
+                      child: Text(
+                        S.of(context).save,
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         ElevatedButton(
-                          style: ButtonStyle(
-                              fixedSize: MaterialStateProperty.all(
-                                  const Size(150, 30))),
-                          child: const Text('Recreate database'),
+                          style: settingsButtonStyle,
                           onPressed: () {
                             DataBase db = DataBase(
                                 databaseFileDirectory: _databaseDirectory,
                                 photosDirectory: _photoDirectory);
                             db.parseFolder();
                           },
+                          child: Text(
+                            S.of(context).recreateDatabase,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                         const SizedBox(width: 10),
                         ElevatedButton(
-                          style: ButtonStyle(
-                              fixedSize: MaterialStateProperty.all(
-                                  const Size(150, 30))),
+                          style: settingsButtonStyle,
                           onPressed: () {
                             needToUpdateGallery = true;
                             _photoDirectory.listSync().forEach((element) {
                               element.deleteSync(recursive: true);
                             });
                           },
-                          child: const Text('Clear images'),
+                          child: Text(
+                            S.of(context).clearImages,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ],
                     ),

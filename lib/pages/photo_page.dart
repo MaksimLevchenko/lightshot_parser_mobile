@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:lightshot_parser_mobile/generated/l10n.dart';
 import 'package:lightshot_parser_mobile/pages/main_page.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -25,8 +26,7 @@ class PhotoViewerPage extends StatelessWidget {
   int currentIndex;
 
   bool shareImage(File image, BuildContext context) {
-    Share.shareXFiles([XFile(image.path)],
-        text: 'Check out this image from Lightshot Parser');
+    Share.shareXFiles([XFile(image.path)], text: S.of(context).shareImage);
     return true;
   }
 
@@ -53,14 +53,14 @@ class PhotoViewerPage extends StatelessWidget {
         await image.copy(newPath).then((value) {
           ScaffoldMessenger.of(context).showSnackBar(
             _getSnackBar(
-              message: 'Image saved to $newPath',
+              message: S.of(context).imageSavedToPath(newPath),
             ),
           );
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           _getSnackBar(
-            message: 'Permission denied',
+            message: S.of(context).permissionDenied,
             color: Colors.red,
           ),
         );
@@ -76,15 +76,15 @@ class PhotoViewerPage extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Confirm Deletion'),
-          content: const Text('Are you sure you want to delete this image?'),
+          title: Text(S.of(context).confirmDeletion),
+          content: Text(S.of(context).areYouSureYouWantToDeleteThisImage),
           actions: [
             TextButton(
               onPressed: () {
                 isImageDeleted = false;
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: const Text('Cancel'),
+              child: Text(S.of(context).cancel),
             ),
             TextButton(
               onPressed: () {
@@ -98,11 +98,11 @@ class PhotoViewerPage extends StatelessWidget {
                 Navigator.of(context).pop(); // Close the dialog
                 ScaffoldMessenger.of(context).showSnackBar(
                   _getSnackBar(
-                    message: 'Image deleted',
+                    message: S.of(context).imageDeleted,
                   ),
                 );
               },
-              child: const Text('Delete'),
+              child: Text(S.of(context).delete),
             ),
           ],
         );
@@ -115,7 +115,7 @@ class PhotoViewerPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Photo Viewer'),
+        title: Text(S.of(context).photoViewer),
         actions: [
           IconButton(
             onPressed: () {

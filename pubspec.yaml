@@ -17,6 +17,10 @@ dependencies:
   dio: ^5.4.2+1
   intl: ^0.19.0
 
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.18.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -24,3 +28,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+flutter_intl:
+  enabled: true
+  localizely:
+    project_id: 61630f63-677a-49fe-beda-3beb45abe85c
