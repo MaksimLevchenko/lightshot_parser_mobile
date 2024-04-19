@@ -21,7 +21,7 @@ class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'uk';
 
   static String m0(images, wantedNumOfImages) =>
-      "${Intl.plural(images, zero: 'Завантажено 0 зображень з ${wantedNumOfImages}', one: 'Завантажено 1 зображення з ${wantedNumOfImages}', few: 'Завантажено ${images} зображень з ${wantedNumOfImages}', many: '', other: 'Завантажено ${images} зображень з ${wantedNumOfImages}')}}";
+      "${Intl.plural(images, zero: 'Завантажено 0 зображень з ${wantedNumOfImages}', one: 'Завантажено 1 зображення з ${wantedNumOfImages}', few: 'Завантажено ${images} зображень з ${wantedNumOfImages}', many: '', other: 'Завантажено ${images} зображень з ${wantedNumOfImages}')}";
 
   static String m1(error) => "Помилка: ${error}";
 
