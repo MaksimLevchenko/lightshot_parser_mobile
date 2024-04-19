@@ -50,56 +50,6 @@ class S {
     return Localizations.of<S>(context, S);
   }
 
-  /// `Gallery`
-  String get galleryAppBar {
-    return Intl.message(
-      'Gallery',
-      name: 'galleryAppBar',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Check out this image from Lightshot Parser`
-  String get shareImage {
-    return Intl.message(
-      'Check out this image from Lightshot Parser',
-      name: 'shareImage',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Image saved to {newPath}`
-  String imageSavedToPath(Object newPath) {
-    return Intl.message(
-      'Image saved to $newPath',
-      name: 'imageSavedToPath',
-      desc: '',
-      args: [newPath],
-    );
-  }
-
-  /// `Permission denied`
-  String get permissionDenied {
-    return Intl.message(
-      'Permission denied',
-      name: 'permissionDenied',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Confirm Deletion`
-  String get confirmDeletion {
-    return Intl.message(
-      'Confirm Deletion',
-      name: 'confirmDeletion',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Are you sure you want to delete this image?`
   String get areYouSureYouWantToDeleteThisImage {
     return Intl.message(
@@ -120,11 +70,11 @@ class S {
     );
   }
 
-  /// `Image deleted`
-  String get imageDeleted {
+  /// `Confirm deletion`
+  String get confirmDeletion {
     return Intl.message(
-      'Image deleted',
-      name: 'imageDeleted',
+      'Confirm deletion',
+      name: 'confirmDeletion',
       desc: '',
       args: [],
     );
@@ -140,13 +90,27 @@ class S {
     );
   }
 
-  /// `Photo Viewer`
-  String get photoViewer {
+  /// `Begin downloading`
+  String get download {
     return Intl.message(
-      'Photo Viewer',
-      name: 'photoViewer',
+      'Begin downloading',
+      name: 'download',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `{images, plural, zero{The images have not been downloaded yet} one{Downloaded 1 image out of {wantedNumOfImages}} other{{images} images out of {wantedNumOfImages} have been downloaded}}`
+  String downloadedImagesOfWantednumofimages(
+      num images, Object wantedNumOfImages) {
+    return Intl.plural(
+      images,
+      zero: 'The images have not been downloaded yet',
+      one: 'Downloaded 1 image out of $wantedNumOfImages',
+      other: '$images images out of $wantedNumOfImages have been downloaded',
+      name: 'downloadedImagesOfWantednumofimages',
+      desc: '',
+      args: [images, wantedNumOfImages],
     );
   }
 
@@ -160,16 +124,6 @@ class S {
     );
   }
 
-  /// `Unknown error: {e}, please contact to the dev`
-  String unknownErrorEPleaseContactToTheDev(Object e) {
-    return Intl.message(
-      'Unknown error: $e, please contact to the dev',
-      name: 'unknownErrorEPleaseContactToTheDev',
-      desc: '',
-      args: [e],
-    );
-  }
-
   /// `Error: {error}`
   String errorError(Object error) {
     return Intl.message(
@@ -180,11 +134,81 @@ class S {
     );
   }
 
-  /// `No download folder found`
+  /// `Gallery`
+  String get galleryAppBar {
+    return Intl.message(
+      'Gallery',
+      name: 'galleryAppBar',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Image deleted`
+  String get imageDeleted {
+    return Intl.message(
+      'Image deleted',
+      name: 'imageDeleted',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Image saved to {newPath}`
+  String imageSavedToPath(Object newPath) {
+    return Intl.message(
+      'Image saved to $newPath',
+      name: 'imageSavedToPath',
+      desc: '',
+      args: [newPath],
+    );
+  }
+
+  /// `Lightshot Parser`
+  String get mainTitle {
+    return Intl.message(
+      'Lightshot Parser',
+      name: 'mainTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The download folder was not found`
   String get noDownloadFolderFound {
     return Intl.message(
-      'No download folder found',
+      'The download folder was not found',
       name: 'noDownloadFolderFound',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `There are no images`
+  String get noPhotos {
+    return Intl.message(
+      'There are no images',
+      name: 'noPhotos',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Permission denied`
+  String get permissionDenied {
+    return Intl.message(
+      'Permission denied',
+      name: 'permissionDenied',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Photo Viewer`
+  String get photoViewer {
+    return Intl.message(
+      'Photo Viewer',
+      name: 'photoViewer',
       desc: '',
       args: [],
     );
@@ -200,42 +224,211 @@ class S {
     );
   }
 
-  /// `Downloaded {images} of {wantedNumOfImages}`
-  String downloadedImagesOfWantednumofimages(
-      Object images, Object wantedNumOfImages) {
+  /// `Check out this image from Lightshot Parser!`
+  String get shareImage {
     return Intl.message(
-      'Downloaded $images of $wantedNumOfImages',
-      name: 'downloadedImagesOfWantednumofimages',
-      desc: '',
-      args: [images, wantedNumOfImages],
-    );
-  }
-
-  /// `Download`
-  String get download {
-    return Intl.message(
-      'Download',
-      name: 'download',
+      'Check out this image from Lightshot Parser!',
+      name: 'shareImage',
       desc: '',
       args: [],
     );
   }
 
-  /// `Lightshot Parser`
-  String get mainTitle {
+  /// `Unknown error: {e}. Please contact to the dev`
+  String unknownErrorEPleaseContactToTheDev(Object e) {
     return Intl.message(
-      'Lightshot Parser',
-      name: 'mainTitle',
+      'Unknown error: $e. Please contact to the dev',
+      name: 'unknownErrorEPleaseContactToTheDev',
+      desc: '',
+      args: [e],
+    );
+  }
+
+  /// `Number of images to download`
+  String get numberOfImagesToDownload {
+    return Intl.message(
+      'Number of images to download',
+      name: 'numberOfImagesToDownload',
       desc: '',
       args: [],
     );
   }
 
-  /// `No photos`
-  String get noPhotos {
+  /// `Use new addresses`
+  String get useNewAddresses {
     return Intl.message(
-      'No photos',
-      name: 'noPhotos',
+      'Use new addresses',
+      name: 'useNewAddresses',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Use random addresses`
+  String get useRandomAddresses {
+    return Intl.message(
+      'Use random addresses',
+      name: 'useRandomAddresses',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Starting address`
+  String get startingAddress {
+    return Intl.message(
+      'Starting address',
+      name: 'startingAddress',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter the starting address`
+  String get enterTheStartingAddress {
+    return Intl.message(
+      'Enter the starting address',
+      name: 'enterTheStartingAddress',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter the starting address`
+  String get pleaseEnterTheStartingAddress {
+    return Intl.message(
+      'Please enter the starting address',
+      name: 'pleaseEnterTheStartingAddress',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter a max length address`
+  String get pleaseEnterAMaxLengthAddress {
+    return Intl.message(
+      'Please enter a max length address',
+      name: 'pleaseEnterAMaxLengthAddress',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter a address with only a {mask}`
+  String pleaseEnterAAddressWithOnlyAMask(Object mask) {
+    return Intl.message(
+      'Please enter a address with only a $mask',
+      name: 'pleaseEnterAAddressWithOnlyAMask',
+      desc: '',
+      args: [mask],
+    );
+  }
+
+  /// `Settings saved`
+  String get settingsSaved {
+    return Intl.message(
+      'Settings saved',
+      name: 'settingsSaved',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter the correct data`
+  String get pleaseEnterTheCorrectData {
+    return Intl.message(
+      'Please enter the correct data',
+      name: 'pleaseEnterTheCorrectData',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Settings`
+  String get settings {
+    return Intl.message(
+      'Settings',
+      name: 'settings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Error: {error} \nPlease try again`
+  String errorErrorNpleaseTryAgain(Object error) {
+    return Intl.message(
+      'Error: $error \\nPlease try again',
+      name: 'errorErrorNpleaseTryAgain',
+      desc: '',
+      args: [error],
+    );
+  }
+
+  /// `Recreate database`
+  String get recreateDatabase {
+    return Intl.message(
+      'Recreate database',
+      name: 'recreateDatabase',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Clear images`
+  String get clearImages {
+    return Intl.message(
+      'Clear images',
+      name: 'clearImages',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter the number of images to download`
+  String get enterTheNumberOfImagesToDownload {
+    return Intl.message(
+      'Enter the number of images to download',
+      name: 'enterTheNumberOfImagesToDownload',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter the number of images to download`
+  String get pleaseEnterTheNumberOfImagesToDownload {
+    return Intl.message(
+      'Please enter the number of images to download',
+      name: 'pleaseEnterTheNumberOfImagesToDownload',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter a valid number`
+  String get pleaseEnterAValidNumber {
+    return Intl.message(
+      'Please enter a valid number',
+      name: 'pleaseEnterAValidNumber',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter a number greater than 0`
+  String get pleaseEnterANumberGreaterThan0 {
+    return Intl.message(
+      'Please enter a number greater than 0',
+      name: 'pleaseEnterANumberGreaterThan0',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Save`
+  String get save {
+    return Intl.message(
+      'Save',
+      name: 'save',
       desc: '',
       args: [],
     );
