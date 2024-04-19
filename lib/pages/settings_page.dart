@@ -261,6 +261,7 @@ class SettingsPage extends StatelessWidget {
             decoration: InputDecoration(
               labelText: S.of(context).proxyAddress,
               hintText: S.of(context).enterTheProxyAddress,
+              counterText: '',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(width: 1.5),
@@ -291,6 +292,7 @@ class SettingsPage extends StatelessWidget {
             decoration: InputDecoration(
               labelText: S.of(context).proxyPort,
               hintText: S.of(context).enterTheProxyPort,
+              counterText: '',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(width: 1.5),
@@ -327,6 +329,7 @@ class SettingsPage extends StatelessWidget {
             decoration: InputDecoration(
               labelText: S.of(context).proxyLogin,
               hintText: S.of(context).enterTheProxyLogin,
+              counterText: '',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(width: 1.5),
@@ -353,6 +356,7 @@ class SettingsPage extends StatelessWidget {
             decoration: InputDecoration(
               labelText: S.of(context).proxyPassword,
               hintText: S.of(context).enterTheProxyPassword,
+              counterText: '',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(width: 1.5),
@@ -419,9 +423,9 @@ class SettingsPage extends StatelessWidget {
         title: Text(S.of(context).settings),
         centerTitle: true,
       ),
-      body: SafeArea(
-        minimum: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
+      body: SingleChildScrollView(
+        child: SafeArea(
+          minimum: const EdgeInsets.all(16),
           child: Form(
             key: _formKey,
             child: FutureBuilder(
@@ -466,16 +470,17 @@ class SettingsPage extends StatelessWidget {
                                   // _proxyTypeDropdown(setState),
                                 ],
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 16),
                               _useProxyAuthCheckbox(context, setState),
                               const SizedBox(height: 16),
                               _proxyAddressForms(context),
                               _useProxyAuth
-                                  ? const SizedBox(height: 16)
+                                  ? const SizedBox(height: 32)
                                   : Container(),
                               _useProxyAuth
                                   ? _proxyLoginForms(context)
                                   : Container(),
+                              SizedBox(height: 32)
                             ],
                           );
                         }
