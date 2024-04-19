@@ -167,7 +167,7 @@ class S {
   /// `Error: {error} \nPlease try again`
   String errorErrorNpleaseTryAgain(Object error) {
     return Intl.message(
-      'Error: $error \\nPlease try again',
+      'Error: $error \nPlease try again',
       name: 'errorErrorNpleaseTryAgain',
       desc: '',
       args: [error],
@@ -429,6 +429,166 @@ class S {
     return Intl.message(
       'Use random addresses',
       name: 'useRandomAddresses',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Use proxy`
+  String get useProxy {
+    return Intl.message(
+      'Use proxy',
+      name: 'useProxy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Use proxy auth`
+  String get useProxyAuth {
+    return Intl.message(
+      'Use proxy auth',
+      name: 'useProxyAuth',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Proxy address`
+  String get proxyAddress {
+    return Intl.message(
+      'Proxy address',
+      name: 'proxyAddress',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter the proxy address`
+  String get enterTheProxyAddress {
+    return Intl.message(
+      'Enter the proxy address',
+      name: 'enterTheProxyAddress',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter the proxy address`
+  String get pleaseEnterTheProxyAddress {
+    return Intl.message(
+      'Please enter the proxy address',
+      name: 'pleaseEnterTheProxyAddress',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Proxy port`
+  String get proxyPort {
+    return Intl.message(
+      'Proxy port',
+      name: 'proxyPort',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter the proxy port`
+  String get enterTheProxyPort {
+    return Intl.message(
+      'Enter the proxy port',
+      name: 'enterTheProxyPort',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter the proxy port`
+  String get pleaseEnterTheProxyPort {
+    return Intl.message(
+      'Please enter the proxy port',
+      name: 'pleaseEnterTheProxyPort',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Proxy login`
+  String get proxyLogin {
+    return Intl.message(
+      'Proxy login',
+      name: 'proxyLogin',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter the proxy login`
+  String get enterTheProxyLogin {
+    return Intl.message(
+      'Enter the proxy login',
+      name: 'enterTheProxyLogin',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter the proxy login`
+  String get pleaseEnterTheProxyLogin {
+    return Intl.message(
+      'Please enter the proxy login',
+      name: 'pleaseEnterTheProxyLogin',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Proxy password`
+  String get proxyPassword {
+    return Intl.message(
+      'Proxy password',
+      name: 'proxyPassword',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter the proxy password`
+  String get enterTheProxyPassword {
+    return Intl.message(
+      'Enter the proxy password',
+      name: 'enterTheProxyPassword',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter the proxy password`
+  String get pleaseEnterTheProxyPassword {
+    return Intl.message(
+      'Please enter the proxy password',
+      name: 'pleaseEnterTheProxyPassword',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter a valid IP address`
+  String get pleaseEnterAValidIpAddress {
+    return Intl.message(
+      'Please enter a valid IP address',
+      name: 'pleaseEnterAValidIpAddress',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter a valid port`
+  String get pleaseEnterAValidPort {
+    return Intl.message(
+      'Please enter a valid port',
+      name: 'pleaseEnterAValidPort',
       desc: '',
       args: [],
     );

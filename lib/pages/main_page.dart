@@ -36,6 +36,12 @@ class MainPage extends StatelessWidget {
   late int _wantedNumOfImages;
   late bool _newAddresses;
   late String _startingUrl;
+  late bool _useProxy;
+  late bool _useProxyAuth;
+  late String _proxyAddress;
+  late String _proxyPort;
+  late String _proxyLogin;
+  late String _proxyPassword;
 
   MainPage({super.key});
 
@@ -45,9 +51,18 @@ class MainPage extends StatelessWidget {
     var generator = _startingUrl == ''
         ? gen.GetRandomUrl(_newAddresses)
         : gen.GetNextUrl(_newAddresses, _startingUrl);
+    String? proxy;
+    if (_useProxy) {
+      if (_useProxyAuth) {
+        proxy = 'PROXY $_proxyLogin:$_proxyPassword@$_proxyAddress:$_proxyPort';
+      } else {
+        proxy = 'PROXY $_proxyAddress:$_proxyPort';
+      }
+    }
     LightshotParser parser = LightshotParser(
         photosDirectory: _photosDirectory,
-        databaseDirectory: _databaseDirectory);
+        databaseDirectory: _databaseDirectory,
+        proxy: proxy);
     downloading = true;
     cancelToken = CancelToken();
     File? downloadedPhoto;
@@ -126,19 +141,37 @@ class MainPage extends StatelessWidget {
       final String jsonString = file.readAsStringSync();
       final Map<String, dynamic> settings = json.decode(jsonString);
       try {
-        _wantedNumOfImages = (settings['numOfImages']);
-        _newAddresses = settings['newAddresses'];
-        _startingUrl = settings['startingUrl'];
+        _wantedNumOfImages = (settings['numOfImages']) ?? 10;
+        _newAddresses = settings['newAddresses'] ?? false;
+        _startingUrl = settings['startingUrl'] ?? '';
+        _useProxy = settings['useProxy'] ?? false;
+        _useProxyAuth = settings['useProxyAuth'] ?? false;
+        _proxyAddress = settings['proxyAddress'] ?? '';
+        _proxyPort = settings['proxyPort'] ?? '';
+        _proxyLogin = settings['proxyLogin'] ?? '';
+        _proxyPassword = settings['proxyPassword'] ?? '';
       } on Exception catch (e) {
         log('Error while loading settings: $e');
         _wantedNumOfImages = 10;
         _newAddresses = false;
         _startingUrl = '';
+        _useProxy = settings['useProxy'] ?? false;
+        _useProxyAuth = settings['useProxyAuth'] ?? false;
+        _proxyAddress = settings['proxyAddress'] ?? '';
+        _proxyPort = settings['proxyPort'] ?? '';
+        _proxyLogin = settings['proxyLogin'] ?? '';
+        _proxyPassword = settings['proxyPassword'] ?? '';
       }
     } else {
       _wantedNumOfImages = 10;
       _newAddresses = false;
       _startingUrl = '';
+      _useProxy = false;
+      _useProxyAuth = false;
+      _proxyAddress = '';
+      _proxyPort = '';
+      _proxyLogin = '';
+      _proxyPassword = '';
     }
   }
 
@@ -177,91 +210,93 @@ class MainPage extends StatelessWidget {
   }
 
   Widget _mainScreen(BuildContext context) {
-    return SafeArea(
-      minimum: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Row(
-            children: [
-              const Expanded(child: SizedBox()),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (BuildContext context) => GalleryPage(
-                        imageStream: _imagesStream.stream,
-                      ),
-                    ),
-                  ).then((_) {
-                    needToUpdateGallery
-                        ? _galleryStatefulKey.currentState?.setState(() {
-                            _galleryStatefulKey.currentState
-                                ?._updateGalleryList();
-                          })
-                        : null;
-                    needToUpdateGallery = false;
-                  });
-                },
-                child: Text(S.of(context).seeAll),
-              ),
-            ],
-          ),
-          // Gallery widget
-          SizedBox(
-            width: double.infinity,
-            height: _imageSize,
-            child: _GalleryBuilder(
-              imagesStream: _imagesStream.stream,
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Download button and progress bar
-          StatefulBuilder(builder: (context, setProgressBarState) {
-            return Column(
+    return SingleChildScrollView(
+      child: SafeArea(
+        minimum: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Row(
               children: [
-                downloading
-                    ? Column(
-                        children: [
-                          TweenAnimationBuilder<double>(
-                            duration: const Duration(milliseconds: 500),
-                            curve: Curves.easeInOut,
-                            tween: Tween<double>(
-                              begin: 0,
-                              end: _progress,
-                            ),
-                            builder: (context, value, _) =>
-                                LinearProgressIndicator(value: value),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(S
-                              .of(context)
-                              .downloadedImagesOfWantednumofimages(
-                                  (_progress * _wantedNumOfImages).round(),
-                                  _wantedNumOfImages)),
-                          const SizedBox(height: 20)
-                        ],
-                      )
-                    : const SizedBox(height: 50),
-                downloading
-                    ? ElevatedButton(
-                        onPressed: () => setProgressBarState(() {
-                          _stopDownloading();
-                        }),
-                        child: Text(S.of(context).cancel),
-                      )
-                    : ElevatedButton(
-                        onPressed: () => setProgressBarState(() {
-                          _beginDownloading(context, setProgressBarState);
-                        }),
-                        child: Text(S.of(context).download),
+                const Expanded(child: SizedBox()),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (BuildContext context) => GalleryPage(
+                          imageStream: _imagesStream.stream,
+                        ),
                       ),
+                    ).then((_) {
+                      needToUpdateGallery
+                          ? _galleryStatefulKey.currentState?.setState(() {
+                              _galleryStatefulKey.currentState
+                                  ?._updateGalleryList();
+                            })
+                          : null;
+                      needToUpdateGallery = false;
+                    });
+                  },
+                  child: Text(S.of(context).seeAll),
+                ),
               ],
-            );
-          }),
-        ],
+            ),
+            // Gallery widget
+            SizedBox(
+              width: double.infinity,
+              height: _imageSize,
+              child: _GalleryBuilder(
+                imagesStream: _imagesStream.stream,
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Download button and progress bar
+            StatefulBuilder(builder: (context, setProgressBarState) {
+              return Column(
+                children: [
+                  downloading
+                      ? Column(
+                          children: [
+                            TweenAnimationBuilder<double>(
+                              duration: const Duration(milliseconds: 500),
+                              curve: Curves.easeInOut,
+                              tween: Tween<double>(
+                                begin: 0,
+                                end: _progress,
+                              ),
+                              builder: (context, value, _) =>
+                                  LinearProgressIndicator(value: value),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(S
+                                .of(context)
+                                .downloadedImagesOfWantednumofimages(
+                                    (_progress * _wantedNumOfImages).round(),
+                                    _wantedNumOfImages)),
+                            const SizedBox(height: 20)
+                          ],
+                        )
+                      : const SizedBox(height: 50),
+                  downloading
+                      ? ElevatedButton(
+                          onPressed: () => setProgressBarState(() {
+                            _stopDownloading();
+                          }),
+                          child: Text(S.of(context).cancel),
+                        )
+                      : ElevatedButton(
+                          onPressed: () => setProgressBarState(() {
+                            _beginDownloading(context, setProgressBarState);
+                          }),
+                          child: Text(S.of(context).download),
+                        ),
+                ],
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
