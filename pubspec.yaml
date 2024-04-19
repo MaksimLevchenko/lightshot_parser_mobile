@@ -29,3 +29,5 @@ flutter:
   uses-material-design: true
 flutter_intl:
   enabled: true
+  localizely:
+    project_id: 61630f63-677a-49fe-beda-3beb45abe85c
