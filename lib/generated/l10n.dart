@@ -384,10 +384,10 @@ class S {
     );
   }
 
-  /// `Check out this image from Lightshot Parser!`
+  /// `Check out this image from Lightshot Parser! \n\nhttps://github.com/MaksimLevchenko/lightshot_parser_mobile`
   String get shareImage {
     return Intl.message(
-      'Check out this image from Lightshot Parser!',
+      'Check out this image from Lightshot Parser! \n\nhttps://github.com/MaksimLevchenko/lightshot_parser_mobile',
       name: 'shareImage',
       desc: '',
       args: [],

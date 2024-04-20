@@ -162,6 +162,7 @@ class MainPage extends StatelessWidget {
   }
 
   Widget _mainScreen(BuildContext context) {
+    int currentWantedNumOfImages = SettingsData.wantedNumOfImages;
     return SingleChildScrollView(
       child: SafeArea(
         minimum: const EdgeInsets.all(16),
@@ -225,9 +226,9 @@ class MainPage extends StatelessWidget {
                             Text(S
                                 .of(context)
                                 .downloadedImagesOfWantednumofimages(
-                                    (_progress * SettingsData.wantedNumOfImages)
+                                    (_progress * currentWantedNumOfImages)
                                         .round(),
-                                    SettingsData.wantedNumOfImages)),
+                                    currentWantedNumOfImages)),
                             const SizedBox(height: 20)
                           ],
                         )
@@ -241,6 +242,8 @@ class MainPage extends StatelessWidget {
                         )
                       : ElevatedButton(
                           onPressed: () => setProgressBarState(() {
+                            currentWantedNumOfImages =
+                                SettingsData.wantedNumOfImages;
                             _beginDownloading(context, setProgressBarState);
                           }),
                           child: Text(S.of(context).download),
