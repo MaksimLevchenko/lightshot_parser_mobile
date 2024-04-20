@@ -122,7 +122,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "settings": MessageLookupByLibrary.simpleMessage("Settings"),
         "settingsSaved": MessageLookupByLibrary.simpleMessage("Settings saved"),
         "shareImage": MessageLookupByLibrary.simpleMessage(
-            "Check out this image from Lightshot Parser!"),
+            "Check out this image from Lightshot Parser! \n\nhttps://github.com/MaksimLevchenko/lightshot_parser_mobile"),
         "startingAddress":
             MessageLookupByLibrary.simpleMessage("Starting address"),
         "successfullyDownloadedWantednumImages": m5,

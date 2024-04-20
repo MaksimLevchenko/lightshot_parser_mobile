@@ -126,7 +126,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "settingsSaved":
             MessageLookupByLibrary.simpleMessage("Налаштування збережені"),
         "shareImage": MessageLookupByLibrary.simpleMessage(
-            "Подивіться це зображення з Lightshot Parser!"),
+            "Подивіться на це зображення з Lightshot Parser! \n\nhttps://github.com/MaksimLevchenko/lightshot_parser_mobile"),
         "startingAddress":
             MessageLookupByLibrary.simpleMessage("Початкова адреса"),
         "successfullyDownloadedWantednumImages": m5,
