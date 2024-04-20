@@ -1,11 +1,11 @@
 {
-    "name": "lightshot_parser_mobile",
-    "short_name": "lightshot_parser_mobile",
+    "name": "Lightshot Parser",
+    "short_name": "Lightshot Parser",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Program for parsing photos from prnt.sc",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

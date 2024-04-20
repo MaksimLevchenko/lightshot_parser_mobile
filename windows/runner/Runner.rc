@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "lightshot_parser_mobile" "\0"
+            VALUE "CompanyName", "MaksimLevchenko" "\0"
+            VALUE "FileDescription", "Lightshot Parser" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "lightshot_parser_mobile" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2024 com.example. All rights reserved." "\0"
+            VALUE "InternalName", "Lightshot Parser" "\0"
+            VALUE "LegalCopyright", "Copyright ©️ 2024 MaksimLevchenko. All rights reserved." "\0"
             VALUE "OriginalFilename", "lightshot_parser_mobile.exe" "\0"
-            VALUE "ProductName", "lightshot_parser_mobile" "\0"
+            VALUE "ProductName", "Lightshot Parser" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
