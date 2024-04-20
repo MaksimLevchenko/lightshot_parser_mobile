@@ -97,6 +97,9 @@
   "pleaseEnterAValidIpAddress": "Пожалуйста, введите правильный IP-адрес",
   "pleaseEnterAValidPort": "Пожалуйста, введите правильный порт",
   "downloadingComplete": "Скачивание завершено",
-  "successfullyDownloadedWantednumImages": "images, plural, zero{Скачано 0 изображений} one{Скачано {images} изображение} few{Скачано {images} изображения} many{Скачано {images} изображений}}}",
+  "successfullyDownloadedWantednumImages": "{images, plural, zero{Скачано 0 изображений} one{Скачано {images} изображение} few{Скачано {images} изображения} many{Скачано {images} изображений} other{}}",
+  "@successfullyDownloadedWantednumImages": {
+    "type": "int"
+  },
   "downloadingImages": "Скачивание"
 }

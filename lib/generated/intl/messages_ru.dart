@@ -33,7 +33,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Пожалуйста, введите адрес, состоящий только из ${mask}";
 
   static String m5(images) =>
-      "images, plural, zero{Скачано 0 изображений} one{Скачано ${images} изображение} few{Скачано ${images} изображения} many{Скачано ${images} изображений}}}";
+      "${Intl.plural(images, zero: 'Скачано 0 изображений', one: 'Скачано ${images} изображение', few: 'Скачано ${images} изображения', many: 'Скачано ${images} изображений', other: '')}";
 
   static String m6(e) =>
       "Неизвестная ошибка: ${e}. Пожалуйста, обратитесь к разработчику";

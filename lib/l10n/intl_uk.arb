@@ -97,6 +97,6 @@
   "pleaseEnterAValidIpAddress": "Будь ласка, введіть правильну IP-адресу",
   "pleaseEnterAValidPort": "Будь ласка, введіть правильний порт",
   "downloadingComplete": "Завантаження завершено",
-  "successfullyDownloadedWantednumImages": "images, plural, zero{} one{Завантажено 1 зображення} few{Завантажено {images} зображень} many{Завантажено {images} зображень}}}",
+  "successfullyDownloadedWantednumImages": "{images, plural, zero{} one{Завантажено 1 зображення} few{Завантажено {images} зображень} many{Завантажено {images} зображень} other{}}",
   "downloadingImages": "Завантаження"
 }
