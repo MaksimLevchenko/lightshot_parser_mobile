@@ -17,13 +17,10 @@ Parser allows you to flexibly adjust the settings to make downloading the most c
 
 ## Installation
 - Download the latest version of the application from the [releases page](https://github.com/MaksimLevchenko/lightshot_parser_mobile/releases)
+- Run exe or apk file.
 
-- For Windows: 
-1. Unzip the archive to any folder;
-2. Run the `LightshotParser.exe` file.
-- For Android:
-1. Install the APK file on your device.
-2. Run the application =)
+## Contacts
+Contact [me](https://t.me/H2S_Rn) on telegram.
 
 ## Disclaimer
 Use this app responsibly and ensure that you comply with all relevant laws and regulations when downloading content from websites. The authors and maintainers of this application are not responsible for any misuse or illegal activities.
