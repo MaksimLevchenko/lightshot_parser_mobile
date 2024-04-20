@@ -13,6 +13,7 @@ import 'package:lightshot_parser_mobile/pages/photo_page.dart';
 import 'package:lightshot_parser_mobile/pages/settings_page.dart';
 import 'package:lightshot_parser_mobile/parser/parser.dart';
 import 'package:lightshot_parser_mobile/parser/parser_db.dart';
+import 'package:lightshot_parser_mobile/services/notification_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:lightshot_parser_mobile/parser/url_generator.dart' as gen;
 import "package:dio/dio.dart";
@@ -42,6 +43,7 @@ class MainPage extends StatelessWidget {
   late String _proxyPort;
   late String _proxyLogin;
   late String _proxyPassword;
+  final _notificationService = NotificationService();
 
   MainPage({super.key});
 
@@ -70,7 +72,24 @@ class MainPage extends StatelessWidget {
     setProgressBarState(() {
       _progress = 0;
       numOfDownloadedImages = 0;
+      _notificationService.showProgressBarNotification(
+        id: 0,
+        title: S.of(context).downloadingImages,
+        body: S.of(context).downloadedImagesOfWantednumofimages(
+            numOfDownloadedImages, _wantedNumOfImages),
+        maxValue: _wantedNumOfImages,
+        progress: 0,
+        context: context,
+      );
     });
+    void closeProgress() {
+      setProgressBarState(() {
+        downloading = false;
+        _progress = 0;
+        _notificationService.cancelNotification(0);
+      });
+    }
+
     for (numOfDownloadedImages; numOfDownloadedImages < _wantedNumOfImages;) {
       if (downloading == false) break;
       try {
@@ -92,6 +111,7 @@ class MainPage extends StatelessWidget {
         setProgressBarState(() {
           downloading = false;
           _progress = 0;
+          _notificationService.cancelNotification(0);
         });
         return false;
       } on NoPhotoException {
@@ -100,6 +120,7 @@ class MainPage extends StatelessWidget {
         generator.moveNext();
       } on CancelledByUserException {
         log('Download cancelled by user');
+        closeProgress();
         return false;
       } catch (e) {
         log(e.toString());
@@ -111,25 +132,36 @@ class MainPage extends StatelessWidget {
             ),
           );
         }
-        setProgressBarState(() {
-          downloading = false;
-          _progress = 0;
-        });
+        closeProgress();
         return false;
       }
       setProgressBarState(() {
         _progress = numOfDownloadedImages / _wantedNumOfImages;
+        _notificationService.showProgressBarNotification(
+          id: 0,
+          title: S.of(context).downloadingImages,
+          body: S.of(context).downloadedImagesOfWantednumofimages(
+              numOfDownloadedImages, _wantedNumOfImages),
+          maxValue: _wantedNumOfImages,
+          progress: numOfDownloadedImages,
+          context: context,
+        );
       });
     }
     if (downloading) await Future.delayed(const Duration(milliseconds: 500));
-    setProgressBarState(() {
-      downloading = false;
-      _progress = 0;
-    });
+    closeProgress();
+    if (context.mounted) {
+      _notificationService.showNotification(
+        title: S.of(context).downloadingComplete,
+        body: S
+            .of(context)
+            .successfullyDownloadedWantednumImages(_wantedNumOfImages),
+      );
+    }
     return true;
   }
 
-  void _stopDownloading() {
+  void cancelDownload() {
     downloading = false;
     cancelToken.cancel();
   }
@@ -282,7 +314,7 @@ class MainPage extends StatelessWidget {
                   downloading
                       ? ElevatedButton(
                           onPressed: () => setProgressBarState(() {
-                            _stopDownloading();
+                            cancelDownload();
                           }),
                           child: Text(S.of(context).cancel),
                         )

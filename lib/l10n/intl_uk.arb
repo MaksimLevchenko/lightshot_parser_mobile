@@ -95,5 +95,8 @@
   "enterTheProxyPassword": "Введіть пароль проксі",
   "pleaseEnterTheProxyPassword": "Будь ласка, введіть пароль проксі",
   "pleaseEnterAValidIpAddress": "Будь ласка, введіть правильну IP-адресу",
-  "pleaseEnterAValidPort": "Будь ласка, введіть правильний порт"
+  "pleaseEnterAValidPort": "Будь ласка, введіть правильний порт",
+  "downloadingComplete": "Завантаження завершено",
+  "successfullyDownloadedWantednumImages": "images, plural, zero{} one{Завантажено 1 зображення} few{Завантажено {images} зображень} many{Завантажено {images} зображень}}}",
+  "downloadingImages": "Завантаження"
 }

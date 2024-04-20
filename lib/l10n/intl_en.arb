@@ -95,5 +95,8 @@
   "enterTheProxyPassword": "Enter the proxy password",
   "pleaseEnterTheProxyPassword": "Please enter the proxy password",
   "pleaseEnterAValidIpAddress": "Please enter a valid IP address",
-  "pleaseEnterAValidPort": "Please enter a valid port"
+  "pleaseEnterAValidPort": "Please enter a valid port",
+  "downloadingComplete": "Downloading Complete",
+  "successfullyDownloadedWantednumImages": "{images, plural, zero {} one{Successfully downloaded 1 image} other{{images} images have been downloaded successfully}}",
+  "downloadingImages": "Downloading"
 }

@@ -31,7 +31,10 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m4(mask) => "Please enter a address with only a ${mask}";
 
-  static String m5(e) => "Unknown error: ${e}. Please contact to the dev";
+  static String m5(images) =>
+      "${Intl.plural(images, zero: '', one: 'Successfully downloaded 1 image', other: '${images} images have been downloaded successfully')}";
+
+  static String m6(e) => "Unknown error: ${e}. Please contact to the dev";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -48,6 +51,10 @@ class MessageLookup extends MessageLookupByLibrary {
         "downloadErrorTryToChangeVpn": MessageLookupByLibrary.simpleMessage(
             "Download error. Try to change VPN"),
         "downloadedImagesOfWantednumofimages": m0,
+        "downloadingComplete":
+            MessageLookupByLibrary.simpleMessage("Downloading Complete"),
+        "downloadingImages":
+            MessageLookupByLibrary.simpleMessage("Downloading"),
         "enterTheNumberOfImagesToDownload":
             MessageLookupByLibrary.simpleMessage(
                 "Enter the number of images to download"),
@@ -115,7 +122,8 @@ class MessageLookup extends MessageLookupByLibrary {
             "Check out this image from Lightshot Parser!"),
         "startingAddress":
             MessageLookupByLibrary.simpleMessage("Starting address"),
-        "unknownErrorEPleaseContactToTheDev": m5,
+        "successfullyDownloadedWantednumImages": m5,
+        "unknownErrorEPleaseContactToTheDev": m6,
         "useNewAddresses":
             MessageLookupByLibrary.simpleMessage("Use new addresses"),
         "useProxy": MessageLookupByLibrary.simpleMessage("Use proxy"),

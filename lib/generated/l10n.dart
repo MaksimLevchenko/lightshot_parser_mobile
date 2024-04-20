@@ -593,6 +593,39 @@ class S {
       args: [],
     );
   }
+
+  /// `Downloading Complete`
+  String get downloadingComplete {
+    return Intl.message(
+      'Downloading Complete',
+      name: 'downloadingComplete',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{images, plural, zero {} one{Successfully downloaded 1 image} other{{images} images have been downloaded successfully}}`
+  String successfullyDownloadedWantednumImages(num images) {
+    return Intl.plural(
+      images,
+      zero: '',
+      one: 'Successfully downloaded 1 image',
+      other: '$images images have been downloaded successfully',
+      name: 'successfullyDownloadedWantednumImages',
+      desc: '',
+      args: [images],
+    );
+  }
+
+  /// `Downloading`
+  String get downloadingImages {
+    return Intl.message(
+      'Downloading',
+      name: 'downloadingImages',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

@@ -31,7 +31,10 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m4(mask) => "Будь ласка, введіть адресу лише з a ${mask}";
 
-  static String m5(e) =>
+  static String m5(images) =>
+      "images, plural, zero{} one{Завантажено 1 зображення} few{Завантажено ${images} зображень} many{Завантажено ${images} зображень}}}";
+
+  static String m6(e) =>
       "Невідома помилка: ${e}. Будь ласка, зверніться до розробника";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
@@ -49,6 +52,10 @@ class MessageLookup extends MessageLookupByLibrary {
         "downloadErrorTryToChangeVpn": MessageLookupByLibrary.simpleMessage(
             "Помилка під час завантаження. Спробуйте змінити VPN"),
         "downloadedImagesOfWantednumofimages": m0,
+        "downloadingComplete":
+            MessageLookupByLibrary.simpleMessage("Завантаження завершено"),
+        "downloadingImages":
+            MessageLookupByLibrary.simpleMessage("Завантаження"),
         "enterTheNumberOfImagesToDownload":
             MessageLookupByLibrary.simpleMessage(
                 "Введіть кількість зображень для завантаження"),
@@ -119,7 +126,8 @@ class MessageLookup extends MessageLookupByLibrary {
             "Подивіться це зображення з Lightshot Parser!"),
         "startingAddress":
             MessageLookupByLibrary.simpleMessage("Початкова адреса"),
-        "unknownErrorEPleaseContactToTheDev": m5,
+        "successfullyDownloadedWantednumImages": m5,
+        "unknownErrorEPleaseContactToTheDev": m6,
         "useNewAddresses":
             MessageLookupByLibrary.simpleMessage("Використовувати нові адреси"),
         "useProxy":

@@ -21,7 +21,7 @@ class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'ru';
 
   static String m0(images, wantedNumOfImages) =>
-      "${Intl.plural(images, zero: 'Скачано 0 изображений из ${wantedNumOfImages}', one: 'Скачано 1 изображение из ${wantedNumOfImages}', few: 'Скачано ${images} изображения из ${wantedNumOfImages}', many: 'Скачано ${images} изображений из ${wantedNumOfImages}', other: 'Скачано ${images} изображений из ${wantedNumOfImages}')}";
+      "${Intl.plural(images, zero: 'Скачано 0 изображений из ${wantedNumOfImages}', one: 'Скачано ${images} изображение из ${wantedNumOfImages}', few: 'Скачано ${images} изображения из ${wantedNumOfImages}', many: 'Скачано ${images} изображений из ${wantedNumOfImages}', other: 'Скачано ${images} изображений из ${wantedNumOfImages}')}";
 
   static String m1(error) => "Ошибка: ${error}";
 
@@ -32,7 +32,10 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m4(mask) =>
       "Пожалуйста, введите адрес, состоящий только из ${mask}";
 
-  static String m5(e) =>
+  static String m5(images) =>
+      "images, plural, zero{Скачано 0 изображений} one{Скачано ${images} изображение} few{Скачано ${images} изображения} many{Скачано ${images} изображений}}}";
+
+  static String m6(e) =>
       "Неизвестная ошибка: ${e}. Пожалуйста, обратитесь к разработчику";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
@@ -50,6 +53,9 @@ class MessageLookup extends MessageLookupByLibrary {
         "downloadErrorTryToChangeVpn": MessageLookupByLibrary.simpleMessage(
             "Ошибка при загрузке. Попробуйте сменить VPN"),
         "downloadedImagesOfWantednumofimages": m0,
+        "downloadingComplete":
+            MessageLookupByLibrary.simpleMessage("Скачивание завершено"),
+        "downloadingImages": MessageLookupByLibrary.simpleMessage("Скачивание"),
         "enterTheNumberOfImagesToDownload":
             MessageLookupByLibrary.simpleMessage(
                 "Введите количество изображений для загрузки"),
@@ -120,7 +126,8 @@ class MessageLookup extends MessageLookupByLibrary {
             "Посмотрите это изображение из Lightshot Parser!"),
         "startingAddress":
             MessageLookupByLibrary.simpleMessage("Начальный адрес"),
-        "unknownErrorEPleaseContactToTheDev": m5,
+        "successfullyDownloadedWantednumImages": m5,
+        "unknownErrorEPleaseContactToTheDev": m6,
         "useNewAddresses":
             MessageLookupByLibrary.simpleMessage("Использовать новые адреса"),
         "useProxy": MessageLookupByLibrary.simpleMessage("Использовать прокси"),

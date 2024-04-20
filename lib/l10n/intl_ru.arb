@@ -12,7 +12,7 @@
   "@delete": {},
   "download": "Начать скачивание",
   "@download": {},
-  "downloadedImagesOfWantednumofimages": "{images, plural, zero{Скачано 0 изображений из {wantedNumOfImages}} one{Скачано 1 изображение из {wantedNumOfImages}} few{Скачано {images} изображения из {wantedNumOfImages}} many{Скачано {images} изображений из {wantedNumOfImages}} other{Скачано {images} изображений из {wantedNumOfImages}}}",
+  "downloadedImagesOfWantednumofimages": "{images, plural, zero{Скачано 0 изображений из {wantedNumOfImages}} one{Скачано {images} изображение из {wantedNumOfImages}} few{Скачано {images} изображения из {wantedNumOfImages}} many{Скачано {images} изображений из {wantedNumOfImages}} other{Скачано {images} изображений из {wantedNumOfImages}}}",
   "@downloadedImagesOfWantednumofimages": {
     "type": "int"
   },
@@ -95,5 +95,8 @@
   "enterTheProxyPassword": "Введите пароль прокси",
   "pleaseEnterTheProxyPassword": "Пожалуйста, введите пароль прокси",
   "pleaseEnterAValidIpAddress": "Пожалуйста, введите правильный IP-адрес",
-  "pleaseEnterAValidPort": "Пожалуйста, введите правильный порт"
+  "pleaseEnterAValidPort": "Пожалуйста, введите правильный порт",
+  "downloadingComplete": "Скачивание завершено",
+  "successfullyDownloadedWantednumImages": "images, plural, zero{Скачано 0 изображений} one{Скачано {images} изображение} few{Скачано {images} изображения} many{Скачано {images} изображений}}}",
+  "downloadingImages": "Скачивание"
 }
