@@ -76,8 +76,9 @@ class MainPage extends StatelessWidget {
       });
     }
 
-    for (numOfDownloadedImages;
-        numOfDownloadedImages < SettingsData.wantedNumOfImages;) {
+    int wantedNumOfImages = SettingsData.wantedNumOfImages;
+
+    for (numOfDownloadedImages; numOfDownloadedImages < wantedNumOfImages;) {
       if (downloading == false) break;
       try {
         downloadedPhoto = await parser.downloadOneImage(generator.current);
@@ -88,13 +89,13 @@ class MainPage extends StatelessWidget {
         parser.database.addUrlRecord(generator.current);
         generator.moveNext();
         setProgressBarState(() {
-          _progress = numOfDownloadedImages / SettingsData.wantedNumOfImages;
+          _progress = numOfDownloadedImages / wantedNumOfImages;
           _notificationService.showProgressBarNotification(
             id: 0,
             title: S.of(context).downloadingImages,
             body: S.of(context).downloadedImagesOfWantednumofimages(
-                numOfDownloadedImages, SettingsData.wantedNumOfImages),
-            maxValue: SettingsData.wantedNumOfImages,
+                numOfDownloadedImages, wantedNumOfImages),
+            maxValue: wantedNumOfImages,
             progress: numOfDownloadedImages,
             context: context,
           );
@@ -140,8 +141,9 @@ class MainPage extends StatelessWidget {
     if (context.mounted) {
       _notificationService.showNotification(
         title: S.of(context).downloadingComplete,
-        body: S.of(context).successfullyDownloadedWantednumImages(
-            SettingsData.wantedNumOfImages),
+        body: S
+            .of(context)
+            .successfullyDownloadedWantednumImages(wantedNumOfImages),
       );
     }
     return true;
