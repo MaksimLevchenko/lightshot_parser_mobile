@@ -57,26 +57,28 @@ class MainPage extends StatelessWidget {
     setProgressBarState(() {
       _progress = 0;
       numOfDownloadedImages = 0;
-      _notificationService.showProgressBarNotification(
-        id: 0,
-        title: S.of(context).downloadingImages,
-        body: S.of(context).downloadedImagesOfWantednumofimages(
-            numOfDownloadedImages, SettingsData.wantedNumOfImages),
-        maxValue: SettingsData.wantedNumOfImages,
-        progress: 0,
-        context: context,
-      );
+      if (Platform.isAndroid) {
+        _notificationService.showProgressBarNotification(
+          id: 0,
+          title: S.of(context).downloadingImages,
+          body: S.of(context).downloadedImagesOfWantednumofimages(
+              numOfDownloadedImages, SettingsData.wantedNumOfImages),
+          maxValue: SettingsData.wantedNumOfImages,
+          progress: 0,
+          context: context,
+        );
+      }
     });
 
     void closeProgress() {
       setProgressBarState(() {
         downloading = false;
         _progress = 0;
-        _notificationService.cancelNotification(0);
+        if (Platform.isAndroid) _notificationService.cancelNotification(0);
       });
     }
 
-    int wantedNumOfImages = SettingsData.wantedNumOfImages;
+    final int wantedNumOfImages = SettingsData.wantedNumOfImages;
 
     for (numOfDownloadedImages; numOfDownloadedImages < wantedNumOfImages;) {
       if (downloading == false) break;
@@ -90,15 +92,17 @@ class MainPage extends StatelessWidget {
         generator.moveNext();
         setProgressBarState(() {
           _progress = numOfDownloadedImages / wantedNumOfImages;
-          _notificationService.showProgressBarNotification(
-            id: 0,
-            title: S.of(context).downloadingImages,
-            body: S.of(context).downloadedImagesOfWantednumofimages(
-                numOfDownloadedImages, wantedNumOfImages),
-            maxValue: wantedNumOfImages,
-            progress: numOfDownloadedImages,
-            context: context,
-          );
+          if (Platform.isAndroid) {
+            _notificationService.showProgressBarNotification(
+              id: 0,
+              title: S.of(context).downloadingImages,
+              body: S.of(context).downloadedImagesOfWantednumofimages(
+                  numOfDownloadedImages, wantedNumOfImages),
+              maxValue: wantedNumOfImages,
+              progress: numOfDownloadedImages,
+              context: context,
+            );
+          }
         });
       } on CouldntConnectException {
         log('Coudnt connect to server');
@@ -118,7 +122,7 @@ class MainPage extends StatelessWidget {
         setProgressBarState(() {
           downloading = false;
           _progress = 0;
-          _notificationService.cancelNotification(0);
+          if (Platform.isAndroid) _notificationService.cancelNotification(0);
         });
         return false;
       } on NoPhotoException {
@@ -146,12 +150,19 @@ class MainPage extends StatelessWidget {
     if (downloading) await Future.delayed(const Duration(milliseconds: 500));
     closeProgress();
     if (context.mounted) {
-      _notificationService.showNotification(
-        title: S.of(context).downloadingComplete,
-        body: S
-            .of(context)
-            .successfullyDownloadedWantednumImages(wantedNumOfImages),
+      ScaffoldMessenger.of(context).showSnackBar(
+        getSnackBar(
+          message: S.of(context).downloadingComplete,
+        ),
       );
+      if (Platform.isAndroid) {
+        _notificationService.showNotification(
+          title: S.of(context).downloadingComplete,
+          body: S
+              .of(context)
+              .successfullyDownloadedWantednumImages(wantedNumOfImages),
+        );
+      }
     }
     return true;
   }
