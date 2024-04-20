@@ -1,7 +1,6 @@
 // ignore_for_file: must_be_immutable, invalid_use_of_protected_member
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math' hide log;
 import 'dart:developer' show log;
@@ -14,56 +13,42 @@ import 'package:lightshot_parser_mobile/pages/settings_page.dart';
 import 'package:lightshot_parser_mobile/parser/parser.dart';
 import 'package:lightshot_parser_mobile/parser/parser_db.dart';
 import 'package:lightshot_parser_mobile/services/notification_service.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:lightshot_parser_mobile/parser/url_generator.dart' as gen;
 import "package:dio/dio.dart";
+import 'package:lightshot_parser_mobile/data/settings_data.dart'
+    show SettingsData;
 
 const _imageSize = 300.0;
 bool needToUpdateGallery = false;
 var cancelToken = CancelToken();
 
 class MainPage extends StatelessWidget {
-  final Future<Directory> _appDocDir = getApplicationDocumentsDirectory();
-  final Future<Directory?> _downloadDirectoryPath =
-      getApplicationCacheDirectory();
-  late Directory _photosDirectory;
-  late Directory _databaseDirectory;
-  late Directory _settingsDirectory;
   bool downloading = false;
   double _progress = 0;
   final StreamController<File> _imagesStream =
       StreamController<File>.broadcast();
 
-  late int _wantedNumOfImages;
-  late bool _newAddresses;
-  late String _startingUrl;
-  late bool _useProxy;
-  late bool _useProxyAuth;
-  late String _proxyAddress;
-  late String _proxyPort;
-  late String _proxyLogin;
-  late String _proxyPassword;
   final _notificationService = NotificationService();
 
   MainPage({super.key});
 
   Future<bool> _beginDownloading(
       BuildContext context, Function setProgressBarState) async {
-    _loadSettings(_settingsDirectory);
-    var generator = _startingUrl == ''
-        ? gen.GetRandomUrl(_newAddresses)
-        : gen.GetNextUrl(_newAddresses, _startingUrl);
+    var generator = SettingsData.startingUrl == ''
+        ? gen.GetRandomUrl(SettingsData.newAddresses)
+        : gen.GetNextUrl(SettingsData.newAddresses, SettingsData.startingUrl);
     String? proxy;
-    if (_useProxy) {
-      if (_useProxyAuth) {
-        proxy = 'PROXY $_proxyLogin:$_proxyPassword@$_proxyAddress:$_proxyPort';
+    if (SettingsData.useProxy) {
+      if (SettingsData.useProxyAuth) {
+        proxy =
+            'PROXY ${SettingsData.proxyLogin}:${SettingsData.proxyPassword}@${SettingsData.proxyAddress}:${SettingsData.proxyPort}';
       } else {
-        proxy = 'PROXY $_proxyAddress:$_proxyPort';
+        proxy = 'PROXY ${SettingsData.proxyAddress}:${SettingsData.proxyPort}';
       }
     }
     LightshotParser parser = LightshotParser(
-        photosDirectory: _photosDirectory,
-        databaseDirectory: _databaseDirectory,
+        photosDirectory: SettingsData.photosDirectory,
+        databaseDirectory: SettingsData.databaseDirectory,
         proxy: proxy);
     downloading = true;
     cancelToken = CancelToken();
@@ -76,12 +61,13 @@ class MainPage extends StatelessWidget {
         id: 0,
         title: S.of(context).downloadingImages,
         body: S.of(context).downloadedImagesOfWantednumofimages(
-            numOfDownloadedImages, _wantedNumOfImages),
-        maxValue: _wantedNumOfImages,
+            numOfDownloadedImages, SettingsData.wantedNumOfImages),
+        maxValue: SettingsData.wantedNumOfImages,
         progress: 0,
         context: context,
       );
     });
+
     void closeProgress() {
       setProgressBarState(() {
         downloading = false;
@@ -90,7 +76,8 @@ class MainPage extends StatelessWidget {
       });
     }
 
-    for (numOfDownloadedImages; numOfDownloadedImages < _wantedNumOfImages;) {
+    for (numOfDownloadedImages;
+        numOfDownloadedImages < SettingsData.wantedNumOfImages;) {
       if (downloading == false) break;
       try {
         downloadedPhoto = await parser.downloadOneImage(generator.current);
@@ -100,6 +87,18 @@ class MainPage extends StatelessWidget {
         }
         parser.database.addUrlRecord(generator.current);
         generator.moveNext();
+        setProgressBarState(() {
+          _progress = numOfDownloadedImages / SettingsData.wantedNumOfImages;
+          _notificationService.showProgressBarNotification(
+            id: 0,
+            title: S.of(context).downloadingImages,
+            body: S.of(context).downloadedImagesOfWantednumofimages(
+                numOfDownloadedImages, SettingsData.wantedNumOfImages),
+            maxValue: SettingsData.wantedNumOfImages,
+            progress: numOfDownloadedImages,
+            context: context,
+          );
+        });
       } on CouldntConnectException {
         log('Coudnt connect to server');
         if (context.mounted) {
@@ -135,27 +134,14 @@ class MainPage extends StatelessWidget {
         closeProgress();
         return false;
       }
-      setProgressBarState(() {
-        _progress = numOfDownloadedImages / _wantedNumOfImages;
-        _notificationService.showProgressBarNotification(
-          id: 0,
-          title: S.of(context).downloadingImages,
-          body: S.of(context).downloadedImagesOfWantednumofimages(
-              numOfDownloadedImages, _wantedNumOfImages),
-          maxValue: _wantedNumOfImages,
-          progress: numOfDownloadedImages,
-          context: context,
-        );
-      });
     }
     if (downloading) await Future.delayed(const Duration(milliseconds: 500));
     closeProgress();
     if (context.mounted) {
       _notificationService.showNotification(
         title: S.of(context).downloadingComplete,
-        body: S
-            .of(context)
-            .successfullyDownloadedWantednumImages(_wantedNumOfImages),
+        body: S.of(context).successfullyDownloadedWantednumImages(
+            SettingsData.wantedNumOfImages),
       );
     }
     return true;
@@ -164,81 +150,6 @@ class MainPage extends StatelessWidget {
   void cancelDownload() {
     downloading = false;
     cancelToken.cancel();
-  }
-
-  void _loadSettings(Directory settingsDir) {
-    final File file =
-        File('${settingsDir.path}/lightshot_parser/settings.json');
-    if (file.existsSync()) {
-      final String jsonString = file.readAsStringSync();
-      final Map<String, dynamic> settings = json.decode(jsonString);
-      try {
-        _wantedNumOfImages = (settings['numOfImages']) ?? 10;
-        _newAddresses = settings['newAddresses'] ?? false;
-        _startingUrl = settings['startingUrl'] ?? '';
-        _useProxy = settings['useProxy'] ?? false;
-        _useProxyAuth = settings['useProxyAuth'] ?? false;
-        _proxyAddress = settings['proxyAddress'] ?? '';
-        _proxyPort = settings['proxyPort'] ?? '';
-        _proxyLogin = settings['proxyLogin'] ?? '';
-        _proxyPassword = settings['proxyPassword'] ?? '';
-      } on Exception catch (e) {
-        log('Error while loading settings: $e');
-        _wantedNumOfImages = 10;
-        _newAddresses = false;
-        _startingUrl = '';
-        _useProxy = settings['useProxy'] ?? false;
-        _useProxyAuth = settings['useProxyAuth'] ?? false;
-        _proxyAddress = settings['proxyAddress'] ?? '';
-        _proxyPort = settings['proxyPort'] ?? '';
-        _proxyLogin = settings['proxyLogin'] ?? '';
-        _proxyPassword = settings['proxyPassword'] ?? '';
-      }
-    } else {
-      _wantedNumOfImages = 10;
-      _newAddresses = false;
-      _startingUrl = '';
-      _useProxy = false;
-      _useProxyAuth = false;
-      _proxyAddress = '';
-      _proxyPort = '';
-      _proxyLogin = '';
-      _proxyPassword = '';
-    }
-  }
-
-  Widget _createDatabaseAndFindFolders(Function child) {
-    return FutureBuilder(
-      future: Future.wait([_downloadDirectoryPath, _appDocDir]),
-      builder: (BuildContext context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-        if (snapshot.hasError) {
-          return Center(
-            child: Text(S.of(context).errorError(snapshot.error!)),
-          );
-        }
-        if (snapshot.connectionState == ConnectionState.done) {
-          _databaseDirectory = snapshot.data![1]!;
-          _photosDirectory = Directory(snapshot.data![0]!.path + r'/Photos');
-          DataBase(
-            databaseFileDirectory: _databaseDirectory,
-            photosDirectory: _photosDirectory,
-          );
-          log('${_databaseDirectory.path} is database path');
-          _settingsDirectory = snapshot.data![1]!;
-          _loadSettings(_settingsDirectory);
-          return child(context);
-        }
-
-        return Center(
-          child: Text(S.of(context).noDownloadFolderFound),
-        );
-      },
-    );
   }
 
   Widget _mainScreen(BuildContext context) {
@@ -305,8 +216,9 @@ class MainPage extends StatelessWidget {
                             Text(S
                                 .of(context)
                                 .downloadedImagesOfWantednumofimages(
-                                    (_progress * _wantedNumOfImages).round(),
-                                    _wantedNumOfImages)),
+                                    (_progress * SettingsData.wantedNumOfImages)
+                                        .round(),
+                                    SettingsData.wantedNumOfImages)),
                             const SizedBox(height: 20)
                           ],
                         )
@@ -343,11 +255,7 @@ class MainPage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (BuildContext context) => SettingsPage(
-                          photoDirectory: _photosDirectory,
-                          databaseDirectory: _databaseDirectory,
-                          settingsDirectory: _settingsDirectory,
-                        )),
+                    builder: (BuildContext context) => SettingsPage()),
               ).then((_) {
                 needToUpdateGallery
                     ? _galleryStatefulKey.currentState?.setState(() {
@@ -363,9 +271,7 @@ class MainPage extends StatelessWidget {
         title: Text(S.of(context).mainTitle),
         centerTitle: true,
       ),
-      body: _createDatabaseAndFindFolders(
-        _mainScreen,
-      ),
+      body: _mainScreen(context),
     );
   }
 }
