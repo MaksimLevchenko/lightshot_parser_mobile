@@ -33,7 +33,7 @@ class SplashScreen extends StatelessWidget {
                 children: <Widget>[
                   ConstrainedBox(
                     constraints: BoxConstraints.loose(Size(200, 200)),
-                    child: Image.asset('assets/icon/logo.png'),
+                    child: Image.asset('assets/icons/logo.png'),
                   ),
                   const CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
