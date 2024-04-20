@@ -424,6 +424,7 @@ class SettingsPage extends StatelessWidget {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
+        padding: EdgeInsets.only(top: 10),
         child: SafeArea(
           minimum: const EdgeInsets.all(16),
           child: Form(
