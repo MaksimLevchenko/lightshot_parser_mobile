@@ -50,6 +50,9 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Подтвердите удаление"),
         "delete": MessageLookupByLibrary.simpleMessage("Удалить"),
         "download": MessageLookupByLibrary.simpleMessage("Начать скачивание"),
+        "downloadErrorMakeSureYouUseHttpProxy":
+            MessageLookupByLibrary.simpleMessage(
+                "Ошибка при загрузке. Убедитесь, что Вы используете HTTP-прокси."),
         "downloadErrorTryToChangeVpn": MessageLookupByLibrary.simpleMessage(
             "Ошибка при загрузке. Попробуйте сменить VPN"),
         "downloadedImagesOfWantednumofimages": m0,

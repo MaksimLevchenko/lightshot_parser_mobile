@@ -98,5 +98,6 @@
   "pleaseEnterAValidPort": "Будь ласка, введіть правильний порт",
   "downloadingComplete": "Завантаження завершено",
   "successfullyDownloadedWantednumImages": "{images, plural, zero{} one{Завантажено 1 зображення} few{Завантажено {images} зображень} many{Завантажено {images} зображень} other{}}",
-  "downloadingImages": "Завантаження"
+  "downloadingImages": "Завантаження",
+  "downloadErrorMakeSureYouUseHttpProxy": "Помилка під час завантаження. Переконайтеся, що ви використовуєте HTTP-проксі"
 }

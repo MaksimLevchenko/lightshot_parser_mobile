@@ -101,5 +101,6 @@
   "@successfullyDownloadedWantednumImages": {
     "type": "int"
   },
-  "downloadingImages": "Скачивание"
+  "downloadingImages": "Скачивание",
+  "downloadErrorMakeSureYouUseHttpProxy": "Ошибка при загрузке. Убедитесь, что Вы используете HTTP-прокси."
 }

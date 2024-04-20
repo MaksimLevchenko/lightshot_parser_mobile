@@ -98,5 +98,6 @@
   "pleaseEnterAValidPort": "Please enter a valid port",
   "downloadingComplete": "Downloading Complete",
   "successfullyDownloadedWantednumImages": "{images, plural, zero {} one{Successfully downloaded 1 image} other{{images} images have been downloaded successfully}}",
-  "downloadingImages": "Downloading"
+  "downloadingImages": "Downloading",
+  "downloadErrorMakeSureYouUseHttpProxy": "Download error. Make sure you use HTTP proxy."
 }

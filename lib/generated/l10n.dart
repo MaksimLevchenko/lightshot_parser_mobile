@@ -626,6 +626,16 @@ class S {
       args: [],
     );
   }
+
+  /// `Download error. Make sure you use HTTP proxy.`
+  String get downloadErrorMakeSureYouUseHttpProxy {
+    return Intl.message(
+      'Download error. Make sure you use HTTP proxy.',
+      name: 'downloadErrorMakeSureYouUseHttpProxy',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

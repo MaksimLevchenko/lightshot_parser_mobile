@@ -103,10 +103,17 @@ class MainPage extends StatelessWidget {
       } on CouldntConnectException {
         log('Coudnt connect to server');
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(getSnackBar(
-            message: S.of(context).downloadErrorTryToChangeVpn,
-            color: Colors.red,
-          ));
+          if (!SettingsData.useProxy) {
+            ScaffoldMessenger.of(context).showSnackBar(getSnackBar(
+              message: S.of(context).downloadErrorTryToChangeVpn,
+              color: Colors.red,
+            ));
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(getSnackBar(
+              message: S.of(context).downloadErrorMakeSureYouUseHttpProxy,
+              color: Colors.red,
+            ));
+          }
         }
         setProgressBarState(() {
           downloading = false;

@@ -48,6 +48,9 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Confirm deletion"),
         "delete": MessageLookupByLibrary.simpleMessage("Delete"),
         "download": MessageLookupByLibrary.simpleMessage("Begin downloading"),
+        "downloadErrorMakeSureYouUseHttpProxy":
+            MessageLookupByLibrary.simpleMessage(
+                "Download error. Make sure you use HTTP proxy."),
         "downloadErrorTryToChangeVpn": MessageLookupByLibrary.simpleMessage(
             "Download error. Try to change VPN"),
         "downloadedImagesOfWantednumofimages": m0,
