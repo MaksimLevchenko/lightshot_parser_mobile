@@ -20,7 +20,7 @@ class NotificationService {
     await notificationsPlugin.initialize(initializationSettings,
         onDidReceiveNotificationResponse: ((details) {
       log('cancelNotification');
-      onRecieveNotificationResponce();
+      // onRecieveNotificationResponce();
     }));
   }
 
