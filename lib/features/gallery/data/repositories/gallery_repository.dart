@@ -42,28 +42,28 @@ class GalleryRepository {
     }
   }
 
-  Future<bool> isUrlProcessed(String id) async {
+  Future<bool> isProcessed(String trackingKey) async {
     if (_trackedIds.isEmpty) {
       _trackedIds = await _localDataSource.loadTrackedIds(
         _settingsRepository.storagePaths,
       );
     }
-    return _trackedIds.contains(id);
+    return _trackedIds.contains(trackingKey);
   }
 
-  Future<void> markUrlProcessed(String id) async {
-    if (_trackedIds.add(id)) {
+  Future<void> markProcessed(String trackingKey) async {
+    if (_trackedIds.add(trackingKey)) {
       await _localDataSource.appendTrackedId(
         _settingsRepository.storagePaths,
-        id,
+        trackingKey,
       );
     }
   }
 
   Future<void> addDownloadedFile({
-    required String id,
+    required GalleryItem item,
   }) async {
-    await markUrlProcessed(id);
+    await markProcessed(item.trackingKey);
     await refresh();
   }
 
@@ -84,7 +84,7 @@ class GalleryRepository {
 
   Future<void> rebuildIndex() async {
     final items = await load();
-    _trackedIds = items.map((item) => item.id).toSet();
+    _trackedIds = items.map((item) => item.trackingKey).toSet();
     await _localDataSource.overwriteTrackedIds(
       _settingsRepository.storagePaths,
       _trackedIds,
@@ -111,6 +111,7 @@ class GalleryRepository {
   }
 
   Future<void> dispose() async {
+    await _localDataSource.close();
     await _itemsController.close();
   }
 }

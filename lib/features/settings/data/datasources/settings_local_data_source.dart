@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
+import 'package:lightshot_parser_mobile/core/logging/app_logger.dart';
 import 'package:lightshot_parser_mobile/core/models/storage_paths.dart';
 import 'package:lightshot_parser_mobile/features/settings/domain/models/app_settings.dart';
 
@@ -35,7 +36,13 @@ class SettingsLocalDataSource {
       final jsonString = await file.readAsString();
       final jsonMap = json.decode(jsonString) as Map<String, dynamic>;
       return AppSettings.fromJson(jsonMap);
-    } on Object {
+    } on Object catch (error, stackTrace) {
+      AppLogger.warning(
+        'Failed to read settings file, fallback to defaults',
+        scope: 'settings',
+        error: error,
+        stackTrace: stackTrace,
+      );
       return const AppSettings.initial();
     }
   }

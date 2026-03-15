@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lightshot_parser_mobile/core/models/storage_paths.dart';
-import 'package:lightshot_parser_mobile/features/download/data/datasources/lightshot_remote_data_source.dart';
 import 'package:lightshot_parser_mobile/features/download/data/repositories/download_repository.dart';
+import 'package:lightshot_parser_mobile/features/download/data/sources/download_source_engine.dart';
 import 'package:lightshot_parser_mobile/features/download/domain/models/download_progress.dart';
 import 'package:lightshot_parser_mobile/features/download/domain/models/download_request.dart';
 import 'package:lightshot_parser_mobile/features/download/domain/models/download_update.dart';
@@ -72,7 +72,7 @@ class StubNotificationService extends NotificationService {
 class StubDownloadRepository extends DownloadRepository {
   StubDownloadRepository()
       : super(
-          remoteDataSource: LightshotRemoteDataSource(),
+          sources: const <DownloadSourceEngine>[],
           galleryRepository: GalleryRepository(
             settingsRepository: SettingsRepository(
               TestSettingsLocalDataSource(
@@ -125,7 +125,8 @@ void main() {
     test('save emits failure when datasource throws', () async {
       final storageContext = await createTestStorageContext();
       final settingsRepository = SettingsRepository(
-        FailingSettingsLocalDataSource(storagePaths: storageContext.storagePaths),
+        FailingSettingsLocalDataSource(
+            storagePaths: storageContext.storagePaths),
       );
       await settingsRepository.ensureInitialized();
       final cubit = SettingsCubit(settingsRepository);
@@ -140,13 +141,15 @@ void main() {
   });
 
   group('GalleryCubit', () {
-    test('rebuildIndex emits typed feedback and clearFeedback resets it', () async {
+    test('rebuildIndex emits typed feedback and clearFeedback resets it',
+        () async {
       final storageContext = await createTestStorageContext();
       final settingsRepository = SettingsRepository(
         TestSettingsLocalDataSource(storagePaths: storageContext.storagePaths),
       );
       await settingsRepository.ensureInitialized();
-      await File('${storageContext.storagePaths.photosDirectory.path}/img001.jpg')
+      await File(
+              '${storageContext.storagePaths.photosDirectory.path}/img001.jpg')
           .writeAsString('binary-data');
       final repository = GalleryRepository(
         settingsRepository: settingsRepository,
@@ -169,7 +172,8 @@ void main() {
   });
 
   group('DownloadBloc', () {
-    test('completed updates drive final completed state and notification', () async {
+    test('completed updates drive final completed state and notification',
+        () async {
       final storageContext = await createTestStorageContext();
       final settingsRepository = SettingsRepository(
         TestSettingsLocalDataSource(storagePaths: storageContext.storagePaths),

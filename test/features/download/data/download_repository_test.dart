@@ -3,19 +3,64 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lightshot_parser_mobile/core/errors/app_exception.dart';
+import 'package:lightshot_parser_mobile/features/download/data/datasources/imgur_remote_data_source.dart';
 import 'package:lightshot_parser_mobile/features/download/data/datasources/lightshot_remote_data_source.dart';
 import 'package:lightshot_parser_mobile/features/download/data/repositories/download_repository.dart';
+import 'package:lightshot_parser_mobile/features/download/data/sources/imgur_download_source.dart';
+import 'package:lightshot_parser_mobile/features/download/data/sources/lightshot_download_source.dart';
 import 'package:lightshot_parser_mobile/features/download/domain/models/download_request.dart';
+import 'package:lightshot_parser_mobile/features/download/domain/models/download_source.dart';
 import 'package:lightshot_parser_mobile/features/download/domain/models/download_update.dart';
 import 'package:lightshot_parser_mobile/features/gallery/data/datasources/gallery_local_data_source.dart';
 import 'package:lightshot_parser_mobile/features/gallery/data/repositories/gallery_repository.dart';
 import 'package:lightshot_parser_mobile/features/settings/data/repositories/settings_repository.dart';
+import 'package:lightshot_parser_mobile/features/settings/domain/models/imgur_source_settings.dart';
+import 'package:lightshot_parser_mobile/features/settings/domain/models/lightshot_source_settings.dart';
 import 'package:lightshot_parser_mobile/features/settings/domain/models/proxy_settings.dart';
 
 import '../../../support/test_storage.dart';
 
 class FakeLightshotRemoteDataSource extends LightshotRemoteDataSource {
   FakeLightshotRemoteDataSource({
+    required this.onResolveImageUrl,
+    required this.onDownloadImage,
+  });
+
+  final Future<String> Function(Uri pageUrl, ProxySettings proxySettings)
+      onResolveImageUrl;
+  final Future<File> Function(
+    String imageUrl,
+    String targetPath,
+    CancelToken cancelToken,
+    ProxySettings proxySettings,
+  ) onDownloadImage;
+
+  @override
+  Future<String> resolveImageUrl({
+    required Uri pageUrl,
+    required ProxySettings proxySettings,
+  }) {
+    return onResolveImageUrl(pageUrl, proxySettings);
+  }
+
+  @override
+  Future<File> downloadImage({
+    required String imageUrl,
+    required String targetPath,
+    required CancelToken cancelToken,
+    required ProxySettings proxySettings,
+  }) {
+    return onDownloadImage(
+      imageUrl,
+      targetPath,
+      cancelToken,
+      proxySettings,
+    );
+  }
+}
+
+class FakeImgurRemoteDataSource extends ImgurRemoteDataSource {
+  FakeImgurRemoteDataSource({
     required this.onResolveImageUrl,
     required this.onDownloadImage,
   });
@@ -79,9 +124,13 @@ void main() {
   DownloadRequest buildRequest() {
     return const DownloadRequest(
       targetCount: 1,
-      useNewAddresses: false,
-      useRandomAddress: false,
-      startingUrl: 'aaaaaa',
+      source: DownloadSource.lightshot,
+      lightshotSettings: LightshotSourceSettings(
+        useNewAddresses: false,
+        useRandomAddress: false,
+        startingId: 'aaaaaa',
+      ),
+      imgurSettings: ImgurSourceSettings.initial(),
       proxySettings: ProxySettings.initial(),
     );
   }
@@ -98,7 +147,7 @@ void main() {
       },
     );
     final repository = DownloadRepository(
-      remoteDataSource: remoteDataSource,
+      sources: [LightshotDownloadSource(remoteDataSource)],
       galleryRepository: galleryRepository,
     );
 
@@ -115,7 +164,13 @@ void main() {
     final items = await galleryRepository.load();
     expect(items, hasLength(1));
     expect(items.single.id, 'aaaaaa');
-    expect(await galleryRepository.isUrlProcessed('aaaaaa'), isTrue);
+    expect(items.single.source, DownloadSource.lightshot);
+    expect(
+      await galleryRepository.isProcessed(
+        buildTrackingKey(DownloadSource.lightshot, 'aaaaaa'),
+      ),
+      isTrue,
+    );
   });
 
   test('no-photo page is marked processed and generator continues', () async {
@@ -134,14 +189,19 @@ void main() {
       },
     );
     final repository = DownloadRepository(
-      remoteDataSource: remoteDataSource,
+      sources: [LightshotDownloadSource(remoteDataSource)],
       galleryRepository: galleryRepository,
     );
 
     final updates = await repository.start(buildRequest()).toList();
 
     expect(updates.last.type, DownloadUpdateType.completed);
-    expect(await galleryRepository.isUrlProcessed('aaaaaa'), isTrue);
+    expect(
+      await galleryRepository.isProcessed(
+        buildTrackingKey(DownloadSource.lightshot, 'aaaaaa'),
+      ),
+      isTrue,
+    );
     final items = await galleryRepository.load();
     expect(items.single.id, 'aaaaab');
   });
@@ -155,7 +215,7 @@ void main() {
       },
     );
     final repository = DownloadRepository(
-      remoteDataSource: remoteDataSource,
+      sources: [LightshotDownloadSource(remoteDataSource)],
       galleryRepository: galleryRepository,
     );
 
@@ -168,8 +228,47 @@ void main() {
         DownloadUpdateType.failed,
       ],
     );
-    expect(await galleryRepository.isUrlProcessed('aaaaaa'), isFalse);
+    expect(
+      await galleryRepository.isProcessed(
+        buildTrackingKey(DownloadSource.lightshot, 'aaaaaa'),
+      ),
+      isFalse,
+    );
     expect(await galleryRepository.load(), isEmpty);
+  });
+
+  test('missing downloaded image is marked processed and generator continues',
+      () async {
+    final remoteDataSource = FakeLightshotRemoteDataSource(
+      onResolveImageUrl: (pageUrl, _) async =>
+          'https://image.example/${pageUrl.pathSegments.first}.jpg',
+      onDownloadImage: (imageUrl, targetPath, _, __) async {
+        if (imageUrl.endsWith('/aaaaaa.jpg')) {
+          throw const NoPhotoException();
+        }
+
+        final file = File(targetPath);
+        await file.create(recursive: true);
+        await file.writeAsString('binary-data');
+        return file;
+      },
+    );
+    final repository = DownloadRepository(
+      sources: [LightshotDownloadSource(remoteDataSource)],
+      galleryRepository: galleryRepository,
+    );
+
+    final updates = await repository.start(buildRequest()).toList();
+
+    expect(updates.last.type, DownloadUpdateType.completed);
+    expect(
+      await galleryRepository.isProcessed(
+        buildTrackingKey(DownloadSource.lightshot, 'aaaaaa'),
+      ),
+      isTrue,
+    );
+    final items = await galleryRepository.load();
+    expect(items.single.id, 'aaaaab');
   });
 
   test('cancel emits cancelled update', () async {
@@ -188,7 +287,7 @@ void main() {
       },
     );
     final repository = DownloadRepository(
-      remoteDataSource: remoteDataSource,
+      sources: [LightshotDownloadSource(remoteDataSource)],
       galleryRepository: galleryRepository,
     );
 
@@ -198,5 +297,58 @@ void main() {
     final updates = await updatesFuture;
 
     expect(updates.last.type, DownloadUpdateType.cancelled);
+  });
+
+  test('imgur successful download uses source-scoped tracking key', () async {
+    final remoteDataSource = FakeImgurRemoteDataSource(
+      onResolveImageUrl: (pageUrl, _) async =>
+          'https://i.imgur.com/${pageUrl.pathSegments.first}.png',
+      onDownloadImage: (imageUrl, targetPath, _, __) async {
+        final file = File(targetPath);
+        await file.create(recursive: true);
+        await file.writeAsString('binary-data');
+        return file;
+      },
+    );
+    final repository = DownloadRepository(
+      sources: [ImgurDownloadSource(remoteDataSource)],
+      galleryRepository: galleryRepository,
+    );
+    const request = DownloadRequest(
+      targetCount: 1,
+      source: DownloadSource.imgur,
+      lightshotSettings: LightshotSourceSettings.initial(),
+      imgurSettings: ImgurSourceSettings(
+        idLength: 5,
+        useRandomAddress: false,
+        startingId: 'aaaaa',
+      ),
+      proxySettings: ProxySettings.initial(),
+    );
+
+    final updates = await repository.start(request).toList();
+
+    expect(updates.last.type, DownloadUpdateType.completed);
+    expect(
+      await galleryRepository.isProcessed(
+        buildTrackingKey(DownloadSource.imgur, 'aaaaa'),
+      ),
+      isTrue,
+    );
+    final items = await galleryRepository.load();
+    expect(items.single.source, DownloadSource.imgur);
+    expect(items.single.id, 'aaaaa');
+  });
+
+  test('lightshot and imgur tracking do not conflict', () async {
+    await galleryRepository.markProcessed(
+      buildTrackingKey(DownloadSource.lightshot, 'aaaaa'),
+    );
+    expect(
+      await galleryRepository.isProcessed(
+        buildTrackingKey(DownloadSource.imgur, 'aaaaa'),
+      ),
+      isFalse,
+    );
   });
 }

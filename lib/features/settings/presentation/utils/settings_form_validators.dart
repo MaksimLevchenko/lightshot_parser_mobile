@@ -48,6 +48,30 @@ class SettingsFormValidators {
     return null;
   }
 
+  static String? validateImgurStartingId(
+    BuildContext context, {
+    required bool useRandomAddress,
+    required int idLength,
+    required String? value,
+  }) {
+    if (useRandomAddress) {
+      return null;
+    }
+    final normalizedValue = value ?? '';
+    if (normalizedValue.isEmpty) {
+      return S.of(context).pleaseEnterTheStartingAddress;
+    }
+    if (normalizedValue.length != idLength) {
+      return S.of(context).pleaseEnterAMaxLengthAddress;
+    }
+    if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(normalizedValue)) {
+      return S.of(context).pleaseEnterAAddressWithOnlyAMask(
+            '(a-z, A-Z, 0-9)',
+          );
+    }
+    return null;
+  }
+
   static String? validateProxyAddress(BuildContext context, String? value) {
     final normalizedValue = value ?? '';
     final addressMask =

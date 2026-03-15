@@ -3,33 +3,26 @@ import 'dart:io';
 import 'package:lightshot_parser_mobile/core/errors/app_exception.dart';
 import 'package:lightshot_parser_mobile/core/models/storage_paths.dart';
 import 'package:lightshot_parser_mobile/features/gallery/domain/models/gallery_item.dart';
+import 'package:lightshot_parser_mobile/features/gallery/data/datasources/gallery_database_service.dart';
 
 class GalleryLocalDataSource {
-  Future<File> _dbFile(StoragePaths paths) async {
-    final file = File('${paths.databaseDirectory.path}/db.txt');
-    await file.create(recursive: true);
-    return file;
-  }
+  GalleryLocalDataSource({
+    GalleryDatabaseService? databaseService,
+  }) : _databaseService = databaseService ?? GalleryDatabaseService();
+
+  final GalleryDatabaseService _databaseService;
 
   Future<Set<String>> loadTrackedIds(StoragePaths paths) async {
-    final file = await _dbFile(paths);
-    final lines = await file.readAsLines();
-    return lines.where((line) => line.trim().isNotEmpty).toSet();
+    return _databaseService.loadTrackedIds(paths);
   }
 
   Future<void> overwriteTrackedIds(
       StoragePaths paths, Iterable<String> ids) async {
-    final file = await _dbFile(paths);
-    final sortedIds = ids.toList()..sort();
-    await file.writeAsString(
-      sortedIds.isEmpty ? '' : '${sortedIds.join('\n')}\n',
-      mode: FileMode.write,
-    );
+    await _databaseService.replaceTrackedIds(paths, ids);
   }
 
   Future<void> appendTrackedId(StoragePaths paths, String id) async {
-    final file = await _dbFile(paths);
-    await file.writeAsString('$id\n', mode: FileMode.append);
+    await _databaseService.insertTrackedId(paths, id);
   }
 
   Future<List<GalleryItem>> loadItems(StoragePaths paths) async {
@@ -67,5 +60,9 @@ class GalleryLocalDataSource {
     required String targetPath,
   }) async {
     await File(sourcePath).copy(targetPath);
+  }
+
+  Future<void> close() async {
+    await _databaseService.close();
   }
 }

@@ -27,7 +27,8 @@ class GalleryCubit extends Cubit<GalleryState> {
     emit(state.copyWith(isLoading: true, clearFeedback: true));
     try {
       await _galleryRepository.refresh();
-    } on Object catch (error) {
+    } on Object catch (error, stackTrace) {
+      addError(error, stackTrace);
       emit(
         state.copyWith(
           isLoading: false,
@@ -47,7 +48,8 @@ class GalleryCubit extends Cubit<GalleryState> {
           items: const [],
         ),
       );
-    } on Object catch (error) {
+    } on Object catch (error, stackTrace) {
+      addError(error, stackTrace);
       emit(
         state.copyWith(
           isLoading: false,
@@ -67,7 +69,8 @@ class GalleryCubit extends Cubit<GalleryState> {
           feedback: GalleryFeedback.reindexed,
         ),
       );
-    } on Object catch (error) {
+    } on Object catch (error, stackTrace) {
+      addError(error, stackTrace);
       emit(
         state.copyWith(
           isLoading: false,

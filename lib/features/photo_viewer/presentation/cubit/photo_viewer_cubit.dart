@@ -35,7 +35,8 @@ class PhotoViewerCubit extends Cubit<PhotoViewerState> {
     try {
       await _photoActionsRepository.shareImage(item, shareText);
       emit(state.copyWith(isBusy: false, clearFeedback: true));
-    } on Object catch (error) {
+    } on Object catch (error, stackTrace) {
+      addError(error, stackTrace);
       emit(
         state.copyWith(
           isBusy: false,
@@ -60,7 +61,8 @@ class PhotoViewerCubit extends Cubit<PhotoViewerState> {
           savedPath: path,
         ),
       );
-    } on Object catch (error) {
+    } on Object catch (error, stackTrace) {
+      addError(error, stackTrace);
       emit(
         state.copyWith(
           isBusy: false,
@@ -89,7 +91,8 @@ class PhotoViewerCubit extends Cubit<PhotoViewerState> {
           feedback: PhotoViewerFeedback.deleted,
         ),
       );
-    } on Object catch (error) {
+    } on Object catch (error, stackTrace) {
+      addError(error, stackTrace);
       emit(
         state.copyWith(
           isBusy: false,

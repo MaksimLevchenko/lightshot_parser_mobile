@@ -43,6 +43,39 @@ class ProxySettings extends Equatable {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'enabled': enabled,
+      'useAuthentication': useAuthentication,
+      'address': address,
+      'port': port,
+      'login': login,
+      'password': password,
+    };
+  }
+
+  factory ProxySettings.fromJson(Map<String, dynamic> json) {
+    return ProxySettings(
+      enabled: (json['enabled'] as bool?) ?? false,
+      useAuthentication: (json['useAuthentication'] as bool?) ?? false,
+      address: (json['address'] as String?) ?? '',
+      port: (json['port'] as String?) ?? '',
+      login: (json['login'] as String?) ?? '',
+      password: (json['password'] as String?) ?? '',
+    );
+  }
+
+  factory ProxySettings.fromLegacyJson(Map<String, dynamic> json) {
+    return ProxySettings(
+      enabled: (json['useProxy'] as bool?) ?? false,
+      useAuthentication: (json['useProxyAuth'] as bool?) ?? false,
+      address: (json['proxyAddress'] as String?) ?? '',
+      port: (json['proxyPort'] as String?) ?? '',
+      login: (json['proxyLogin'] as String?) ?? '',
+      password: (json['proxyPassword'] as String?) ?? '',
+    );
+  }
+
   String? toProxyString() {
     if (!enabled || address.isEmpty || port.isEmpty) {
       return null;

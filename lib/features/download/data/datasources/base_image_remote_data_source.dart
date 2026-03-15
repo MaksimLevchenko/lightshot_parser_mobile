@@ -1,0 +1,109 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
+import 'package:flutter/foundation.dart';
+import 'package:lightshot_parser_mobile/core/errors/app_exception.dart';
+import 'package:lightshot_parser_mobile/core/logging/app_logger.dart';
+import 'package:lightshot_parser_mobile/features/settings/domain/models/proxy_settings.dart';
+
+abstract class BaseImageRemoteDataSource {
+  BaseImageRemoteDataSource()
+      : _client = Dio(
+          BaseOptions(
+            connectTimeout: const Duration(seconds: 3),
+            receiveTimeout: const Duration(seconds: 7),
+            headers: const {
+              'User-Agent':
+                  'Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0',
+            },
+          ),
+        );
+
+  final Dio _client;
+
+  @protected
+  Future<String> fetchPageSource({
+    required Uri pageUrl,
+    required ProxySettings proxySettings,
+    bool treatNotFoundAsNoPhoto = false,
+  }) async {
+    _configureProxy(proxySettings);
+
+    late final Response<dynamic> response;
+    try {
+      response = await _client.getUri(
+        pageUrl,
+        options: Options(validateStatus: (_) => true),
+      );
+    } on DioException catch (error, stackTrace) {
+      AppLogger.warning(
+        'Failed to load page source: $pageUrl',
+        scope: 'network',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      throw const CouldNotConnectException();
+    }
+
+    final statusCode = response.statusCode;
+    if (treatNotFoundAsNoPhoto && _isMissingResourceStatus(statusCode)) {
+      throw const NoPhotoException();
+    }
+    if ((statusCode ?? 200) >= 400) {
+      throw const CouldNotConnectException();
+    }
+
+    return response.data.toString();
+  }
+
+  Future<File> downloadImage({
+    required String imageUrl,
+    required String targetPath,
+    required CancelToken cancelToken,
+    required ProxySettings proxySettings,
+  }) async {
+    _configureProxy(proxySettings);
+
+    try {
+      await _client.download(
+        imageUrl,
+        targetPath,
+        cancelToken: cancelToken,
+      );
+    } on DioException catch (error, stackTrace) {
+      if (cancelToken.isCancelled) {
+        throw const CancelledDownloadException();
+      }
+      if (_isMissingResourceStatus(error.response?.statusCode)) {
+        throw const NoPhotoException();
+      }
+      AppLogger.warning(
+        'Failed to download image: $imageUrl',
+        scope: 'network',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      throw const DownloadTransportException();
+    }
+
+    return File(targetPath);
+  }
+
+  void _configureProxy(ProxySettings proxySettings) {
+    final proxy = proxySettings.toProxyString();
+    _client.httpClientAdapter = IOHttpClientAdapter(
+      createHttpClient: () {
+        final client = HttpClient();
+        if (proxy != null) {
+          client.findProxy = (_) => proxy;
+        }
+        return client;
+      },
+    );
+  }
+
+  bool _isMissingResourceStatus(int? statusCode) {
+    return statusCode == 404 || statusCode == 410;
+  }
+}

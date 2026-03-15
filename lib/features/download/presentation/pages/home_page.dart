@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lightshot_parser_mobile/core/theme/app_theme.dart';
 import 'package:lightshot_parser_mobile/core/widgets/app_snack_bar.dart';
 import 'package:lightshot_parser_mobile/core/widgets/status_view.dart';
+import 'package:lightshot_parser_mobile/features/download/presentation/utils/download_source_texts.dart';
 import 'package:lightshot_parser_mobile/features/download/presentation/bloc/download_bloc.dart';
 import 'package:lightshot_parser_mobile/features/download/presentation/bloc/download_event.dart';
 import 'package:lightshot_parser_mobile/features/download/presentation/bloc/download_state.dart';
@@ -19,11 +20,18 @@ import 'package:lightshot_parser_mobile/features/settings/presentation/cubit/set
 import 'package:lightshot_parser_mobile/features/settings/presentation/pages/settings_page.dart';
 import 'package:lightshot_parser_mobile/generated/l10n.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
   Widget build(BuildContext context) {
+    final selectedSource =
+        context.read<SettingsRepository>().currentSettings.selectedSource;
     return BlocListener<DownloadBloc, DownloadState>(
       listener: (context, state) {
         if (state.status == DownloadStatus.completed) {
@@ -56,8 +64,8 @@ class HomePage extends StatelessWidget {
           centerTitle: true,
           actions: [
             IconButton(
-              onPressed: () {
-                Navigator.of(context).push(
+              onPressed: () async {
+                await Navigator.of(context).push(
                   MaterialPageRoute<void>(
                     builder: (_) => MultiBlocProvider(
                       providers: [
@@ -74,6 +82,9 @@ class HomePage extends StatelessWidget {
                     ),
                   ),
                 );
+                if (mounted) {
+                  setState(() {});
+                }
               },
               icon: const Icon(Icons.settings),
             ),
@@ -152,6 +163,23 @@ class HomePage extends StatelessWidget {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        Wrap(
+                          spacing: AppSpacing.sm,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Text(DownloadSourceTexts.currentSourceLabel(
+                                context)),
+                            Chip(
+                              label: Text(
+                                DownloadSourceTexts.sourceName(
+                                  context,
+                                  selectedSource,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.md),
                         AnimatedSwitcher(
                           duration: const Duration(milliseconds: 250),
                           child: state.isDownloading

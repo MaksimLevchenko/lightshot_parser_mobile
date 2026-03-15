@@ -1,103 +1,27 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:lightshot_parser_mobile/core/errors/app_exception.dart';
-import 'package:lightshot_parser_mobile/features/download/data/datasources/lightshot_remote_data_source.dart';
+import 'package:lightshot_parser_mobile/core/logging/app_logger.dart';
+import 'package:lightshot_parser_mobile/features/download/data/sources/download_source_engine.dart';
 import 'package:lightshot_parser_mobile/features/download/domain/models/download_progress.dart';
 import 'package:lightshot_parser_mobile/features/download/domain/models/download_request.dart';
+import 'package:lightshot_parser_mobile/features/download/domain/models/download_source.dart';
 import 'package:lightshot_parser_mobile/features/download/domain/models/download_update.dart';
 import 'package:lightshot_parser_mobile/features/gallery/data/repositories/gallery_repository.dart';
 import 'package:lightshot_parser_mobile/features/gallery/domain/models/gallery_item.dart';
 
-abstract class UrlGenerator {
-  Uri get current;
-  bool moveNext();
-}
-
-class SequentialUrlGenerator implements UrlGenerator {
-  SequentialUrlGenerator({
-    required bool useNewAddresses,
-    required String startingUrl,
-  })  : _symbols = useNewAddresses
-            ? 'abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ_-'
-            : 'abcdefghijklmnopqrstuvwxyz1234567890',
-        _length = useNewAddresses ? 12 : 6 {
-    final seed = startingUrl;
-    if (seed.length != _length ||
-        seed.split('').any((char) => !_symbols.contains(char))) {
-      _currentValue = List<String>.filled(_length, 'a').join();
-    } else {
-      _currentValue = seed;
-    }
-    _indexes =
-        _currentValue.split('').map(_symbols.indexOf).toList(growable: false);
-  }
-
-  final String _symbols;
-  final int _length;
-  late List<int> _indexes;
-  late String _currentValue;
-
-  @override
-  Uri get current => Uri.parse('https://prnt.sc/$_currentValue');
-
-  @override
-  bool moveNext() {
-    final nextIndexes = List<int>.from(_indexes);
-    nextIndexes[_length - 1] += 1;
-    for (int index = _length - 1; index >= 0; index--) {
-      if (nextIndexes[index] == _symbols.length) {
-        nextIndexes[index] = 0;
-        if (index > 0) {
-          nextIndexes[index - 1] += 1;
-        }
-      }
-    }
-    _indexes = nextIndexes;
-    _currentValue = _indexes.map((index) => _symbols[index]).join();
-    return true;
-  }
-}
-
-class RandomUrlGenerator implements UrlGenerator {
-  RandomUrlGenerator({required bool useNewAddresses})
-      : _symbols = useNewAddresses
-            ? 'abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ_-'
-            : 'abcdefghijklmnopqrstuvwxyz1234567890',
-        _length = useNewAddresses ? 12 : 6 {
-    moveNext();
-  }
-
-  final String _symbols;
-  final int _length;
-  final Random _random = Random();
-  late String _currentValue;
-
-  @override
-  Uri get current => Uri.parse('https://prnt.sc/$_currentValue');
-
-  @override
-  bool moveNext() {
-    _currentValue = String.fromCharCodes(
-      Iterable<int>.generate(
-        _length,
-        (_) => _symbols.codeUnitAt(_random.nextInt(_symbols.length)),
-      ),
-    );
-    return true;
-  }
-}
-
 class DownloadRepository {
   DownloadRepository({
-    required LightshotRemoteDataSource remoteDataSource,
+    required List<DownloadSourceEngine> sources,
     required GalleryRepository galleryRepository,
-  })  : _remoteDataSource = remoteDataSource,
+  })  : _sources = {
+          for (final source in sources) source.source: source,
+        },
         _galleryRepository = galleryRepository;
 
-  final LightshotRemoteDataSource _remoteDataSource;
+  final Map<DownloadSource, DownloadSourceEngine> _sources;
   final GalleryRepository _galleryRepository;
 
   CancelToken? _cancelToken;
@@ -105,12 +29,27 @@ class DownloadRepository {
   Stream<DownloadUpdate> start(DownloadRequest request) async* {
     final cancelToken = CancelToken();
     _cancelToken = cancelToken;
-    final generator = request.useRandomAddress
-        ? RandomUrlGenerator(useNewAddresses: request.useNewAddresses)
-        : SequentialUrlGenerator(
-            useNewAddresses: request.useNewAddresses,
-            startingUrl: request.startingUrl,
-          );
+    AppLogger.info(
+      'Starting download: source=${request.source.name}, targetCount=${request.targetCount}',
+      scope: 'download',
+    );
+    final source = _sources[request.source];
+    if (source == null) {
+      AppLogger.error(
+        'Unsupported source: ${request.source.name}',
+        scope: 'download',
+      );
+      yield DownloadUpdate(
+        type: DownloadUpdateType.failed,
+        progress: DownloadProgress(
+          downloadedCount: 0,
+          totalCount: request.targetCount,
+        ),
+        message: 'Unsupported source: ${request.source.name}',
+      );
+      return;
+    }
+    final generator = source.createGenerator(request);
 
     try {
       var downloadedCount = 0;
@@ -123,29 +62,29 @@ class DownloadRepository {
       );
 
       while (downloadedCount < request.targetCount) {
-        final pageUrl = generator.current;
-        final pageId = pageUrl.pathSegments.first;
+        final sourceId = generator.current;
+        final trackingKey = source.createTrackingKey(sourceId);
 
-        if (await _galleryRepository.isUrlProcessed(pageId)) {
+        if (await _galleryRepository.isProcessed(trackingKey)) {
           generator.moveNext();
           continue;
         }
 
         try {
-          final imageUrl = await _remoteDataSource.resolveImageUrl(
-            pageUrl: pageUrl,
+          final resolvedImage = await source.resolveImage(
+            sourceId: sourceId,
             proxySettings: request.proxySettings,
           );
 
-          final extension = imageUrl.substring(imageUrl.lastIndexOf('.'));
-          final downloadedFile = await _remoteDataSource.downloadImage(
-            imageUrl: imageUrl,
+          final downloadedFile = await source.downloadImage(
+            imageUrl: resolvedImage.imageUrl,
             targetPath:
-                '${_galleryRepository.photosDirectory.path}${Platform.pathSeparator}$pageId$extension',
+                '${_galleryRepository.photosDirectory.path}${Platform.pathSeparator}$trackingKey${resolvedImage.fileExtension}',
             cancelToken: cancelToken,
             proxySettings: request.proxySettings,
           );
-          await _galleryRepository.addDownloadedFile(id: pageId);
+          final item = GalleryItem.fromFile(downloadedFile);
+          await _galleryRepository.addDownloadedFile(item: item);
           downloadedCount += 1;
           yield DownloadUpdate(
             type: DownloadUpdateType.progress,
@@ -153,11 +92,12 @@ class DownloadRepository {
               downloadedCount: downloadedCount,
               totalCount: request.targetCount,
             ),
-            item: GalleryItem.fromFile(downloadedFile),
+            item: item,
           );
         } on NoPhotoException {
-          await _galleryRepository.markUrlProcessed(pageId);
+          await _galleryRepository.markProcessed(trackingKey);
         } on CancelledDownloadException {
+          AppLogger.info('Download cancelled by user', scope: 'download');
           yield DownloadUpdate(
             type: DownloadUpdateType.cancelled,
             progress: DownloadProgress(
@@ -186,7 +126,13 @@ class DownloadRepository {
             message: request.proxySettings.enabled ? 'proxy' : 'vpn',
           );
           return;
-        } on AppException catch (error) {
+        } on AppException catch (error, stackTrace) {
+          AppLogger.error(
+            'Download failed with application error',
+            scope: 'download',
+            error: error,
+            stackTrace: stackTrace,
+          );
           yield DownloadUpdate(
             type: DownloadUpdateType.failed,
             progress: DownloadProgress(
@@ -196,7 +142,13 @@ class DownloadRepository {
             message: error.message,
           );
           return;
-        } on Object catch (error) {
+        } on Object catch (error, stackTrace) {
+          AppLogger.error(
+            'Download failed with unexpected error',
+            scope: 'download',
+            error: error,
+            stackTrace: stackTrace,
+          );
           yield DownloadUpdate(
             type: DownloadUpdateType.failed,
             progress: DownloadProgress(
@@ -218,6 +170,7 @@ class DownloadRepository {
           totalCount: request.targetCount,
         ),
       );
+      AppLogger.info('Download completed successfully', scope: 'download');
     } finally {
       if (identical(_cancelToken, cancelToken)) {
         _cancelToken = null;
@@ -226,6 +179,7 @@ class DownloadRepository {
   }
 
   Future<void> cancel() async {
+    AppLogger.info('Cancelling active download', scope: 'download');
     _cancelToken?.cancel();
   }
 }

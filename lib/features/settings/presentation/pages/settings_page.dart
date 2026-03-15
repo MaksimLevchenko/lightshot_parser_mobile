@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lightshot_parser_mobile/core/theme/app_theme.dart';
 import 'package:lightshot_parser_mobile/core/widgets/app_snack_bar.dart';
+import 'package:lightshot_parser_mobile/features/download/domain/models/download_source.dart';
+import 'package:lightshot_parser_mobile/features/download/presentation/utils/download_source_texts.dart';
 import 'package:lightshot_parser_mobile/features/gallery/presentation/cubit/gallery_cubit.dart';
 import 'package:lightshot_parser_mobile/features/gallery/presentation/cubit/gallery_state.dart';
 import 'package:lightshot_parser_mobile/features/settings/presentation/cubit/settings_cubit.dart';
@@ -19,7 +21,8 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _wantedNumController;
-  late final TextEditingController _startingUrlController;
+  late final TextEditingController _lightshotStartingIdController;
+  late final TextEditingController _imgurStartingIdController;
   late final TextEditingController _proxyAddressController;
   late final TextEditingController _proxyPortController;
   late final TextEditingController _proxyLoginController;
@@ -31,7 +34,10 @@ class _SettingsPageState extends State<SettingsPage> {
     final draft = context.read<SettingsCubit>().state.draft;
     _wantedNumController =
         TextEditingController(text: draft.wantedNumOfImages.toString());
-    _startingUrlController = TextEditingController(text: draft.startingUrl);
+    _lightshotStartingIdController =
+        TextEditingController(text: draft.lightshot.startingId);
+    _imgurStartingIdController =
+        TextEditingController(text: draft.imgur.startingId);
     _proxyAddressController =
         TextEditingController(text: draft.proxySettings.address);
     _proxyPortController =
@@ -45,7 +51,8 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void dispose() {
     _wantedNumController.dispose();
-    _startingUrlController.dispose();
+    _lightshotStartingIdController.dispose();
+    _imgurStartingIdController.dispose();
     _proxyAddressController.dispose();
     _proxyPortController.dispose();
     _proxyLoginController.dispose();
@@ -94,12 +101,40 @@ class _SettingsPageState extends State<SettingsPage> {
         body: BlocBuilder<SettingsCubit, SettingsState>(
           builder: (context, state) {
             final draft = state.draft;
+            final selectedSource = draft.selectedSource;
             return SingleChildScrollView(
               padding: const EdgeInsets.all(AppSpacing.md),
               child: Form(
                 key: _formKey,
                 child: Column(
                   children: [
+                    DropdownButtonFormField<DownloadSource>(
+                      initialValue: selectedSource,
+                      decoration: InputDecoration(
+                        labelText: DownloadSourceTexts.sourceLabel(context),
+                      ),
+                      items: DownloadSource.values
+                          .map(
+                            (source) => DropdownMenuItem<DownloadSource>(
+                              value: source,
+                              child: Text(
+                                DownloadSourceTexts.sourceName(
+                                  context,
+                                  source,
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(growable: false),
+                      onChanged: (value) {
+                        if (value != null) {
+                          context
+                              .read<SettingsCubit>()
+                              .setSelectedSource(value);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.md),
                     TextFormField(
                       controller: _wantedNumController,
                       decoration: InputDecoration(
@@ -123,55 +158,154 @@ class _SettingsPageState extends State<SettingsPage> {
                         }
                       },
                     ),
-                    CheckboxListTile(
-                      value: draft.useNewAddresses,
-                      onChanged: (value) {
-                        final useNewAddresses = value ?? false;
-                        final maxLength = useNewAddresses ? 12 : 6;
-                        if (_startingUrlController.text.length > maxLength) {
-                          _startingUrlController.text = _startingUrlController
-                              .text
-                              .substring(0, maxLength);
-                          _startingUrlController.selection =
-                              TextSelection.collapsed(
-                            offset: _startingUrlController.text.length,
-                          );
-                        }
-                        context
-                            .read<SettingsCubit>()
-                            .setUseNewAddresses(useNewAddresses);
-                      },
-                      title: Text(S.of(context).useNewAddresses),
-                    ),
-                    CheckboxListTile(
-                      value: draft.useRandomAddress,
-                      onChanged: (value) {
-                        final useRandomAddress = value ?? false;
-                        if (useRandomAddress) {
-                          _startingUrlController.clear();
-                        }
-                        context
-                            .read<SettingsCubit>()
-                            .setUseRandomAddress(useRandomAddress);
-                      },
-                      title: Text(S.of(context).useRandomAddresses),
-                    ),
-                    TextFormField(
-                      controller: _startingUrlController,
-                      enabled: !draft.useRandomAddress,
-                      decoration: InputDecoration(
-                        labelText: S.of(context).startingAddress,
-                        hintText: S.of(context).enterTheStartingAddress,
-                      ),
-                      maxLength: draft.useNewAddresses ? 12 : 6,
-                      validator: (value) =>
-                          SettingsFormValidators.validateStartingUrl(
-                        context,
-                        useRandomAddress: draft.useRandomAddress,
-                        useNewAddresses: draft.useNewAddresses,
-                        value: value,
-                      ),
-                      onChanged: context.read<SettingsCubit>().setStartingUrl,
+                    _SourceSettingsSection(
+                      title: selectedSource == DownloadSource.lightshot
+                          ? DownloadSourceTexts.lightshotSettings(context)
+                          : DownloadSourceTexts.imgurSettings(context),
+                      child: selectedSource == DownloadSource.lightshot
+                          ? Column(
+                              children: [
+                                CheckboxListTile(
+                                  value: draft.lightshot.useNewAddresses,
+                                  onChanged: (value) {
+                                    final useNewAddresses = value ?? false;
+                                    final maxLength = useNewAddresses ? 12 : 6;
+                                    if (_lightshotStartingIdController
+                                            .text.length >
+                                        maxLength) {
+                                      _lightshotStartingIdController.text =
+                                          _lightshotStartingIdController.text
+                                              .substring(0, maxLength);
+                                      _lightshotStartingIdController.selection =
+                                          TextSelection.collapsed(
+                                        offset: _lightshotStartingIdController
+                                            .text.length,
+                                      );
+                                    }
+                                    context
+                                        .read<SettingsCubit>()
+                                        .setUseNewAddresses(useNewAddresses);
+                                  },
+                                  title: Text(S.of(context).useNewAddresses),
+                                ),
+                                CheckboxListTile(
+                                  value: draft.lightshot.useRandomAddress,
+                                  onChanged: (value) {
+                                    final useRandomAddress = value ?? false;
+                                    if (useRandomAddress) {
+                                      _lightshotStartingIdController.clear();
+                                    }
+                                    context
+                                        .read<SettingsCubit>()
+                                        .setUseRandomAddress(
+                                          useRandomAddress,
+                                        );
+                                  },
+                                  title: Text(S.of(context).useRandomAddresses),
+                                ),
+                                TextFormField(
+                                  controller: _lightshotStartingIdController,
+                                  enabled: !draft.lightshot.useRandomAddress,
+                                  decoration: InputDecoration(
+                                    labelText: S.of(context).startingAddress,
+                                    hintText:
+                                        S.of(context).enterTheStartingAddress,
+                                  ),
+                                  maxLength: draft.lightshot.idLength,
+                                  validator: (value) => SettingsFormValidators
+                                      .validateStartingUrl(
+                                    context,
+                                    useRandomAddress:
+                                        draft.lightshot.useRandomAddress,
+                                    useNewAddresses:
+                                        draft.lightshot.useNewAddresses,
+                                    value: value,
+                                  ),
+                                  onChanged: context
+                                      .read<SettingsCubit>()
+                                      .setStartingUrl,
+                                ),
+                              ],
+                            )
+                          : Column(
+                              children: [
+                                DropdownButtonFormField<int>(
+                                  initialValue: draft.imgur.idLength,
+                                  decoration: InputDecoration(
+                                    labelText:
+                                        DownloadSourceTexts.imgurIdLength(
+                                      context,
+                                    ),
+                                  ),
+                                  items: const [5, 6, 7]
+                                      .map(
+                                        (value) => DropdownMenuItem<int>(
+                                          value: value,
+                                          child: Text('$value'),
+                                        ),
+                                      )
+                                      .toList(growable: false),
+                                  onChanged: (value) {
+                                    if (value == null) {
+                                      return;
+                                    }
+                                    if (_imgurStartingIdController.text.length >
+                                        value) {
+                                      _imgurStartingIdController.text =
+                                          _imgurStartingIdController.text
+                                              .substring(0, value);
+                                      _imgurStartingIdController.selection =
+                                          TextSelection.collapsed(
+                                        offset: _imgurStartingIdController
+                                            .text.length,
+                                      );
+                                    }
+                                    context
+                                        .read<SettingsCubit>()
+                                        .setImgurIdLength(value);
+                                  },
+                                ),
+                                CheckboxListTile(
+                                  value: draft.imgur.useRandomAddress,
+                                  onChanged: (value) {
+                                    final useRandomAddress = value ?? false;
+                                    if (useRandomAddress) {
+                                      _imgurStartingIdController.clear();
+                                    }
+                                    context
+                                        .read<SettingsCubit>()
+                                        .setImgurUseRandomAddress(
+                                          useRandomAddress,
+                                        );
+                                  },
+                                  title: Text(S.of(context).useRandomAddresses),
+                                ),
+                                TextFormField(
+                                  controller: _imgurStartingIdController,
+                                  enabled: !draft.imgur.useRandomAddress,
+                                  decoration: InputDecoration(
+                                    labelText:
+                                        DownloadSourceTexts.startingId(context),
+                                    hintText:
+                                        DownloadSourceTexts.enterTheStartingId(
+                                      context,
+                                    ),
+                                  ),
+                                  maxLength: draft.imgur.idLength,
+                                  validator: (value) => SettingsFormValidators
+                                      .validateImgurStartingId(
+                                    context,
+                                    useRandomAddress:
+                                        draft.imgur.useRandomAddress,
+                                    idLength: draft.imgur.idLength,
+                                    value: value,
+                                  ),
+                                  onChanged: context
+                                      .read<SettingsCubit>()
+                                      .setImgurStartingId,
+                                ),
+                              ],
+                            ),
                     ),
                     const SizedBox(height: AppSpacing.md),
                     CheckboxListTile(
@@ -312,6 +446,33 @@ class _SettingsPageState extends State<SettingsPage> {
           },
         ),
       ),
+    );
+  }
+}
+
+class _SourceSettingsSection extends StatelessWidget {
+  const _SourceSettingsSection({
+    required this.title,
+    required this.child,
+  });
+
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const SizedBox(height: AppSpacing.sm),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            title,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ),
+        child,
+      ],
     );
   }
 }

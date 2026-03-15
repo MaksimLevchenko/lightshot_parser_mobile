@@ -49,9 +49,9 @@ class DownloadBloc extends Bloc<DownloadEvent, DownloadState> {
     final settings = _settingsRepository.currentSettings;
     final request = DownloadRequest(
       targetCount: settings.wantedNumOfImages,
-      useNewAddresses: settings.useNewAddresses,
-      useRandomAddress: settings.useRandomAddress,
-      startingUrl: settings.startingUrl,
+      source: settings.selectedSource,
+      lightshotSettings: settings.lightshot,
+      imgurSettings: settings.imgur,
       proxySettings: settings.proxySettings,
     );
 

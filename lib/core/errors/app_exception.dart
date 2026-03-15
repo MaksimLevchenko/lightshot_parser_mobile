@@ -20,7 +20,8 @@ class NoPhotoException extends AppException {
 }
 
 class DownloadTransportException extends AppException {
-  const DownloadTransportException([super.message = 'Download transport failed']);
+  const DownloadTransportException(
+      [super.message = 'Download transport failed']);
 }
 
 class StorageException extends AppException {

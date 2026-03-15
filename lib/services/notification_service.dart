@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:flutter/foundation.dart';
 
 enum NotificationAction {
   cancelDownload,
@@ -45,7 +46,7 @@ class NotificationService {
           importance: NotificationImportance.Max,
         ),
       ],
-      debug: false,
+      debug: kDebugMode,
     );
 
     await AwesomeNotifications().setListeners(
