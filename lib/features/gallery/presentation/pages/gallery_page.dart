@@ -6,6 +6,7 @@ import 'package:lightshot_parser_mobile/features/gallery/data/repositories/galle
 import 'package:lightshot_parser_mobile/features/gallery/domain/models/gallery_item.dart';
 import 'package:lightshot_parser_mobile/features/gallery/presentation/cubit/gallery_cubit.dart';
 import 'package:lightshot_parser_mobile/features/gallery/presentation/cubit/gallery_state.dart';
+import 'package:lightshot_parser_mobile/features/gallery/presentation/widgets/classification_badge.dart';
 import 'package:lightshot_parser_mobile/features/photo_viewer/data/repositories/photo_actions_repository.dart';
 import 'package:lightshot_parser_mobile/features/photo_viewer/presentation/cubit/photo_viewer_cubit.dart';
 import 'package:lightshot_parser_mobile/features/photo_viewer/presentation/pages/photo_viewer_page.dart';
@@ -43,7 +44,23 @@ class GalleryPage extends StatelessWidget {
                 child: Container(
                   color: AppColors.imageCard,
                   padding: const EdgeInsets.all(AppSpacing.sm),
-                  child: Image.file(item.file),
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: Image.file(
+                          item.file,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      Positioned(
+                        left: AppSpacing.sm,
+                        top: AppSpacing.sm,
+                        child: ClassificationBadge(
+                          classificationResult: item.classificationResult,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },

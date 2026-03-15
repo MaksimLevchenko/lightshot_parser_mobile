@@ -29,6 +29,7 @@ import 'package:lightshot_parser_mobile/generated/l10n.dart';
 import 'package:lightshot_parser_mobile/services/notification_service.dart';
 
 import '../../support/test_storage.dart';
+import '../../support/test_image_classifier_service.dart';
 
 class StubNotificationService extends NotificationService {
   final StreamController<NotificationAction> _controller =
@@ -78,6 +79,7 @@ class StubDownloadRepository extends DownloadRepository {
             ),
             localDataSource: GalleryLocalDataSource(),
           ),
+          imageClassifierService: buildTestImageClassifierService(),
         );
 
   final StreamController<DownloadUpdate> updatesController =
@@ -142,6 +144,10 @@ void main() {
     WidgetTester tester, {
     required double width,
   }) async {
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+    });
     await tester.pumpWidget(
       MultiRepositoryProvider(
         providers: [
@@ -246,7 +252,8 @@ void main() {
         '${storageContext.storagePaths.photosDirectory.path}/imgur@@two.png');
     await prepareApp();
     await pumpHomePage(tester, width: 1200);
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
 
     expect(find.byKey(const ValueKey('recent-gallery-grid')), findsOneWidget);
     expect(find.byKey(const ValueKey('gallery-preview-0')), findsOneWidget);

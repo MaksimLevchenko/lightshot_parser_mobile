@@ -11,6 +11,7 @@ import 'package:lightshot_parser_mobile/features/download/presentation/bloc/down
 import 'package:lightshot_parser_mobile/features/download/presentation/pages/home_page.dart';
 import 'package:lightshot_parser_mobile/features/gallery/data/repositories/gallery_repository.dart';
 import 'package:lightshot_parser_mobile/features/gallery/presentation/cubit/gallery_cubit.dart';
+import 'package:lightshot_parser_mobile/features/image_classification/image_classification.dart';
 import 'package:lightshot_parser_mobile/features/photo_viewer/data/repositories/photo_actions_repository.dart';
 import 'package:lightshot_parser_mobile/features/settings/data/repositories/settings_repository.dart';
 import 'package:lightshot_parser_mobile/generated/l10n.dart';
@@ -24,6 +25,7 @@ class App extends StatelessWidget {
     required this.downloadRepository,
     required this.photoActionsRepository,
     required this.notificationService,
+    required this.imageClassifierService,
   });
 
   final SettingsRepository settingsRepository;
@@ -31,6 +33,7 @@ class App extends StatelessWidget {
   final DownloadRepository downloadRepository;
   final PhotoActionsRepository photoActionsRepository;
   final NotificationService notificationService;
+  final ImageClassifierService imageClassifierService;
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +44,7 @@ class App extends StatelessWidget {
         RepositoryProvider.value(value: downloadRepository),
         RepositoryProvider.value(value: photoActionsRepository),
         RepositoryProvider.value(value: notificationService),
+        RepositoryProvider.value(value: imageClassifierService),
       ],
       child: BlocProvider(
         create: (_) => BootstrapCubit(

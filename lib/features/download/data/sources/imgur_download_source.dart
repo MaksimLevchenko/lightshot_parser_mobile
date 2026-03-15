@@ -22,9 +22,9 @@ class ImgurDownloadSource extends DownloadSourceEngine {
   CandidateIdGenerator createGenerator(DownloadRequest request) {
     final settings = request.imgurSettings;
     return settings.useRandomAddress
-        ? MultiLengthRandomIdGenerator(
+        ? RandomIdGenerator(
             symbols: _symbols,
-            lengths: settings.candidateLengths,
+            length: settings.idLength,
           )
         : SequentialIdGenerator(
             symbols: _symbols,

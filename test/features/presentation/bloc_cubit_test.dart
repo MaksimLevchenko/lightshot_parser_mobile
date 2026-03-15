@@ -21,6 +21,7 @@ import 'package:lightshot_parser_mobile/features/settings/presentation/cubit/set
 import 'package:lightshot_parser_mobile/services/notification_service.dart';
 
 import '../../support/test_storage.dart';
+import '../../support/test_image_classifier_service.dart';
 
 class StubNotificationService extends NotificationService {
   final StreamController<NotificationAction> _controller =
@@ -85,6 +86,7 @@ class StubDownloadRepository extends DownloadRepository {
             ),
             localDataSource: GalleryLocalDataSource(),
           ),
+          imageClassifierService: buildTestImageClassifierService(),
         );
 
   final StreamController<DownloadUpdate> updatesController =

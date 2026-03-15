@@ -13,6 +13,7 @@ import 'package:lightshot_parser_mobile/features/gallery/domain/models/gallery_i
 import 'package:lightshot_parser_mobile/features/gallery/presentation/cubit/gallery_cubit.dart';
 import 'package:lightshot_parser_mobile/features/gallery/presentation/cubit/gallery_state.dart';
 import 'package:lightshot_parser_mobile/features/gallery/presentation/pages/gallery_page.dart';
+import 'package:lightshot_parser_mobile/features/gallery/presentation/widgets/classification_badge.dart';
 import 'package:lightshot_parser_mobile/features/photo_viewer/data/repositories/photo_actions_repository.dart';
 import 'package:lightshot_parser_mobile/features/photo_viewer/presentation/cubit/photo_viewer_cubit.dart';
 import 'package:lightshot_parser_mobile/features/photo_viewer/presentation/pages/photo_viewer_page.dart';
@@ -811,6 +812,10 @@ class _GalleryPreviewCard extends StatelessWidget {
               Text(
                 DownloadSourceTexts.sourceName(context, item.source),
                 style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              ClassificationBadge(
+                classificationResult: item.classificationResult,
               ),
               const SizedBox(height: AppSpacing.sm),
               Align(

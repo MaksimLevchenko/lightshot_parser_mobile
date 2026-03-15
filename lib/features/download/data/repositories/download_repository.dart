@@ -11,18 +11,23 @@ import 'package:lightshot_parser_mobile/features/download/domain/models/download
 import 'package:lightshot_parser_mobile/features/download/domain/models/download_update.dart';
 import 'package:lightshot_parser_mobile/features/gallery/data/repositories/gallery_repository.dart';
 import 'package:lightshot_parser_mobile/features/gallery/domain/models/gallery_item.dart';
+import 'package:lightshot_parser_mobile/features/image_classification/image_classification.dart';
 
 class DownloadRepository {
   DownloadRepository({
     required List<DownloadSourceEngine> sources,
     required GalleryRepository galleryRepository,
+    required ImageClassifierService imageClassifierService,
   })  : _sources = {
           for (final source in sources) source.source: source,
         },
-        _galleryRepository = galleryRepository;
+        _galleryRepository = galleryRepository,
+        _imageClassifierService = imageClassifierService;
 
   final Map<DownloadSource, DownloadSourceEngine> _sources;
   final GalleryRepository _galleryRepository;
+  final ImageClassifierService _imageClassifierService;
+  final Set<Future<void>> _backgroundClassificationTasks = <Future<void>>{};
 
   CancelToken? _cancelToken;
   bool _cancelRequested = false;
@@ -100,8 +105,19 @@ class DownloadRepository {
             cancelToken: cancelToken,
             proxySettings: request.proxySettings,
           );
-          final item = GalleryItem.fromFile(downloadedFile);
+          final item = GalleryItem.fromFile(
+            downloadedFile,
+            classificationResult: ClassificationResult.pending(
+              backend: _imageClassifierService.backendId,
+            ),
+          );
           await _galleryRepository.addDownloadedFile(item: item);
+          final backgroundTask = _classifyDownloadedItem(item);
+          _backgroundClassificationTasks.add(backgroundTask);
+          backgroundTask.whenComplete(() {
+            _backgroundClassificationTasks.remove(backgroundTask);
+          });
+          unawaited(backgroundTask);
           downloadedCount += 1;
           yield DownloadUpdate(
             type: DownloadUpdateType.progress,
@@ -180,6 +196,10 @@ class DownloadRepository {
         generator.moveNext();
       }
 
+      if (_backgroundClassificationTasks.isNotEmpty) {
+        await Future.wait(_backgroundClassificationTasks.toList());
+      }
+
       yield DownloadUpdate(
         type: DownloadUpdateType.completed,
         progress: DownloadProgress(
@@ -215,5 +235,28 @@ class DownloadRepository {
         totalCount: totalCount,
       ),
     );
+  }
+
+  Future<void> _classifyDownloadedItem(GalleryItem item) async {
+    try {
+      final classifiedItem =
+          await _imageClassifierService.classifyPendingGalleryItem(item: item);
+      await _galleryRepository.updateClassification(item: classifiedItem);
+    } on Object catch (error, stackTrace) {
+      AppLogger.warning(
+        'Image classification failed, keeping unrecognized fallback',
+        scope: 'classification',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      await _galleryRepository.updateClassification(
+        item: item.copyWith(
+          classificationResult: ClassificationResult.unrecognized(
+            backend: _imageClassifierService.backendId,
+            classifiedAt: DateTime.now(),
+          ),
+        ),
+      );
+    }
   }
 }

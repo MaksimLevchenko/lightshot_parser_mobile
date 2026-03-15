@@ -63,7 +63,21 @@ class GalleryRepository {
   Future<void> addDownloadedFile({
     required GalleryItem item,
   }) async {
-    await markProcessed(item.trackingKey);
+    _trackedIds.add(item.trackingKey);
+    await _localDataSource.upsertGalleryItem(
+      _settingsRepository.storagePaths,
+      item,
+    );
+    await refresh();
+  }
+
+  Future<void> updateClassification({
+    required GalleryItem item,
+  }) async {
+    await _localDataSource.updateClassification(
+      _settingsRepository.storagePaths,
+      item: item,
+    );
     await refresh();
   }
 
@@ -75,9 +89,9 @@ class GalleryRepository {
   Future<void> clearImages() async {
     await _localDataSource.clearImages(_settingsRepository.storagePaths);
     _trackedIds = <String>{};
-    await _localDataSource.overwriteTrackedIds(
+    await _localDataSource.overwriteTrackedItems(
       _settingsRepository.storagePaths,
-      _trackedIds,
+      const <GalleryItem>[],
     );
     await refresh();
   }
@@ -85,9 +99,9 @@ class GalleryRepository {
   Future<void> rebuildIndex() async {
     final items = await load();
     _trackedIds = items.map((item) => item.trackingKey).toSet();
-    await _localDataSource.overwriteTrackedIds(
+    await _localDataSource.overwriteTrackedItems(
       _settingsRepository.storagePaths,
-      _trackedIds,
+      items,
     );
     if (!_itemsController.isClosed) {
       _itemsController.add(items);

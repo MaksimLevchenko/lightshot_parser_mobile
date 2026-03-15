@@ -13,6 +13,7 @@ import 'package:lightshot_parser_mobile/features/download/data/sources/imgur_dow
 import 'package:lightshot_parser_mobile/features/download/data/sources/lightshot_download_source.dart';
 import 'package:lightshot_parser_mobile/features/gallery/data/datasources/gallery_local_data_source.dart';
 import 'package:lightshot_parser_mobile/features/gallery/data/repositories/gallery_repository.dart';
+import 'package:lightshot_parser_mobile/features/image_classification/image_classification.dart';
 import 'package:lightshot_parser_mobile/features/photo_viewer/data/repositories/photo_actions_repository.dart';
 import 'package:lightshot_parser_mobile/features/settings/data/datasources/settings_local_data_source.dart';
 import 'package:lightshot_parser_mobile/features/settings/data/repositories/settings_repository.dart';
@@ -70,6 +71,7 @@ class _AppBootstrapState extends State<AppBootstrap> {
   late final DownloadRepository _downloadRepository;
   late final PhotoActionsRepository _photoActionsRepository;
   late final NotificationService _notificationService;
+  late final ImageClassifierService _imageClassifierService;
 
   @override
   void initState() {
@@ -79,12 +81,18 @@ class _AppBootstrapState extends State<AppBootstrap> {
       settingsRepository: _settingsRepository,
       localDataSource: GalleryLocalDataSource(),
     );
+    _imageClassifierService = ImageClassifierService(
+      imagePreprocessor: ImagePreprocessor(),
+      inferenceBackend: MockInferenceBackend(),
+      cascadeClassifier: const CascadeClassifier(),
+    );
     _downloadRepository = DownloadRepository(
       sources: [
         LightshotDownloadSource(LightshotRemoteDataSource()),
         ImgurDownloadSource(ImgurRemoteDataSource()),
       ],
       galleryRepository: _galleryRepository,
+      imageClassifierService: _imageClassifierService,
     );
     _photoActionsRepository = PhotoActionsRepository(_galleryRepository);
     _notificationService = NotificationService();
@@ -93,6 +101,7 @@ class _AppBootstrapState extends State<AppBootstrap> {
   @override
   Future<void> dispose() async {
     await _galleryRepository.dispose();
+    await _imageClassifierService.dispose();
     await _notificationService.dispose();
     super.dispose();
   }
@@ -105,6 +114,7 @@ class _AppBootstrapState extends State<AppBootstrap> {
       downloadRepository: _downloadRepository,
       photoActionsRepository: _photoActionsRepository,
       notificationService: _notificationService,
+      imageClassifierService: _imageClassifierService,
     );
   }
 }

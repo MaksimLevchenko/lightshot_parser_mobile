@@ -175,6 +175,56 @@ class S {
     return Intl.message('Gallery', name: 'galleryAppBar', desc: '', args: []);
   }
 
+  /// `Loading`
+  String get classificationLoading {
+    return Intl.message(
+      'Loading',
+      name: 'classificationLoading',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nudity`
+  String get classificationCategoryNsfw {
+    return Intl.message(
+      'Nudity',
+      name: 'classificationCategoryNsfw',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Documents`
+  String get classificationCategoryDocuments {
+    return Intl.message(
+      'Documents',
+      name: 'classificationCategoryDocuments',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Games`
+  String get classificationCategoryGames {
+    return Intl.message(
+      'Games',
+      name: 'classificationCategoryGames',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unrecognized`
+  String get classificationCategoryUnrecognized {
+    return Intl.message(
+      'Unrecognized',
+      name: 'classificationCategoryUnrecognized',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Image deleted`
   String get imageDeleted {
     return Intl.message(

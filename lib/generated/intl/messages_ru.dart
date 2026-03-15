@@ -44,6 +44,17 @@ class MessageLookup extends MessageLookupByLibrary {
       "Вы уверены, что хотите удалить это изображение?",
     ),
     "cancel": MessageLookupByLibrary.simpleMessage("Отменить"),
+    "classificationCategoryDocuments": MessageLookupByLibrary.simpleMessage(
+      "Документы",
+    ),
+    "classificationCategoryGames": MessageLookupByLibrary.simpleMessage("Игры"),
+    "classificationCategoryNsfw": MessageLookupByLibrary.simpleMessage(
+      "Обнаженка",
+    ),
+    "classificationCategoryUnrecognized": MessageLookupByLibrary.simpleMessage(
+      "Нераспознанно",
+    ),
+    "classificationLoading": MessageLookupByLibrary.simpleMessage("Грузится"),
     "clearImages": MessageLookupByLibrary.simpleMessage(
       "Удалить все изображения",
     ),
