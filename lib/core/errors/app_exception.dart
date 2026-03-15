@@ -19,6 +19,10 @@ class NoPhotoException extends AppException {
   const NoPhotoException([super.message = 'No photo found']);
 }
 
+class DownloadTransportException extends AppException {
+  const DownloadTransportException([super.message = 'Download transport failed']);
+}
+
 class StorageException extends AppException {
   const StorageException([super.message = 'Storage operation failed']);
 }

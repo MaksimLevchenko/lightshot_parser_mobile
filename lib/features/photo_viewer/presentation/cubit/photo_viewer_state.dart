@@ -1,12 +1,18 @@
 import 'package:equatable/equatable.dart';
 import 'package:lightshot_parser_mobile/features/gallery/domain/models/gallery_item.dart';
 
+enum PhotoViewerFeedback {
+  deleted,
+  saved,
+}
+
 class PhotoViewerState extends Equatable {
   const PhotoViewerState({
     required this.items,
     required this.currentIndex,
     required this.isBusy,
-    this.message,
+    this.feedback,
+    this.savedPath,
     this.errorMessage,
   });
 
@@ -14,17 +20,19 @@ class PhotoViewerState extends Equatable {
     required this.items,
     required this.currentIndex,
   })  : isBusy = false,
-        message = null,
+        feedback = null,
+        savedPath = null,
         errorMessage = null;
 
   final List<GalleryItem> items;
   final int currentIndex;
   final bool isBusy;
-  final String? message;
+  final PhotoViewerFeedback? feedback;
+  final String? savedPath;
   final String? errorMessage;
 
   GalleryItem? get currentItem {
-    if (items.isEmpty) {
+    if (items.isEmpty || currentIndex < 0 || currentIndex >= items.length) {
       return null;
     }
     return items[currentIndex];
@@ -34,7 +42,8 @@ class PhotoViewerState extends Equatable {
     List<GalleryItem>? items,
     int? currentIndex,
     bool? isBusy,
-    String? message,
+    PhotoViewerFeedback? feedback,
+    String? savedPath,
     String? errorMessage,
     bool clearFeedback = false,
   }) {
@@ -42,7 +51,8 @@ class PhotoViewerState extends Equatable {
       items: items ?? this.items,
       currentIndex: currentIndex ?? this.currentIndex,
       isBusy: isBusy ?? this.isBusy,
-      message: clearFeedback ? null : message ?? this.message,
+      feedback: clearFeedback ? null : feedback ?? this.feedback,
+      savedPath: clearFeedback ? null : savedPath ?? this.savedPath,
       errorMessage: clearFeedback ? null : errorMessage ?? this.errorMessage,
     );
   }
@@ -52,7 +62,8 @@ class PhotoViewerState extends Equatable {
         items,
         currentIndex,
         isBusy,
-        message,
+        feedback,
+        savedPath,
         errorMessage,
       ];
 }

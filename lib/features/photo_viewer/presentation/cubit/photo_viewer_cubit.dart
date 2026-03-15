@@ -56,7 +56,8 @@ class PhotoViewerCubit extends Cubit<PhotoViewerState> {
       emit(
         state.copyWith(
           isBusy: false,
-          message: path,
+          feedback: PhotoViewerFeedback.saved,
+          savedPath: path,
         ),
       );
     } on Object catch (error) {
@@ -85,7 +86,7 @@ class PhotoViewerCubit extends Cubit<PhotoViewerState> {
           isBusy: false,
           items: items,
           currentIndex: newIndex,
-          message: 'deleted',
+          feedback: PhotoViewerFeedback.deleted,
         ),
       );
     } on Object catch (error) {

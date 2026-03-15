@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lightshot_parser_mobile/features/bootstrap/presentation/cubit/bootstrap_state.dart';
 import 'package:lightshot_parser_mobile/features/gallery/data/repositories/gallery_repository.dart';
@@ -25,9 +26,19 @@ class BootstrapCubit extends Cubit<BootstrapState> {
     try {
       await _settingsRepository.ensureInitialized();
       await _galleryRepository.ensureInitialized();
-      await _notificationService.init();
+      try {
+        await _notificationService.init();
+      } on Object catch (error) {
+        debugPrint('Notification init failed: $error');
+      }
+      if (isClosed) {
+        return;
+      }
       emit(state.copyWith(status: BootstrapStatus.ready, clearError: true));
     } on Object catch (error) {
+      if (isClosed) {
+        return;
+      }
       emit(
         state.copyWith(
           status: BootstrapStatus.failure,

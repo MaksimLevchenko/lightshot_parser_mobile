@@ -61,7 +61,6 @@ class GalleryRepository {
   }
 
   Future<void> addDownloadedFile({
-    required File file,
     required String id,
   }) async {
     await markUrlProcessed(id);
@@ -75,6 +74,11 @@ class GalleryRepository {
 
   Future<void> clearImages() async {
     await _localDataSource.clearImages(_settingsRepository.storagePaths);
+    _trackedIds = <String>{};
+    await _localDataSource.overwriteTrackedIds(
+      _settingsRepository.storagePaths,
+      _trackedIds,
+    );
     await refresh();
   }
 

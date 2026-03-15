@@ -64,7 +64,7 @@ class GalleryCubit extends Cubit<GalleryState> {
       emit(
         state.copyWith(
           isLoading: false,
-          message: 'reindexed',
+          feedback: GalleryFeedback.reindexed,
         ),
       );
     } on Object catch (error) {

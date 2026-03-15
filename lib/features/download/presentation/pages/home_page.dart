@@ -59,10 +59,17 @@ class HomePage extends StatelessWidget {
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
-                    builder: (_) => BlocProvider(
-                      create: (_) => SettingsCubit(
-                        context.read<SettingsRepository>(),
-                      ),
+                    builder: (_) => MultiBlocProvider(
+                      providers: [
+                        BlocProvider.value(
+                          value: context.read<GalleryCubit>(),
+                        ),
+                        BlocProvider(
+                          create: (_) => SettingsCubit(
+                            context.read<SettingsRepository>(),
+                          ),
+                        ),
+                      ],
                       child: const SettingsPage(),
                     ),
                   ),

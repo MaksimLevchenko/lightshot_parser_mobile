@@ -79,7 +79,7 @@ class LightshotRemoteDataSource {
       if (cancelToken.isCancelled) {
         throw const CancelledDownloadException();
       }
-      throw const NoPhotoException();
+      throw const DownloadTransportException();
     }
 
     final file = File(targetPath);

@@ -103,7 +103,8 @@ class DownloadRepository {
   CancelToken? _cancelToken;
 
   Stream<DownloadUpdate> start(DownloadRequest request) async* {
-    _cancelToken = CancelToken();
+    final cancelToken = CancelToken();
+    _cancelToken = cancelToken;
     final generator = request.useRandomAddress
         ? RandomUrlGenerator(useNewAddresses: request.useNewAddresses)
         : SequentialUrlGenerator(
@@ -111,104 +112,117 @@ class DownloadRepository {
             startingUrl: request.startingUrl,
           );
 
-    var downloadedCount = 0;
-    yield DownloadUpdate(
-      type: DownloadUpdateType.progress,
-      progress: DownloadProgress(
-        downloadedCount: downloadedCount,
-        totalCount: request.targetCount,
-      ),
-    );
+    try {
+      var downloadedCount = 0;
+      yield DownloadUpdate(
+        type: DownloadUpdateType.progress,
+        progress: DownloadProgress(
+          downloadedCount: downloadedCount,
+          totalCount: request.targetCount,
+        ),
+      );
 
-    while (downloadedCount < request.targetCount) {
-      final pageUrl = generator.current;
-      final pageId = pageUrl.pathSegments.first;
+      while (downloadedCount < request.targetCount) {
+        final pageUrl = generator.current;
+        final pageId = pageUrl.pathSegments.first;
 
-      if (await _galleryRepository.isUrlProcessed(pageId)) {
+        if (await _galleryRepository.isUrlProcessed(pageId)) {
+          generator.moveNext();
+          continue;
+        }
+
+        try {
+          final imageUrl = await _remoteDataSource.resolveImageUrl(
+            pageUrl: pageUrl,
+            proxySettings: request.proxySettings,
+          );
+
+          final extension = imageUrl.substring(imageUrl.lastIndexOf('.'));
+          final downloadedFile = await _remoteDataSource.downloadImage(
+            imageUrl: imageUrl,
+            targetPath:
+                '${_galleryRepository.photosDirectory.path}${Platform.pathSeparator}$pageId$extension',
+            cancelToken: cancelToken,
+            proxySettings: request.proxySettings,
+          );
+          await _galleryRepository.addDownloadedFile(id: pageId);
+          downloadedCount += 1;
+          yield DownloadUpdate(
+            type: DownloadUpdateType.progress,
+            progress: DownloadProgress(
+              downloadedCount: downloadedCount,
+              totalCount: request.targetCount,
+            ),
+            item: GalleryItem.fromFile(downloadedFile),
+          );
+        } on NoPhotoException {
+          await _galleryRepository.markUrlProcessed(pageId);
+        } on CancelledDownloadException {
+          yield DownloadUpdate(
+            type: DownloadUpdateType.cancelled,
+            progress: DownloadProgress(
+              downloadedCount: downloadedCount,
+              totalCount: request.targetCount,
+            ),
+          );
+          return;
+        } on CouldNotConnectException {
+          yield DownloadUpdate(
+            type: DownloadUpdateType.failed,
+            progress: DownloadProgress(
+              downloadedCount: downloadedCount,
+              totalCount: request.targetCount,
+            ),
+            message: request.proxySettings.enabled ? 'proxy' : 'vpn',
+          );
+          return;
+        } on DownloadTransportException {
+          yield DownloadUpdate(
+            type: DownloadUpdateType.failed,
+            progress: DownloadProgress(
+              downloadedCount: downloadedCount,
+              totalCount: request.targetCount,
+            ),
+            message: request.proxySettings.enabled ? 'proxy' : 'vpn',
+          );
+          return;
+        } on AppException catch (error) {
+          yield DownloadUpdate(
+            type: DownloadUpdateType.failed,
+            progress: DownloadProgress(
+              downloadedCount: downloadedCount,
+              totalCount: request.targetCount,
+            ),
+            message: error.message,
+          );
+          return;
+        } on Object catch (error) {
+          yield DownloadUpdate(
+            type: DownloadUpdateType.failed,
+            progress: DownloadProgress(
+              downloadedCount: downloadedCount,
+              totalCount: request.targetCount,
+            ),
+            message: error.toString(),
+          );
+          return;
+        }
+
         generator.moveNext();
-        continue;
       }
 
-      try {
-        final imageUrl = await _remoteDataSource.resolveImageUrl(
-          pageUrl: pageUrl,
-          proxySettings: request.proxySettings,
-        );
-
-        final extension = imageUrl.substring(imageUrl.lastIndexOf('.'));
-        final downloadedFile = await _remoteDataSource.downloadImage(
-          imageUrl: imageUrl,
-          targetPath:
-              '${_galleryRepository.photosDirectory.path}${Platform.pathSeparator}$pageId$extension',
-          cancelToken: _cancelToken!,
-          proxySettings: request.proxySettings,
-        );
-        await _galleryRepository.addDownloadedFile(
-          file: downloadedFile,
-          id: pageId,
-        );
-        downloadedCount += 1;
-        yield DownloadUpdate(
-          type: DownloadUpdateType.progress,
-          progress: DownloadProgress(
-            downloadedCount: downloadedCount,
-            totalCount: request.targetCount,
-          ),
-          item: GalleryItem.fromFile(downloadedFile),
-        );
-      } on NoPhotoException {
-        await _galleryRepository.markUrlProcessed(pageId);
-      } on CancelledDownloadException {
-        yield DownloadUpdate(
-          type: DownloadUpdateType.cancelled,
-          progress: DownloadProgress(
-            downloadedCount: downloadedCount,
-            totalCount: request.targetCount,
-          ),
-        );
-        return;
-      } on CouldNotConnectException {
-        yield DownloadUpdate(
-          type: DownloadUpdateType.failed,
-          progress: DownloadProgress(
-            downloadedCount: downloadedCount,
-            totalCount: request.targetCount,
-          ),
-          message: request.proxySettings.enabled ? 'proxy' : 'vpn',
-        );
-        return;
-      } on AppException catch (error) {
-        yield DownloadUpdate(
-          type: DownloadUpdateType.failed,
-          progress: DownloadProgress(
-            downloadedCount: downloadedCount,
-            totalCount: request.targetCount,
-          ),
-          message: error.message,
-        );
-        return;
-      } on Object catch (error) {
-        yield DownloadUpdate(
-          type: DownloadUpdateType.failed,
-          progress: DownloadProgress(
-            downloadedCount: downloadedCount,
-            totalCount: request.targetCount,
-          ),
-          message: error.toString(),
-        );
-        return;
+      yield DownloadUpdate(
+        type: DownloadUpdateType.completed,
+        progress: DownloadProgress(
+          downloadedCount: downloadedCount,
+          totalCount: request.targetCount,
+        ),
+      );
+    } finally {
+      if (identical(_cancelToken, cancelToken)) {
+        _cancelToken = null;
       }
-
-      generator.moveNext();
     }
-
-    yield DownloadUpdate(
-      type: DownloadUpdateType.completed,
-      progress: DownloadProgress(
-        downloadedCount: downloadedCount,
-        totalCount: request.targetCount,
-      ),
-    );
   }
 
   Future<void> cancel() async {

@@ -16,7 +16,7 @@ class PhotoViewerPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocListener<PhotoViewerCubit, PhotoViewerState>(
       listener: (context, state) {
-        if (state.message == 'deleted') {
+        if (state.feedback == PhotoViewerFeedback.deleted) {
           ScaffoldMessenger.of(context).showSnackBar(
             buildAppSnackBar(message: S.of(context).imageDeleted),
           );
@@ -24,10 +24,12 @@ class PhotoViewerPage extends StatelessWidget {
           if (state.items.isEmpty && Navigator.of(context).canPop()) {
             Navigator.of(context).pop();
           }
-        } else if (state.message != null && state.message!.isNotEmpty) {
+        } else if (state.feedback == PhotoViewerFeedback.saved &&
+            state.savedPath != null &&
+            state.savedPath!.isNotEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
             buildAppSnackBar(
-              message: S.of(context).imageSavedToPath(state.message!),
+              message: S.of(context).imageSavedToPath(state.savedPath!),
             ),
           );
           context.read<PhotoViewerCubit>().clearFeedback();

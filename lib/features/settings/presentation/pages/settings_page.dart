@@ -77,7 +77,7 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         BlocListener<GalleryCubit, GalleryState>(
           listener: (context, state) {
-            if (state.message == 'reindexed') {
+            if (state.feedback == GalleryFeedback.reindexed) {
               ScaffoldMessenger.of(context).showSnackBar(
                 buildAppSnackBar(message: S.of(context).recreateDatabase),
               );
