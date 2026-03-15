@@ -424,12 +424,11 @@ void main() {
         onClassify: (GalleryItem item) {
           return item.copyWith(
             classificationResult: ClassificationResult.completed(
-              category: ClassificationCategory.games,
+              category: ClassificationCategory.documents,
               confidence: 0.92,
               rawScores: const ClassificationScores(
                 nsfw: 0.1,
-                documents: 0.3,
-                games: 0.92,
+                documents: 0.92,
               ),
               backend: 'mock',
               classifiedAt: DateTime(2026, 3, 15),
@@ -438,30 +437,42 @@ void main() {
         },
       ),
     );
-    final updates = <DownloadUpdate>[];
-    final completer = Completer<void>();
+    final sawPending = Completer<void>();
+    final sawCompleted = Completer<void>();
+    final gallerySubscription = galleryRepository.watch().listen(
+      (items) {
+        if (items.isEmpty) {
+          return;
+        }
 
-    repository.start(buildRequest()).listen(
-          updates.add,
-          onDone: () => completer.complete(),
-        );
-
-    await _waitForCondition(() async {
-      final items = await galleryRepository.load();
-      return items.isNotEmpty;
+        final item = items.first;
+        if (item.classificationResult.status == ClassificationStatus.pending &&
+            !sawPending.isCompleted) {
+          sawPending.complete();
+        }
+        if (item.classificationResult.category ==
+                ClassificationCategory.documents &&
+            !sawCompleted.isCompleted) {
+          sawCompleted.complete();
+        }
+      },
+    );
+    addTearDown(() async {
+      await gallerySubscription.cancel();
     });
-    final pendingItems = await galleryRepository.load();
 
-    expect(pendingItems.single.classificationResult.status,
-        ClassificationStatus.pending);
+    final updatesFuture = repository.start(buildRequest()).toList();
 
-    await completer.future;
+    await sawPending.future.timeout(const Duration(seconds: 2));
+    final updates = await updatesFuture;
+    await sawCompleted.future.timeout(const Duration(seconds: 2));
+
     final completedItems = await galleryRepository.load();
 
     expect(updates.last.type, DownloadUpdateType.completed);
     expect(
       completedItems.single.classificationResult.category,
-      ClassificationCategory.games,
+      ClassificationCategory.documents,
     );
   });
 }
@@ -539,19 +550,4 @@ Future<void> _writePngBytes(File file) async {
     0x82,
   ];
   await file.writeAsBytes(bytes, flush: true);
-}
-
-Future<void> _waitForCondition(
-  Future<bool> Function() condition, {
-  Duration timeout = const Duration(seconds: 2),
-  Duration step = const Duration(milliseconds: 10),
-}) async {
-  final stopwatch = Stopwatch()..start();
-  while (stopwatch.elapsed < timeout) {
-    if (await condition()) {
-      return;
-    }
-    await Future<void>.delayed(step);
-  }
-  fail('Timed out while waiting for condition');
 }

@@ -205,16 +205,6 @@ class S {
     );
   }
 
-  /// `Games`
-  String get classificationCategoryGames {
-    return Intl.message(
-      'Games',
-      name: 'classificationCategoryGames',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Unrecognized`
   String get classificationCategoryUnrecognized {
     return Intl.message(

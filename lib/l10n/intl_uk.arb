@@ -34,8 +34,6 @@
   "@classificationCategoryNsfw": {},
   "classificationCategoryDocuments": "Документи",
   "@classificationCategoryDocuments": {},
-  "classificationCategoryGames": "Ігри",
-  "@classificationCategoryGames": {},
   "classificationCategoryUnrecognized": "Не розпізнано",
   "@classificationCategoryUnrecognized": {},
   "imageDeleted": "Зображення видалено",

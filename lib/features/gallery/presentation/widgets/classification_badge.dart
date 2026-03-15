@@ -61,11 +61,6 @@ class ClassificationBadge extends StatelessWidget {
           const Color(0xFFF5F0E3),
           AppColors.warning,
         ),
-      ClassificationCategory.games => (
-          S.of(context).classificationCategoryGames,
-          const Color(0xFFE4F2F4),
-          AppColors.accent,
-        ),
       ClassificationCategory.unrecognized => (
           S.of(context).classificationCategoryUnrecognized,
           AppColors.panelStrong,

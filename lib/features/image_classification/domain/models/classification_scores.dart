@@ -6,20 +6,17 @@ class ClassificationScores extends Equatable {
   const ClassificationScores({
     required this.nsfw,
     required this.documents,
-    required this.games,
   });
 
   const ClassificationScores.zero()
       : nsfw = 0,
-        documents = 0,
-        games = 0;
+        documents = 0;
 
   final double nsfw;
   final double documents;
-  final double games;
 
   double get maxScore {
-    final values = <double>[nsfw, documents, games]..sort();
+    final values = <double>[nsfw, documents]..sort();
     return values.last;
   }
 
@@ -27,7 +24,6 @@ class ClassificationScores extends Equatable {
     return switch (category) {
       ClassificationCategory.nsfw => nsfw,
       ClassificationCategory.documents => documents,
-      ClassificationCategory.games => games,
       ClassificationCategory.unrecognized => maxScore,
     };
   }
@@ -36,7 +32,6 @@ class ClassificationScores extends Equatable {
     return <String, double>{
       'nsfw': nsfw,
       'documents': documents,
-      'games': games,
     };
   }
 
@@ -44,19 +39,16 @@ class ClassificationScores extends Equatable {
     return ClassificationScores(
       nsfw: _asDouble(json['nsfw']),
       documents: _asDouble(json['documents']),
-      games: _asDouble(json['games']),
     );
   }
 
   ClassificationScores copyWith({
     double? nsfw,
     double? documents,
-    double? games,
   }) {
     return ClassificationScores(
       nsfw: nsfw ?? this.nsfw,
       documents: documents ?? this.documents,
-      games: games ?? this.games,
     );
   }
 
@@ -68,5 +60,5 @@ class ClassificationScores extends Equatable {
   }
 
   @override
-  List<Object?> get props => <Object?>[nsfw, documents, games];
+  List<Object?> get props => <Object?>[nsfw, documents];
 }

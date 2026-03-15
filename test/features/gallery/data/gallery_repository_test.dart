@@ -140,12 +140,11 @@ void main() {
 
     final completedItem = pendingItem.copyWith(
       classificationResult: ClassificationResult.completed(
-        category: ClassificationCategory.games,
+        category: ClassificationCategory.documents,
         confidence: 0.93,
         rawScores: const ClassificationScores(
           nsfw: 0.1,
-          documents: 0.2,
-          games: 0.93,
+          documents: 0.93,
         ),
         backend: 'mock',
         classifiedAt: DateTime(2026, 3, 15),
@@ -157,7 +156,7 @@ void main() {
     final completedItems = await galleryRepository.load();
     expect(
       completedItems.single.classificationResult.category,
-      ClassificationCategory.games,
+      ClassificationCategory.documents,
     );
     expect(
       completedItems.single.classificationResult.confidence,

@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:lightshot_parser_mobile/core/logging/app_logger.dart';
+import 'package:lightshot_parser_mobile/features/gallery/presentation/cubit/gallery_cubit.dart';
 
 class AppBlocObserver extends BlocObserver {
   @override
@@ -16,6 +17,11 @@ class AppBlocObserver extends BlocObserver {
 
   @override
   void onChange(BlocBase<dynamic> bloc, Change<dynamic> change) {
+    if (bloc is GalleryCubit) {
+      super.onChange(bloc, change);
+      return;
+    }
+
     AppLogger.info(
       '${bloc.runtimeType} state: ${change.currentState} -> ${change.nextState}',
       scope: 'bloc',

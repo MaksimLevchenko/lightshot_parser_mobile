@@ -46,18 +46,17 @@ void main() {
     await pumpBadge(
       tester,
       ClassificationResult.completed(
-        category: ClassificationCategory.games,
+        category: ClassificationCategory.documents,
         confidence: 0.91,
         rawScores: const ClassificationScores(
           nsfw: 0.1,
-          documents: 0.2,
-          games: 0.91,
+          documents: 0.91,
         ),
         backend: 'mock',
         classifiedAt: DateTime(2026, 3, 15),
       ),
     );
 
-    expect(find.text('Games'), findsOneWidget);
+    expect(find.text('Documents'), findsOneWidget);
   });
 }

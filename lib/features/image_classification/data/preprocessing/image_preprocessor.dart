@@ -53,6 +53,8 @@ class ImagePreprocessor {
     var tensorIndex = 0;
 
     for (var channel = 0; channel < 3; channel += 1) {
+      final mean = modelSpec.normalizationMean[channel];
+      final std = modelSpec.normalizationStd[channel];
       for (var y = 0; y < modelSpec.inputHeight; y += 1) {
         for (var x = 0; x < modelSpec.inputWidth; x += 1) {
           final pixel = resizedImage.getPixel(x, y);
@@ -61,7 +63,8 @@ class ImagePreprocessor {
             1 => pixel.g,
             _ => pixel.b,
           };
-          tensor[tensorIndex] = channelValue / 255;
+          final normalizedValue = channelValue / 255;
+          tensor[tensorIndex] = (normalizedValue - mean) / std;
           tensorIndex += 1;
         }
       }
@@ -73,6 +76,7 @@ class ImagePreprocessor {
       height: modelSpec.inputHeight,
       channels: 3,
       signature: decodedImage.signature,
+      shape: <int>[1, 3, modelSpec.inputHeight, modelSpec.inputWidth],
     );
   }
 

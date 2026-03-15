@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/foundation.dart';
@@ -24,7 +25,14 @@ class NotificationService {
 
   Stream<NotificationAction> get actions => _actionsController.stream;
 
+  bool get _isSupportedPlatform =>
+      !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+
   Future<void> init() async {
+    if (!_isSupportedPlatform) {
+      return;
+    }
+
     _activeInstance = this;
     await AwesomeNotifications().initialize(
       _defaultNotificationIcon,
@@ -62,6 +70,9 @@ class NotificationService {
   }
 
   Future<void> cancelNotification(int id) async {
+    if (!_isSupportedPlatform) {
+      return;
+    }
     await AwesomeNotifications().cancel(id);
   }
 
@@ -72,6 +83,10 @@ class NotificationService {
     required int maxValue,
     required int progress,
   }) async {
+    if (!_isSupportedPlatform) {
+      return;
+    }
+
     final progressPercent = maxValue == 0 ? 0.0 : (progress / maxValue) * 100.0;
 
     await AwesomeNotifications().createNotification(
@@ -98,6 +113,10 @@ class NotificationService {
     required String title,
     required String body,
   }) async {
+    if (!_isSupportedPlatform) {
+      return;
+    }
+
     await AwesomeNotifications().createNotification(
       content: NotificationContent(
         id: id,

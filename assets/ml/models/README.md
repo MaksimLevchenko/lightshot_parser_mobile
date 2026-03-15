@@ -1,11 +1,15 @@
-TODO(onnx-assets): Place the production ONNX models in this directory using these exact names:
+Production ONNX models are expected in this directory using these exact names:
 
 - `assets/ml/models/nsfw.onnx`
 - `assets/ml/models/documents.onnx`
-- `assets/ml/models/games.onnx`
 
-TODO(model-config): Verify the real model input names, output names, tensor shapes, normalization rules, and thresholds before replacing the mock backend.
+The current production pipeline uses `flutter_onnxruntime` with:
 
-TODO(android-runtime): Add the Android-specific ONNX Runtime backend binding and wire it into `InferenceBackend`.
+- `nsfw.onnx`
+- `documents.onnx`
 
-TODO(windows-runtime): Add the Windows-specific ONNX Runtime backend binding and wire it into `InferenceBackend`.
+TODO(model-config): Recalibrate thresholds and re-verify output contracts if the exported models change.
+
+TODO(android-runtime): Validate release configuration on Android with the final shipping build variant.
+
+TODO(windows-runtime): Validate release configuration on Windows with the final shipping build variant.

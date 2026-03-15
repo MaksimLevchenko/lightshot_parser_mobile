@@ -1,4 +1,5 @@
 import 'package:lightshot_parser_mobile/features/gallery/domain/models/gallery_item.dart';
+import 'package:lightshot_parser_mobile/core/logging/app_logger.dart';
 import 'package:lightshot_parser_mobile/features/image_classification/data/backends/inference_backend.dart';
 import 'package:lightshot_parser_mobile/features/image_classification/data/classifiers/cascade_classifier.dart';
 import 'package:lightshot_parser_mobile/features/image_classification/data/models/model_spec.dart';
@@ -33,32 +34,63 @@ class ImageClassifierService {
     final decodedImage = await _imagePreprocessor.decodeFile(
       imagePath: imagePath,
     );
-    final scoresByCategory = <ClassificationCategory, double>{};
 
-    for (final modelSpec in _defaultModelSpecs) {
-      final preprocessedImage = _imagePreprocessor.preprocessDecodedImage(
-        decodedImage: decodedImage,
-        modelSpec: modelSpec,
+    final nsfwScore = await _runModel(
+      decodedImage: decodedImage,
+      modelSpec: _nsfwModelSpec,
+    );
+    if (nsfwScore >= _modelThresholds.nsfwThreshold) {
+      return _buildResult(
+        scores: ClassificationScores(
+          nsfw: nsfwScore,
+          documents: 0,
+        ),
       );
-      final score = await _inferenceBackend.runModel(
-        modelSpec: modelSpec,
-        input: preprocessedImage,
-      );
-      scoresByCategory[modelSpec.category] = score;
     }
 
-    final scores = ClassificationScores(
-      nsfw: scoresByCategory[ClassificationCategory.nsfw] ?? 0,
-      documents: scoresByCategory[ClassificationCategory.documents] ?? 0,
-      games: scoresByCategory[ClassificationCategory.games] ?? 0,
+    final documentsScore = await _runModel(
+      decodedImage: decodedImage,
+      modelSpec: _documentsModelSpec,
     );
+    return _buildResult(
+      scores: ClassificationScores(
+        nsfw: nsfwScore,
+        documents: documentsScore,
+      ),
+    );
+  }
 
-    return _cascadeClassifier.classify(
+  Future<double> _runModel({
+    required DecodedImageData decodedImage,
+    required ModelSpec modelSpec,
+  }) async {
+    final preprocessedImage = _imagePreprocessor.preprocessDecodedImage(
+      decodedImage: decodedImage,
+      modelSpec: modelSpec,
+    );
+    return _inferenceBackend.runModel(
+      modelSpec: modelSpec,
+      input: preprocessedImage,
+    );
+  }
+
+  ClassificationResult _buildResult({
+    required ClassificationScores scores,
+  }) {
+    final result = _cascadeClassifier.classify(
       scores: scores,
       thresholds: _modelThresholds,
       backend: _inferenceBackend.backendId,
       classifiedAt: DateTime.now(),
     );
+    AppLogger.info(
+      'Classification completed with backend=${_inferenceBackend.backendId} '
+      'nsfw=${scores.nsfw.toStringAsFixed(4)} '
+      'documents=${scores.documents.toStringAsFixed(4)} '
+      'category=${result.category.name}',
+      scope: 'image_classification',
+    );
+    return result;
   }
 
   Future<GalleryItem> classifyPendingGalleryItem({
@@ -67,7 +99,13 @@ class ImageClassifierService {
     try {
       final result = await classifyFile(imagePath: item.path);
       return item.copyWith(classificationResult: result);
-    } on Object {
+    } on Object catch (error, stackTrace) {
+      AppLogger.warning(
+        'Classification failed for ${item.path}. Returning unrecognized fallback.',
+        scope: 'image_classification',
+        error: error,
+        stackTrace: stackTrace,
+      );
       return item.copyWith(
         classificationResult: ClassificationResult.unrecognized(
           backend: _inferenceBackend.backendId,
@@ -81,37 +119,27 @@ class ImageClassifierService {
     return _inferenceBackend.dispose();
   }
 
-  List<ModelSpec> get _defaultModelSpecs {
-    return const <ModelSpec>[
-      // TODO(onnx-assets): Place the production models into assets/ml/models/ using the paths below.
-      // TODO(model-config): Replace the placeholder input and output names after the real ONNX models are wired in.
-      ModelSpec(
-        key: 'nsfw',
-        category: ClassificationCategory.nsfw,
-        assetPath: 'assets/ml/models/nsfw.onnx',
-        inputName: 'input',
-        outputName: 'output',
-        inputWidth: 224,
-        inputHeight: 224,
-      ),
-      ModelSpec(
-        key: 'documents',
-        category: ClassificationCategory.documents,
-        assetPath: 'assets/ml/models/documents.onnx',
-        inputName: 'input',
-        outputName: 'output',
-        inputWidth: 224,
-        inputHeight: 224,
-      ),
-      ModelSpec(
-        key: 'games',
-        category: ClassificationCategory.games,
-        assetPath: 'assets/ml/models/games.onnx',
-        inputName: 'input',
-        outputName: 'output',
-        inputWidth: 224,
-        inputHeight: 224,
-      ),
-    ];
-  }
+  static const ModelSpec _nsfwModelSpec = ModelSpec(
+    key: 'nsfw',
+    category: ClassificationCategory.nsfw,
+    assetPath: 'assets/ml/models/nsfw.onnx',
+    inputName: 'input',
+    outputName: 'logits',
+    inputWidth: 384,
+    inputHeight: 384,
+    normalizationMean: <double>[0.5, 0.5, 0.5],
+    normalizationStd: <double>[0.5, 0.5, 0.5],
+  );
+
+  static const ModelSpec _documentsModelSpec = ModelSpec(
+    key: 'documents',
+    category: ClassificationCategory.documents,
+    assetPath: 'assets/ml/models/documents.onnx',
+    inputName: 'input',
+    outputName: 'output',
+    inputWidth: 224,
+    inputHeight: 224,
+    normalizationMean: <double>[0, 0, 0],
+    normalizationStd: <double>[1, 1, 1],
+  );
 }

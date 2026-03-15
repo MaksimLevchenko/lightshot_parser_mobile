@@ -34,8 +34,6 @@
   "@classificationCategoryNsfw": {},
   "classificationCategoryDocuments": "Documents",
   "@classificationCategoryDocuments": {},
-  "classificationCategoryGames": "Games",
-  "@classificationCategoryGames": {},
   "classificationCategoryUnrecognized": "Unrecognized",
   "@classificationCategoryUnrecognized": {},
   "imageDeleted": "Image deleted",

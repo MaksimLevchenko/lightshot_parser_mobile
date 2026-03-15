@@ -7,9 +7,9 @@ void main() {
   test('mock backend returns deterministic score for same input', () async {
     final backend = MockInferenceBackend();
     const modelSpec = ModelSpec(
-      key: 'games',
-      category: ClassificationCategory.games,
-      assetPath: 'assets/ml/models/games.onnx',
+      key: 'documents',
+      category: ClassificationCategory.documents,
+      assetPath: 'assets/ml/models/documents.onnx',
       inputName: 'input',
       outputName: 'output',
       inputWidth: 224,
@@ -21,6 +21,7 @@ void main() {
       height: 224,
       channels: 3,
       signature: 123456,
+      shape: const <int>[1, 3, 1, 3],
     );
 
     final firstScore = await backend.runModel(

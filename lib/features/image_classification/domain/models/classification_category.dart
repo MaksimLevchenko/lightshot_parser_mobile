@@ -1,7 +1,6 @@
 enum ClassificationCategory {
   nsfw,
   documents,
-  games,
   unrecognized;
 
   static ClassificationCategory fromStorage(String? value) {

@@ -11,6 +11,8 @@ class ModelSpec extends Equatable {
     required this.outputName,
     required this.inputWidth,
     required this.inputHeight,
+    this.normalizationMean = const <double>[0, 0, 0],
+    this.normalizationStd = const <double>[1, 1, 1],
   });
 
   final String key;
@@ -20,6 +22,8 @@ class ModelSpec extends Equatable {
   final String outputName;
   final int inputWidth;
   final int inputHeight;
+  final List<double> normalizationMean;
+  final List<double> normalizationStd;
 
   @override
   List<Object?> get props => <Object?>[
@@ -30,5 +34,7 @@ class ModelSpec extends Equatable {
         outputName,
         inputWidth,
         inputHeight,
+        normalizationMean,
+        normalizationStd,
       ];
 }

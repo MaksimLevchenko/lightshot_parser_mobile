@@ -1,5 +1,6 @@
 export 'data/backends/inference_backend.dart';
 export 'data/backends/mock_inference_backend.dart';
+export 'data/backends/onnx_inference_backend.dart';
 export 'data/classifiers/cascade_classifier.dart';
 export 'data/models/model_spec.dart';
 export 'data/models/preprocessed_image_data.dart';

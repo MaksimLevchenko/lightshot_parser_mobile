@@ -83,7 +83,7 @@ class _AppBootstrapState extends State<AppBootstrap> {
     );
     _imageClassifierService = ImageClassifierService(
       imagePreprocessor: ImagePreprocessor(),
-      inferenceBackend: MockInferenceBackend(),
+      inferenceBackend: OnnxInferenceBackend(),
       cascadeClassifier: const CascadeClassifier(),
     );
     _downloadRepository = DownloadRepository(
