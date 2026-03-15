@@ -1,48 +1,50 @@
+import 'dart:async';
 import 'dart:developer';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+enum NotificationAction {
+  cancelDownload,
+}
+
 class NotificationService {
+  NotificationService();
+
   final FlutterLocalNotificationsPlugin notificationsPlugin =
       FlutterLocalNotificationsPlugin();
+  final StreamController<NotificationAction> _actionsController =
+      StreamController<NotificationAction>.broadcast();
+
+  Stream<NotificationAction> get actions => _actionsController.stream;
+
+  Future<void> init() async {
+    const initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    const initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+    );
+    await notificationsPlugin.initialize(
+      settings: initializationSettings,
+      onDidReceiveNotificationResponse: (details) {
+        log('cancelNotification');
+        _actionsController.add(NotificationAction.cancelDownload);
+      },
+    );
+  }
 
   Future<void> cancelNotification(int id) async {
-    await notificationsPlugin.cancel(id);
+    await notificationsPlugin.cancel(id: id);
   }
 
-  Future<void> initNotification(onRecieveNotificationResponce) async {
-    AndroidInitializationSettings initializationSettingsAndroid =
-        const AndroidInitializationSettings('@mipmap/ic_launcher');
-
-    var initializationSettings = InitializationSettings(
-        android: initializationSettingsAndroid, iOS: null);
-    await notificationsPlugin.initialize(initializationSettings,
-        onDidReceiveNotificationResponse: ((details) {
-      log('cancelNotification');
-      // onRecieveNotificationResponce();
-    }));
-  }
-
-  // AndroidNotificationAction actionCancel(BuildContext context) {
-  //   return AndroidNotificationAction(
-  //     cancelNotification: true,
-  //     'channelId',
-  //     S.of(context).cancel,
-  //   );
-  // }
-
-  progressBarNotificationDetails(
-      {required int maxValue,
-      required int progress,
-      required BuildContext context}) {
+  NotificationDetails progressBarNotificationDetails({
+    required int maxValue,
+    required int progress,
+  }) {
     return NotificationDetails(
       android: AndroidNotificationDetails(
         'channelId',
         'channelName',
-        // actions: [
-        //   actionCancel(context),
-        // ],
         enableVibration: false,
         visibility: NotificationVisibility.public,
         ongoing: true,
@@ -59,7 +61,7 @@ class NotificationService {
     );
   }
 
-  notificationDetails() {
+  NotificationDetails notificationDetails() {
     return const NotificationDetails(
       android: AndroidNotificationDetails(
         'channelId',
@@ -69,25 +71,40 @@ class NotificationService {
     );
   }
 
-  Future showProgressBarNotification(
-      {int id = 0,
-      required String title,
-      required String body,
-      required int maxValue,
-      required int progress,
-      required BuildContext context}) async {
-    return notificationsPlugin.show(
-        id,
-        title,
-        body,
-        await progressBarNotificationDetails(
-            maxValue: maxValue, progress: progress, context: context),
-        payload: 'item x');
+  Future<void> showProgressBarNotification({
+    int id = 0,
+    required String title,
+    required String body,
+    required int maxValue,
+    required int progress,
+  }) async {
+    await notificationsPlugin.show(
+      id: id,
+      title: title,
+      body: body,
+      notificationDetails: progressBarNotificationDetails(
+        maxValue: maxValue,
+        progress: progress,
+      ),
+      payload: 'cancel-download',
+    );
   }
 
-  Future showNotification(
-      {int id = 1, required String title, required String body}) async {
-    return notificationsPlugin
-        .show(id, title, body, await notificationDetails(), payload: 'item x');
+  Future<void> showNotification({
+    int id = 1,
+    required String title,
+    required String body,
+  }) async {
+    await notificationsPlugin.show(
+      id: id,
+      title: title,
+      body: body,
+      notificationDetails: notificationDetails(),
+      payload: 'item x',
+    );
+  }
+
+  Future<void> dispose() async {
+    await _actionsController.close();
   }
 }

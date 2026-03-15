@@ -18,8 +18,10 @@ class S {
   static S? _current;
 
   static S get current {
-    assert(_current != null,
-        'No instance of S was loaded. Try to initialize the S delegate before accessing S.current.');
+    assert(
+      _current != null,
+      'No instance of S was loaded. Try to initialize the S delegate before accessing S.current.',
+    );
     return _current!;
   }
 
@@ -41,8 +43,10 @@ class S {
 
   static S of(BuildContext context) {
     final instance = S.maybeOf(context);
-    assert(instance != null,
-        'No instance of S present in the widget tree. Did you add S.delegate in localizationsDelegates?');
+    assert(
+      instance != null,
+      'No instance of S present in the widget tree. Did you add S.delegate in localizationsDelegates?',
+    );
     return instance!;
   }
 
@@ -62,12 +66,7 @@ class S {
 
   /// `Cancel`
   String get cancel {
-    return Intl.message(
-      'Cancel',
-      name: 'cancel',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Cancel', name: 'cancel', desc: '', args: []);
   }
 
   /// `Delete all images`
@@ -92,12 +91,7 @@ class S {
 
   /// `Delete`
   String get delete {
-    return Intl.message(
-      'Delete',
-      name: 'delete',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Delete', name: 'delete', desc: '', args: []);
   }
 
   /// `Begin downloading`
@@ -112,7 +106,9 @@ class S {
 
   /// `{images, plural, zero{The images have not been downloaded yet} one{Downloaded 1 image out of {wantedNumOfImages}} other{{images} images out of {wantedNumOfImages} have been downloaded}}`
   String downloadedImagesOfWantednumofimages(
-      num images, Object wantedNumOfImages) {
+    num images,
+    Object wantedNumOfImages,
+  ) {
     return Intl.plural(
       images,
       zero: 'The images have not been downloaded yet',
@@ -176,12 +172,7 @@ class S {
 
   /// `Gallery`
   String get galleryAppBar {
-    return Intl.message(
-      'Gallery',
-      name: 'galleryAppBar',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Gallery', name: 'galleryAppBar', desc: '', args: []);
   }
 
   /// `Image deleted`
@@ -346,32 +337,17 @@ class S {
 
   /// `Save`
   String get save {
-    return Intl.message(
-      'Save',
-      name: 'save',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Save', name: 'save', desc: '', args: []);
   }
 
   /// `See all`
   String get seeAll {
-    return Intl.message(
-      'See all',
-      name: 'seeAll',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('See all', name: 'seeAll', desc: '', args: []);
   }
 
   /// `Settings`
   String get settings {
-    return Intl.message(
-      'Settings',
-      name: 'settings',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Settings', name: 'settings', desc: '', args: []);
   }
 
   /// `Settings saved`
@@ -436,12 +412,7 @@ class S {
 
   /// `Use proxy`
   String get useProxy {
-    return Intl.message(
-      'Use proxy',
-      name: 'useProxy',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Use proxy', name: 'useProxy', desc: '', args: []);
   }
 
   /// `Use proxy auth`
@@ -486,12 +457,7 @@ class S {
 
   /// `Proxy port`
   String get proxyPort {
-    return Intl.message(
-      'Proxy port',
-      name: 'proxyPort',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Proxy port', name: 'proxyPort', desc: '', args: []);
   }
 
   /// `Enter the proxy port`
@@ -516,12 +482,7 @@ class S {
 
   /// `Proxy login`
   String get proxyLogin {
-    return Intl.message(
-      'Proxy login',
-      name: 'proxyLogin',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Proxy login', name: 'proxyLogin', desc: '', args: []);
   }
 
   /// `Enter the proxy login`

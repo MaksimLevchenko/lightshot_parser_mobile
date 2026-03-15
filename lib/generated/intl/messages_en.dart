@@ -40,7 +40,8 @@ class MessageLookup extends MessageLookupByLibrary {
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
         "areYouSureYouWantToDeleteThisImage":
             MessageLookupByLibrary.simpleMessage(
-                "Are you sure you want to delete this image?"),
+          "Are you sure you want to delete this image?",
+        ),
         "cancel": MessageLookupByLibrary.simpleMessage("Cancel"),
         "clearImages":
             MessageLookupByLibrary.simpleMessage("Delete all images"),
@@ -50,27 +51,36 @@ class MessageLookup extends MessageLookupByLibrary {
         "download": MessageLookupByLibrary.simpleMessage("Begin downloading"),
         "downloadErrorMakeSureYouUseHttpProxy":
             MessageLookupByLibrary.simpleMessage(
-                "Download error. Make sure you use HTTP proxy."),
+          "Download error. Make sure you use HTTP proxy.",
+        ),
         "downloadErrorTryToChangeVpn": MessageLookupByLibrary.simpleMessage(
-            "Download error. Try to change VPN"),
+          "Download error. Try to change VPN",
+        ),
         "downloadedImagesOfWantednumofimages": m0,
-        "downloadingComplete":
-            MessageLookupByLibrary.simpleMessage("Downloading Complete"),
+        "downloadingComplete": MessageLookupByLibrary.simpleMessage(
+          "Downloading Complete",
+        ),
         "downloadingImages":
             MessageLookupByLibrary.simpleMessage("Downloading"),
         "enterTheNumberOfImagesToDownload":
             MessageLookupByLibrary.simpleMessage(
-                "Enter the number of images to download"),
-        "enterTheProxyAddress":
-            MessageLookupByLibrary.simpleMessage("Enter the proxy address"),
-        "enterTheProxyLogin":
-            MessageLookupByLibrary.simpleMessage("Enter the proxy login"),
-        "enterTheProxyPassword":
-            MessageLookupByLibrary.simpleMessage("Enter the proxy password"),
-        "enterTheProxyPort":
-            MessageLookupByLibrary.simpleMessage("Enter the proxy port"),
-        "enterTheStartingAddress":
-            MessageLookupByLibrary.simpleMessage("Enter the starting address"),
+          "Enter the number of images to download",
+        ),
+        "enterTheProxyAddress": MessageLookupByLibrary.simpleMessage(
+          "Enter the proxy address",
+        ),
+        "enterTheProxyLogin": MessageLookupByLibrary.simpleMessage(
+          "Enter the proxy login",
+        ),
+        "enterTheProxyPassword": MessageLookupByLibrary.simpleMessage(
+          "Enter the proxy password",
+        ),
+        "enterTheProxyPort": MessageLookupByLibrary.simpleMessage(
+          "Enter the proxy port",
+        ),
+        "enterTheStartingAddress": MessageLookupByLibrary.simpleMessage(
+          "Enter the starting address",
+        ),
         "errorError": m1,
         "errorErrorNpleaseTryAgain": m2,
         "galleryAppBar": MessageLookupByLibrary.simpleMessage("Gallery"),
@@ -78,60 +88,79 @@ class MessageLookup extends MessageLookupByLibrary {
         "imageSavedToPath": m3,
         "mainTitle": MessageLookupByLibrary.simpleMessage("Lightshot Parser"),
         "noDownloadFolderFound": MessageLookupByLibrary.simpleMessage(
-            "The download folder was not found"),
+          "The download folder was not found",
+        ),
         "noPhotos": MessageLookupByLibrary.simpleMessage("There are no images"),
         "numberOfImagesToDownload": MessageLookupByLibrary.simpleMessage(
-            "The desired number of images"),
-        "permissionDenied":
-            MessageLookupByLibrary.simpleMessage("Permission denied"),
+          "The desired number of images",
+        ),
+        "permissionDenied": MessageLookupByLibrary.simpleMessage(
+          "Permission denied",
+        ),
         "photoViewer": MessageLookupByLibrary.simpleMessage("Photo Viewer"),
         "pleaseEnterAAddressWithOnlyAMask": m4,
         "pleaseEnterAMaxLengthAddress": MessageLookupByLibrary.simpleMessage(
-            "Please enter a max length address"),
+          "Please enter a max length address",
+        ),
         "pleaseEnterANumberGreaterThan0": MessageLookupByLibrary.simpleMessage(
-            "Please enter a number greater than 0"),
+          "Please enter a number greater than 0",
+        ),
         "pleaseEnterAValidIpAddress": MessageLookupByLibrary.simpleMessage(
-            "Please enter a valid IP address"),
-        "pleaseEnterAValidNumber":
-            MessageLookupByLibrary.simpleMessage("Please enter a number"),
-        "pleaseEnterAValidPort":
-            MessageLookupByLibrary.simpleMessage("Please enter a valid port"),
+          "Please enter a valid IP address",
+        ),
+        "pleaseEnterAValidNumber": MessageLookupByLibrary.simpleMessage(
+          "Please enter a number",
+        ),
+        "pleaseEnterAValidPort": MessageLookupByLibrary.simpleMessage(
+          "Please enter a valid port",
+        ),
         "pleaseEnterTheCorrectData": MessageLookupByLibrary.simpleMessage(
-            "Please enter the correct data"),
+          "Please enter the correct data",
+        ),
         "pleaseEnterTheNumberOfImagesToDownload":
             MessageLookupByLibrary.simpleMessage(
-                "Please enter the number of images to download"),
+          "Please enter the number of images to download",
+        ),
         "pleaseEnterTheProxyAddress": MessageLookupByLibrary.simpleMessage(
-            "Please enter the proxy address"),
+          "Please enter the proxy address",
+        ),
         "pleaseEnterTheProxyLogin": MessageLookupByLibrary.simpleMessage(
-            "Please enter the proxy login"),
+          "Please enter the proxy login",
+        ),
         "pleaseEnterTheProxyPassword": MessageLookupByLibrary.simpleMessage(
-            "Please enter the proxy password"),
-        "pleaseEnterTheProxyPort":
-            MessageLookupByLibrary.simpleMessage("Please enter the proxy port"),
+          "Please enter the proxy password",
+        ),
+        "pleaseEnterTheProxyPort": MessageLookupByLibrary.simpleMessage(
+          "Please enter the proxy port",
+        ),
         "pleaseEnterTheStartingAddress": MessageLookupByLibrary.simpleMessage(
-            "Please enter the starting address"),
+          "Please enter the starting address",
+        ),
         "proxyAddress": MessageLookupByLibrary.simpleMessage("Proxy address"),
         "proxyLogin": MessageLookupByLibrary.simpleMessage("Proxy login"),
         "proxyPassword": MessageLookupByLibrary.simpleMessage("Proxy password"),
         "proxyPort": MessageLookupByLibrary.simpleMessage("Proxy port"),
-        "recreateDatabase":
-            MessageLookupByLibrary.simpleMessage("Recreate database"),
+        "recreateDatabase": MessageLookupByLibrary.simpleMessage(
+          "Recreate database",
+        ),
         "save": MessageLookupByLibrary.simpleMessage("Save"),
         "seeAll": MessageLookupByLibrary.simpleMessage("See all"),
         "settings": MessageLookupByLibrary.simpleMessage("Settings"),
         "settingsSaved": MessageLookupByLibrary.simpleMessage("Settings saved"),
         "shareImage": MessageLookupByLibrary.simpleMessage(
-            "Check out this image from Lightshot Parser! \n\nhttps://github.com/MaksimLevchenko/lightshot_parser_mobile"),
+          "Check out this image from Lightshot Parser! \n\nhttps://github.com/MaksimLevchenko/lightshot_parser_mobile",
+        ),
         "startingAddress":
             MessageLookupByLibrary.simpleMessage("Starting address"),
         "successfullyDownloadedWantednumImages": m5,
         "unknownErrorEPleaseContactToTheDev": m6,
-        "useNewAddresses":
-            MessageLookupByLibrary.simpleMessage("Use new addresses"),
+        "useNewAddresses": MessageLookupByLibrary.simpleMessage(
+          "Use new addresses",
+        ),
         "useProxy": MessageLookupByLibrary.simpleMessage("Use proxy"),
         "useProxyAuth": MessageLookupByLibrary.simpleMessage("Use proxy auth"),
-        "useRandomAddresses":
-            MessageLookupByLibrary.simpleMessage("Use random addresses")
+        "useRandomAddresses": MessageLookupByLibrary.simpleMessage(
+          "Use random addresses",
+        ),
       };
 }
