@@ -64,16 +64,22 @@ class SettingsCubit extends Cubit<SettingsState> {
   }
 
   void setImgurIdLength(int value) {
-    final normalizedLength = value.clamp(5, 7);
+    final normalizedLength = value == 7 ? 7 : 5;
     var startingId = state.draft.imgur.startingId;
     if (startingId.length > normalizedLength) {
       startingId = startingId.substring(0, normalizedLength);
     }
+    final candidateLengths = <int>[
+      normalizedLength,
+      ...state.draft.imgur.candidateLengths.where(
+        (length) => length != normalizedLength,
+      ),
+    ];
     emit(
       state.copyWith(
         draft: state.draft.copyWith(
           imgur: state.draft.imgur.copyWith(
-            idLength: normalizedLength,
+            candidateLengths: candidateLengths,
             startingId: startingId,
           ),
         ),

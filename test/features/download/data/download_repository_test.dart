@@ -26,8 +26,11 @@ class FakeLightshotRemoteDataSource extends LightshotRemoteDataSource {
     required this.onDownloadImage,
   });
 
-  final Future<String> Function(Uri pageUrl, ProxySettings proxySettings)
-      onResolveImageUrl;
+  final Future<String> Function(
+    Uri pageUrl,
+    ProxySettings proxySettings,
+    CancelToken? cancelToken,
+  ) onResolveImageUrl;
   final Future<File> Function(
     String imageUrl,
     String targetPath,
@@ -39,8 +42,9 @@ class FakeLightshotRemoteDataSource extends LightshotRemoteDataSource {
   Future<String> resolveImageUrl({
     required Uri pageUrl,
     required ProxySettings proxySettings,
+    CancelToken? cancelToken,
   }) {
-    return onResolveImageUrl(pageUrl, proxySettings);
+    return onResolveImageUrl(pageUrl, proxySettings, cancelToken);
   }
 
   @override
@@ -65,8 +69,11 @@ class FakeImgurRemoteDataSource extends ImgurRemoteDataSource {
     required this.onDownloadImage,
   });
 
-  final Future<String> Function(Uri pageUrl, ProxySettings proxySettings)
-      onResolveImageUrl;
+  final Future<String> Function(
+    Uri pageUrl,
+    ProxySettings proxySettings,
+    CancelToken? cancelToken,
+  ) onResolveImageUrl;
   final Future<File> Function(
     String imageUrl,
     String targetPath,
@@ -78,8 +85,9 @@ class FakeImgurRemoteDataSource extends ImgurRemoteDataSource {
   Future<String> resolveImageUrl({
     required Uri pageUrl,
     required ProxySettings proxySettings,
+    CancelToken? cancelToken,
   }) {
-    return onResolveImageUrl(pageUrl, proxySettings);
+    return onResolveImageUrl(pageUrl, proxySettings, cancelToken);
   }
 
   @override
@@ -137,7 +145,7 @@ void main() {
 
   test('successful download emits progress and completion', () async {
     final remoteDataSource = FakeLightshotRemoteDataSource(
-      onResolveImageUrl: (pageUrl, _) async =>
+      onResolveImageUrl: (pageUrl, _, __) async =>
           'https://image.example/${pageUrl.pathSegments.first}.jpg',
       onDownloadImage: (imageUrl, targetPath, _, __) async {
         final file = File(targetPath);
@@ -175,7 +183,7 @@ void main() {
 
   test('no-photo page is marked processed and generator continues', () async {
     final remoteDataSource = FakeLightshotRemoteDataSource(
-      onResolveImageUrl: (pageUrl, _) async {
+      onResolveImageUrl: (pageUrl, _, __) async {
         if (pageUrl.pathSegments.first == 'aaaaaa') {
           throw const NoPhotoException();
         }
@@ -208,7 +216,7 @@ void main() {
 
   test('download transport failure does not mark page as processed', () async {
     final remoteDataSource = FakeLightshotRemoteDataSource(
-      onResolveImageUrl: (pageUrl, _) async =>
+      onResolveImageUrl: (pageUrl, _, __) async =>
           'https://image.example/${pageUrl.pathSegments.first}.jpg',
       onDownloadImage: (_, __, ___, ____) async {
         throw const DownloadTransportException();
@@ -240,7 +248,7 @@ void main() {
   test('missing downloaded image is marked processed and generator continues',
       () async {
     final remoteDataSource = FakeLightshotRemoteDataSource(
-      onResolveImageUrl: (pageUrl, _) async =>
+      onResolveImageUrl: (pageUrl, _, __) async =>
           'https://image.example/${pageUrl.pathSegments.first}.jpg',
       onDownloadImage: (imageUrl, targetPath, _, __) async {
         if (imageUrl.endsWith('/aaaaaa.jpg')) {
@@ -273,7 +281,7 @@ void main() {
 
   test('cancel emits cancelled update', () async {
     final remoteDataSource = FakeLightshotRemoteDataSource(
-      onResolveImageUrl: (pageUrl, _) async =>
+      onResolveImageUrl: (pageUrl, _, __) async =>
           'https://image.example/${pageUrl.pathSegments.first}.jpg',
       onDownloadImage: (imageUrl, targetPath, cancelToken, __) async {
         await Future<void>.delayed(const Duration(milliseconds: 20));
@@ -299,9 +307,42 @@ void main() {
     expect(updates.last.type, DownloadUpdateType.cancelled);
   });
 
+  test('cancel during resolve emits cancelled update without downloading',
+      () async {
+    var downloadCalled = false;
+    final remoteDataSource = FakeLightshotRemoteDataSource(
+      onResolveImageUrl: (pageUrl, _, cancelToken) async {
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        if (cancelToken?.isCancelled ?? false) {
+          throw const CancelledDownloadException();
+        }
+        return 'https://image.example/${pageUrl.pathSegments.first}.jpg';
+      },
+      onDownloadImage: (imageUrl, targetPath, _, __) async {
+        downloadCalled = true;
+        final file = File(targetPath);
+        await file.create(recursive: true);
+        await file.writeAsString('binary-data');
+        return file;
+      },
+    );
+    final repository = DownloadRepository(
+      sources: [LightshotDownloadSource(remoteDataSource)],
+      galleryRepository: galleryRepository,
+    );
+
+    final updatesFuture = repository.start(buildRequest()).toList();
+    await Future<void>.delayed(const Duration(milliseconds: 5));
+    await repository.cancel();
+    final updates = await updatesFuture;
+
+    expect(updates.last.type, DownloadUpdateType.cancelled);
+    expect(downloadCalled, isFalse);
+  });
+
   test('imgur successful download uses source-scoped tracking key', () async {
     final remoteDataSource = FakeImgurRemoteDataSource(
-      onResolveImageUrl: (pageUrl, _) async =>
+      onResolveImageUrl: (pageUrl, _, __) async =>
           'https://i.imgur.com/${pageUrl.pathSegments.first}.png',
       onDownloadImage: (imageUrl, targetPath, _, __) async {
         final file = File(targetPath);
@@ -319,7 +360,7 @@ void main() {
       source: DownloadSource.imgur,
       lightshotSettings: LightshotSourceSettings.initial(),
       imgurSettings: ImgurSourceSettings(
-        idLength: 5,
+        candidateLengths: [5],
         useRandomAddress: false,
         startingId: 'aaaaa',
       ),

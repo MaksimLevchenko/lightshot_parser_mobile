@@ -22,7 +22,10 @@ class ImgurDownloadSource extends DownloadSourceEngine {
   CandidateIdGenerator createGenerator(DownloadRequest request) {
     final settings = request.imgurSettings;
     return settings.useRandomAddress
-        ? RandomIdGenerator(symbols: _symbols, length: settings.idLength)
+        ? MultiLengthRandomIdGenerator(
+            symbols: _symbols,
+            lengths: settings.candidateLengths,
+          )
         : SequentialIdGenerator(
             symbols: _symbols,
             length: settings.idLength,
@@ -34,10 +37,12 @@ class ImgurDownloadSource extends DownloadSourceEngine {
   Future<ResolvedImage> resolveImage({
     required String sourceId,
     required ProxySettings proxySettings,
+    required CancelToken cancelToken,
   }) async {
     final imageUrl = await _remoteDataSource.resolveImageUrl(
       pageUrl: Uri.parse('https://imgur.com/$sourceId'),
       proxySettings: proxySettings,
+      cancelToken: cancelToken,
     );
     return ResolvedImage(
       imageUrl: imageUrl,

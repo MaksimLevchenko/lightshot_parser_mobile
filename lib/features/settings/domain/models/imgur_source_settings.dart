@@ -2,48 +2,71 @@ import 'package:equatable/equatable.dart';
 
 class ImgurSourceSettings extends Equatable {
   const ImgurSourceSettings({
-    required this.idLength,
+    required this.candidateLengths,
     required this.useRandomAddress,
     required this.startingId,
   });
 
   const ImgurSourceSettings.initial()
-      : idLength = 7,
+      : candidateLengths = const [5, 7],
         useRandomAddress = true,
         startingId = '';
 
-  final int idLength;
+  final List<int> candidateLengths;
   final bool useRandomAddress;
   final String startingId;
 
+  int get idLength => candidateLengths.first;
+
   ImgurSourceSettings copyWith({
-    int? idLength,
+    List<int>? candidateLengths,
     bool? useRandomAddress,
     String? startingId,
   }) {
+    final normalizedLengths = _normalizeCandidateLengths(
+      candidateLengths ?? this.candidateLengths,
+    );
     return ImgurSourceSettings(
-      idLength: idLength ?? this.idLength,
+      candidateLengths: normalizedLengths,
       useRandomAddress: useRandomAddress ?? this.useRandomAddress,
       startingId: startingId ?? this.startingId,
     );
   }
 
   Map<String, dynamic> toJson() {
+    final normalizedLengths = _normalizeCandidateLengths(candidateLengths);
     return {
-      'idLength': idLength,
+      'candidateLengths': normalizedLengths,
       'useRandomAddress': useRandomAddress,
       'startingId': useRandomAddress ? '' : startingId,
     };
   }
 
   factory ImgurSourceSettings.fromJson(Map<String, dynamic> json) {
+    final rawCandidateLengths = json['candidateLengths'];
+    final legacyLength = json['idLength'] as int?;
+
     return ImgurSourceSettings(
-      idLength: (json['idLength'] as int?) ?? 7,
+      candidateLengths: _normalizeCandidateLengths(
+        rawCandidateLengths is List
+            ? rawCandidateLengths.whereType<int>().toList(growable: false)
+            : <int>[
+                if (legacyLength != null) legacyLength,
+              ],
+      ),
       useRandomAddress: (json['useRandomAddress'] as bool?) ?? true,
       startingId: (json['startingId'] as String?) ?? '',
     );
   }
 
   @override
-  List<Object?> get props => [idLength, useRandomAddress, startingId];
+  List<Object?> get props => [candidateLengths, useRandomAddress, startingId];
+
+  static List<int> _normalizeCandidateLengths(List<int> values) {
+    final normalized = values.where((value) => value > 0).toSet().toList()
+      ..sort();
+    return normalized.isEmpty
+        ? const [5, 7]
+        : List<int>.unmodifiable(normalized);
+  }
 }

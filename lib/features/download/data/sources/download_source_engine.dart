@@ -24,6 +24,7 @@ abstract class DownloadSourceEngine {
   Future<ResolvedImage> resolveImage({
     required String sourceId,
     required ProxySettings proxySettings,
+    required CancelToken cancelToken,
   });
 
   Future<File> downloadImage({

@@ -76,3 +76,38 @@ class RandomIdGenerator implements CandidateIdGenerator {
     return true;
   }
 }
+
+class MultiLengthRandomIdGenerator implements CandidateIdGenerator {
+  MultiLengthRandomIdGenerator({
+    required String symbols,
+    required List<int> lengths,
+  })  : _symbols = symbols,
+        _lengths = List<int>.unmodifiable(
+          lengths.where((length) => length > 0).toSet().toList()..sort(),
+        ) {
+    if (_lengths.isEmpty) {
+      throw ArgumentError.value(lengths, 'lengths', 'Must not be empty.');
+    }
+    moveNext();
+  }
+
+  final String _symbols;
+  final List<int> _lengths;
+  final Random _random = Random();
+  late String _currentValue;
+
+  @override
+  String get current => _currentValue;
+
+  @override
+  bool moveNext() {
+    final length = _lengths[_random.nextInt(_lengths.length)];
+    _currentValue = String.fromCharCodes(
+      Iterable<int>.generate(
+        length,
+        (_) => _symbols.codeUnitAt(_random.nextInt(_symbols.length)),
+      ),
+    );
+    return true;
+  }
+}

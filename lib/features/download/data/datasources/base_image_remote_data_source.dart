@@ -11,8 +11,9 @@ abstract class BaseImageRemoteDataSource {
   BaseImageRemoteDataSource()
       : _client = Dio(
           BaseOptions(
-            connectTimeout: const Duration(seconds: 3),
-            receiveTimeout: const Duration(seconds: 7),
+            connectTimeout: const Duration(seconds: 8),
+            receiveTimeout: const Duration(seconds: 8),
+            sendTimeout: const Duration(seconds: 8),
             headers: const {
               'User-Agent':
                   'Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0',
@@ -23,28 +24,64 @@ abstract class BaseImageRemoteDataSource {
   final Dio _client;
 
   @protected
-  Future<String> fetchPageSource({
-    required Uri pageUrl,
+  Future<Response<dynamic>> sendRequestUri({
+    required Uri uri,
     required ProxySettings proxySettings,
-    bool treatNotFoundAsNoPhoto = false,
+    CancelToken? cancelToken,
+    String method = 'GET',
+    Map<String, Object?>? headers,
+    bool followRedirects = true,
+    ResponseType? responseType,
   }) async {
     _configureProxy(proxySettings);
 
-    late final Response<dynamic> response;
     try {
-      response = await _client.getUri(
-        pageUrl,
-        options: Options(validateStatus: (_) => true),
+      return await _client.requestUri(
+        uri,
+        options: Options(
+          method: method,
+          headers: headers,
+          validateStatus: (_) => true,
+          followRedirects: followRedirects,
+          responseType: responseType,
+        ),
+        cancelToken: cancelToken,
       );
     } on DioException catch (error, stackTrace) {
+      if (CancelToken.isCancel(error)) {
+        throw const CancelledDownloadException();
+      }
+      if (_isTimeout(error)) {
+        AppLogger.warning(
+          'Request timed out and will be skipped: $method $uri',
+          scope: 'network',
+          error: error,
+          stackTrace: stackTrace,
+        );
+        throw const NoPhotoException('Request timed out');
+      }
       AppLogger.warning(
-        'Failed to load page source: $pageUrl',
+        'Failed to perform $method request: $uri',
         scope: 'network',
         error: error,
         stackTrace: stackTrace,
       );
       throw const CouldNotConnectException();
     }
+  }
+
+  @protected
+  Future<String> fetchPageSource({
+    required Uri pageUrl,
+    required ProxySettings proxySettings,
+    CancelToken? cancelToken,
+    bool treatNotFoundAsNoPhoto = false,
+  }) async {
+    final response = await sendRequestUri(
+      uri: pageUrl,
+      proxySettings: proxySettings,
+      cancelToken: cancelToken,
+    );
 
     final statusCode = response.statusCode;
     if (treatNotFoundAsNoPhoto && _isMissingResourceStatus(statusCode)) {
@@ -75,7 +112,18 @@ abstract class BaseImageRemoteDataSource {
       if (cancelToken.isCancelled) {
         throw const CancelledDownloadException();
       }
+      if (_isTimeout(error)) {
+        await _deleteIfExists(targetPath);
+        AppLogger.warning(
+          'Image download timed out and will be skipped: $imageUrl',
+          scope: 'network',
+          error: error,
+          stackTrace: stackTrace,
+        );
+        throw const NoPhotoException('Download timed out');
+      }
       if (_isMissingResourceStatus(error.response?.statusCode)) {
+        await _deleteIfExists(targetPath);
         throw const NoPhotoException();
       }
       AppLogger.warning(
@@ -105,5 +153,18 @@ abstract class BaseImageRemoteDataSource {
 
   bool _isMissingResourceStatus(int? statusCode) {
     return statusCode == 404 || statusCode == 410;
+  }
+
+  bool _isTimeout(DioException error) {
+    return error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.sendTimeout ||
+        error.type == DioExceptionType.receiveTimeout;
+  }
+
+  Future<void> _deleteIfExists(String targetPath) async {
+    final file = File(targetPath);
+    if (await file.exists()) {
+      await file.delete();
+    }
   }
 }

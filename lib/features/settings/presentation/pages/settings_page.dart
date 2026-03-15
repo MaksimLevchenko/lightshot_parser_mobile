@@ -237,7 +237,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                       context,
                                     ),
                                   ),
-                                  items: const [5, 6, 7]
+                                  items: const [5, 7]
                                       .map(
                                         (value) => DropdownMenuItem<int>(
                                           value: value,

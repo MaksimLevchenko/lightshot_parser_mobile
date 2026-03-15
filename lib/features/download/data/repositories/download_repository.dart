@@ -25,10 +25,12 @@ class DownloadRepository {
   final GalleryRepository _galleryRepository;
 
   CancelToken? _cancelToken;
+  bool _cancelRequested = false;
 
   Stream<DownloadUpdate> start(DownloadRequest request) async* {
     final cancelToken = CancelToken();
     _cancelToken = cancelToken;
+    _cancelRequested = false;
     AppLogger.info(
       'Starting download: source=${request.source.name}, targetCount=${request.targetCount}',
       scope: 'download',
@@ -62,10 +64,19 @@ class DownloadRepository {
       );
 
       while (downloadedCount < request.targetCount) {
+        if (_shouldCancel(cancelToken)) {
+          yield _buildCancelledUpdate(downloadedCount, request.targetCount);
+          return;
+        }
+
         final sourceId = generator.current;
         final trackingKey = source.createTrackingKey(sourceId);
 
         if (await _galleryRepository.isProcessed(trackingKey)) {
+          if (_shouldCancel(cancelToken)) {
+            yield _buildCancelledUpdate(downloadedCount, request.targetCount);
+            return;
+          }
           generator.moveNext();
           continue;
         }
@@ -74,7 +85,13 @@ class DownloadRepository {
           final resolvedImage = await source.resolveImage(
             sourceId: sourceId,
             proxySettings: request.proxySettings,
+            cancelToken: cancelToken,
           );
+
+          if (_shouldCancel(cancelToken)) {
+            yield _buildCancelledUpdate(downloadedCount, request.targetCount);
+            return;
+          }
 
           final downloadedFile = await source.downloadImage(
             imageUrl: resolvedImage.imageUrl,
@@ -175,11 +192,28 @@ class DownloadRepository {
       if (identical(_cancelToken, cancelToken)) {
         _cancelToken = null;
       }
+      _cancelRequested = false;
     }
   }
 
   Future<void> cancel() async {
     AppLogger.info('Cancelling active download', scope: 'download');
+    _cancelRequested = true;
     _cancelToken?.cancel();
+  }
+
+  bool _shouldCancel(CancelToken cancelToken) {
+    return _cancelRequested || cancelToken.isCancelled;
+  }
+
+  DownloadUpdate _buildCancelledUpdate(int downloadedCount, int totalCount) {
+    AppLogger.info('Download cancelled by user', scope: 'download');
+    return DownloadUpdate(
+      type: DownloadUpdateType.cancelled,
+      progress: DownloadProgress(
+        downloadedCount: downloadedCount,
+        totalCount: totalCount,
+      ),
+    );
   }
 }

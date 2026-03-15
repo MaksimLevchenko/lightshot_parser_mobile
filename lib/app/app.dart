@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:lightshot_parser_mobile/core/theme/app_scroll_behavior.dart';
 import 'package:lightshot_parser_mobile/core/theme/app_theme.dart';
 import 'package:lightshot_parser_mobile/core/widgets/status_view.dart';
 import 'package:lightshot_parser_mobile/features/bootstrap/presentation/cubit/bootstrap_cubit.dart';
@@ -57,6 +58,7 @@ class App extends StatelessWidget {
           ],
           supportedLocales: S.delegate.supportedLocales,
           theme: buildAppTheme(),
+          scrollBehavior: const AppScrollBehavior(),
           home: const AppView(),
         ),
       ),
@@ -111,38 +113,117 @@ class SplashPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      body: Container(
+      body: DecoratedBox(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.pink, Colors.purple],
-          ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              ConstrainedBox(
-                constraints: BoxConstraints.loose(const Size(200, 200)),
-                child: Image.asset('assets/icons/logo.png'),
-              ),
-              const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Lightshot Parser',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFFF8EEE5),
+              Color(0xFFECCEC0),
+              Color(0xFFDFAEA0),
             ],
           ),
         ),
+        child: Stack(
+          children: [
+            const Positioned(
+              left: -120,
+              top: -80,
+              child: _SplashOrb(
+                size: 260,
+                color: Color(0x66FFFFFF),
+              ),
+            ),
+            const Positioned(
+              right: -70,
+              bottom: -90,
+              child: _SplashOrb(
+                size: 240,
+                color: Color(0x44FFFFFF),
+              ),
+            ),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  child: Card(
+                    color: AppColors.panel.withValues(alpha: 0.92),
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.xl),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Container(
+                            width: 120,
+                            height: 120,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(AppRadius.lg),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x22000000),
+                                  blurRadius: 32,
+                                  offset: Offset(0, 18),
+                                ),
+                              ],
+                            ),
+                            padding: const EdgeInsets.all(AppSpacing.md),
+                            child: Image.asset('assets/icons/logo.png'),
+                          ),
+                          const SizedBox(height: AppSpacing.xl),
+                          Text(
+                            'Lightshot Parser',
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.headlineMedium?.copyWith(
+                              fontSize: 30,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                          Text(
+                            'Preparing your desktop-friendly download workspace.',
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.xl),
+                          const LinearProgressIndicator(minHeight: 6),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SplashOrb extends StatelessWidget {
+  const _SplashOrb({
+    required this.size,
+    required this.color,
+  });
+
+  final double size;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
       ),
     );
   }

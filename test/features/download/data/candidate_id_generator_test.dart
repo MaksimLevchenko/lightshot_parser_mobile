@@ -25,4 +25,19 @@ void main() {
 
     expect(generator.current, 'aaa0a');
   });
+
+  test('imgur multi-length random generator uses configured lengths', () {
+    final generator = MultiLengthRandomIdGenerator(
+      symbols: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
+      lengths: [5, 7],
+    );
+
+    final generatedLengths = <int>{};
+    for (var index = 0; index < 200; index++) {
+      generatedLengths.add(generator.current.length);
+      generator.moveNext();
+    }
+
+    expect(generatedLengths, containsAll([5, 7]));
+  });
 }

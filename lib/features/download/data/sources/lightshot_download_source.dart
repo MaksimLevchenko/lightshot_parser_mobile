@@ -37,10 +37,12 @@ class LightshotDownloadSource extends DownloadSourceEngine {
   Future<ResolvedImage> resolveImage({
     required String sourceId,
     required ProxySettings proxySettings,
+    required CancelToken cancelToken,
   }) async {
     final imageUrl = await _remoteDataSource.resolveImageUrl(
       pageUrl: Uri.parse('https://prnt.sc/$sourceId'),
       proxySettings: proxySettings,
+      cancelToken: cancelToken,
     );
     return ResolvedImage(
       imageUrl: imageUrl,

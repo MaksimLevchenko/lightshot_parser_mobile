@@ -12,10 +12,12 @@ class LightshotRemoteDataSource extends BaseImageRemoteDataSource {
   Future<String> resolveImageUrl({
     required Uri pageUrl,
     required ProxySettings proxySettings,
+    CancelToken? cancelToken,
   }) async {
     final sourceCode = await fetchPageSource(
       pageUrl: pageUrl,
       proxySettings: proxySettings,
+      cancelToken: cancelToken,
       treatNotFoundAsNoPhoto: true,
     );
     var imageStringUrl = _imageUrlPattern.stringMatch(sourceCode);
