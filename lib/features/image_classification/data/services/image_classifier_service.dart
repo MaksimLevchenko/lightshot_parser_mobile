@@ -1,10 +1,14 @@
-import 'package:lightshot_parser_mobile/features/gallery/domain/models/gallery_item.dart';
+import 'dart:ui';
+
+import 'package:flutter/foundation.dart';
+
 import 'package:lightshot_parser_mobile/core/logging/app_logger.dart';
+import 'package:lightshot_parser_mobile/features/gallery/domain/models/gallery_item.dart';
 import 'package:lightshot_parser_mobile/features/image_classification/data/backends/inference_backend.dart';
+import 'package:lightshot_parser_mobile/features/image_classification/data/backends/onnx_inference_backend.dart';
 import 'package:lightshot_parser_mobile/features/image_classification/data/classifiers/cascade_classifier.dart';
-import 'package:lightshot_parser_mobile/features/image_classification/data/models/model_spec.dart';
 import 'package:lightshot_parser_mobile/features/image_classification/data/preprocessing/image_preprocessor.dart';
-import 'package:lightshot_parser_mobile/features/image_classification/domain/models/classification_category.dart';
+import 'package:lightshot_parser_mobile/features/image_classification/data/services/classification_execution_backend.dart';
 import 'package:lightshot_parser_mobile/features/image_classification/domain/models/classification_result.dart';
 import 'package:lightshot_parser_mobile/features/image_classification/domain/models/classification_scores.dart';
 import 'package:lightshot_parser_mobile/features/image_classification/domain/models/model_thresholds.dart';
@@ -15,96 +19,57 @@ class ImageClassifierService {
     required InferenceBackend inferenceBackend,
     required CascadeClassifier cascadeClassifier,
     ModelThresholds modelThresholds = const ModelThresholds.defaults(),
-  })  : _imagePreprocessor = imagePreprocessor,
-        _inferenceBackend = inferenceBackend,
-        _cascadeClassifier = cascadeClassifier,
-        _modelThresholds = modelThresholds;
+    ClassificationExecutionBackend? executionBackend,
+    RootIsolateToken? rootIsolateToken,
+  })  : _cascadeClassifier = cascadeClassifier,
+        _modelThresholds = modelThresholds,
+        _executionBackend = executionBackend ??
+            _buildExecutionBackend(
+              imagePreprocessor: imagePreprocessor,
+              inferenceBackend: inferenceBackend,
+              modelThresholds: modelThresholds,
+              rootIsolateToken: rootIsolateToken ?? RootIsolateToken.instance,
+            );
 
-  final ImagePreprocessor _imagePreprocessor;
-  final InferenceBackend _inferenceBackend;
   final CascadeClassifier _cascadeClassifier;
   final ModelThresholds _modelThresholds;
+  final ClassificationExecutionBackend _executionBackend;
 
-  String get backendId => _inferenceBackend.backendId;
+  String get backendId => _executionBackend.backendId;
 
   Future<ClassificationResult> classifyFile({
     required String imagePath,
   }) async {
-    await _inferenceBackend.initialize();
-    final decodedImage = await _imagePreprocessor.decodeFile(
-      imagePath: imagePath,
-    );
-
-    final nsfwScore = await _runModel(
-      decodedImage: decodedImage,
-      modelSpec: _nsfwModelSpec,
-    );
-    if (nsfwScore >= _modelThresholds.nsfwThreshold) {
-      return _buildResult(
-        scores: ClassificationScores(
-          nsfw: nsfwScore,
-          people: 0,
-          documents: 0,
-        ),
-      );
-    }
-
-    final documentsScore = await _runModel(
-      decodedImage: decodedImage,
-      modelSpec: _documentsModelSpec,
-    );
-    if (documentsScore >= _modelThresholds.documentThreshold) {
-      return _buildResult(
-        scores: ClassificationScores(
-          nsfw: nsfwScore,
-          people: 0,
-          documents: documentsScore,
-        ),
-      );
-    }
-
-    final peopleScore = await _runModel(
-      decodedImage: decodedImage,
-      modelSpec: _peopleModelSpec,
-    );
+    final executionResult =
+        await _executionBackend.executeClassification(imagePath: imagePath);
     return _buildResult(
-      scores: ClassificationScores(
-        nsfw: nsfwScore,
-        people: peopleScore,
-        documents: documentsScore,
-      ),
-    );
-  }
-
-  Future<double> _runModel({
-    required DecodedImageData decodedImage,
-    required ModelSpec modelSpec,
-  }) async {
-    final preprocessedImage = _imagePreprocessor.preprocessDecodedImage(
-      decodedImage: decodedImage,
-      modelSpec: modelSpec,
-    );
-    return _inferenceBackend.runModel(
-      modelSpec: modelSpec,
-      input: preprocessedImage,
+      scores: executionResult.scores,
+      backendId: executionResult.backendId,
+      executionPath: executionResult.executionPath,
+      fallbackReason: executionResult.fallbackReason,
     );
   }
 
   ClassificationResult _buildResult({
     required ClassificationScores scores,
+    required String backendId,
+    required String executionPath,
+    String? fallbackReason,
   }) {
     final result = _cascadeClassifier.classify(
       scores: scores,
       thresholds: _modelThresholds,
-      backend: _inferenceBackend.backendId,
+      backend: backendId,
       classifiedAt: DateTime.now(),
     );
     AppLogger.info(
-      'Classification completed with backend=${_inferenceBackend.backendId} '
+      'Classification completed with backend=$backendId '
+      'executionPath=$executionPath '
       'nsfw=${scores.nsfw.toStringAsFixed(4)} '
       'people=${scores.people.toStringAsFixed(4)} '
       'documents=${scores.documents.toStringAsFixed(4)} '
-      'category=${result.category.name}',
+      'category=${result.category.name}'
+      '${fallbackReason == null ? '' : ' fallbackReason=$fallbackReason'}',
       scope: 'image_classification',
     );
     return result;
@@ -125,7 +90,7 @@ class ImageClassifierService {
       );
       return item.copyWith(
         classificationResult: ClassificationResult.unrecognized(
-          backend: _inferenceBackend.backendId,
+          backend: _executionBackend.backendId,
           classifiedAt: DateTime.now(),
         ),
       );
@@ -133,42 +98,31 @@ class ImageClassifierService {
   }
 
   Future<void> dispose() {
-    return _inferenceBackend.dispose();
+    return _executionBackend.dispose();
   }
 
-  static const ModelSpec _nsfwModelSpec = ModelSpec(
-    key: 'nsfw',
-    category: ClassificationCategory.nsfw,
-    assetPath: 'assets/ml/models/nsfw.onnx',
-    inputName: 'input',
-    outputName: 'logits',
-    inputWidth: 384,
-    inputHeight: 384,
-    normalizationMean: <double>[0.5, 0.5, 0.5],
-    normalizationStd: <double>[0.5, 0.5, 0.5],
-  );
+  static ClassificationExecutionBackend _buildExecutionBackend({
+    required ImagePreprocessor imagePreprocessor,
+    required InferenceBackend inferenceBackend,
+    required ModelThresholds modelThresholds,
+    required RootIsolateToken? rootIsolateToken,
+  }) {
+    final localBackend = LocalClassificationExecutionBackend(
+      imagePreprocessor: imagePreprocessor,
+      inferenceBackend: inferenceBackend,
+      modelThresholds: modelThresholds,
+    );
+    final canUseWorker = !kIsWeb &&
+        rootIsolateToken != null &&
+        inferenceBackend is OnnxInferenceBackend;
+    if (!canUseWorker) {
+      return localBackend;
+    }
 
-  static const ModelSpec _documentsModelSpec = ModelSpec(
-    key: 'documents',
-    category: ClassificationCategory.documents,
-    assetPath: 'assets/ml/models/documents_float.onnx',
-    inputName: 'input',
-    outputName: 'output',
-    inputWidth: 224,
-    inputHeight: 224,
-    normalizationMean: <double>[0, 0, 0],
-    normalizationStd: <double>[1, 1, 1],
-  );
-
-  static const ModelSpec _peopleModelSpec = ModelSpec(
-    key: 'people',
-    category: ClassificationCategory.people,
-    assetPath: 'assets/ml/models/people.onnx',
-    inputName: 'inputs',
-    taskType: ModelTaskType.personDetector,
-    numDetectionsOutputName: 'num_detections',
-    detectionBoxesOutputName: 'detection_boxes',
-    detectionScoresOutputName: 'detection_scores',
-    detectionClassesOutputName: 'detection_classes',
-  );
+    return IsolateClassificationExecutionBackend(
+      fallbackBackend: localBackend,
+      modelThresholds: modelThresholds,
+      rootIsolateToken: rootIsolateToken,
+    );
+  }
 }

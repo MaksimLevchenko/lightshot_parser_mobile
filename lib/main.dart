@@ -85,6 +85,7 @@ class _AppBootstrapState extends State<AppBootstrap> {
       imagePreprocessor: ImagePreprocessor(),
       inferenceBackend: OnnxInferenceBackend(),
       cascadeClassifier: const CascadeClassifier(),
+      rootIsolateToken: RootIsolateToken.instance,
     );
     _downloadRepository = DownloadRepository(
       sources: [

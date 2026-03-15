@@ -31,186 +31,175 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m4(mask) => "Please enter a address with only a ${mask}";
 
-  static String m5(images) =>
+  static String m5(processed, total) => "${processed} of ${total}";
+
+  static String m6(images) =>
       "${Intl.plural(images, zero: '', one: 'Successfully downloaded 1 image', other: '${images} images have been downloaded successfully')}";
 
-  static String m6(e) => "Unknown error: ${e}. Please contact to the dev";
-
-  static String m7(processed, total) => "${processed} of ${total}";
+  static String m7(e) => "Unknown error: ${e}. Please contact to the dev";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
-        "areYouSureYouWantToDeleteThisImage":
-            MessageLookupByLibrary.simpleMessage(
-          "Are you sure you want to delete this image?",
-        ),
-        "cancel": MessageLookupByLibrary.simpleMessage("Cancel"),
-        "classificationCategoryDocuments": MessageLookupByLibrary.simpleMessage(
-          "Documents",
-        ),
-        "classificationCategoryNotClassified":
-            MessageLookupByLibrary.simpleMessage(
-          "Not classified",
-        ),
-        "classificationCategoryNsfw": MessageLookupByLibrary.simpleMessage(
-          "Nudity",
-        ),
-        "classificationCategoryPeople": MessageLookupByLibrary.simpleMessage(
-          "People",
-        ),
-        "classificationCategoryUnrecognized":
-            MessageLookupByLibrary.simpleMessage(
-          "Unrecognized",
-        ),
-        "classificationLoading":
-            MessageLookupByLibrary.simpleMessage("Loading"),
-        "clearImages":
-            MessageLookupByLibrary.simpleMessage("Delete all images"),
-        "confirmDeletion":
-            MessageLookupByLibrary.simpleMessage("Confirm deletion"),
-        "delete": MessageLookupByLibrary.simpleMessage("Delete"),
-        "download": MessageLookupByLibrary.simpleMessage("Begin downloading"),
-        "downloadErrorMakeSureYouUseHttpProxy":
-            MessageLookupByLibrary.simpleMessage(
+    "areYouSureYouWantToDeleteThisImage": MessageLookupByLibrary.simpleMessage(
+      "Are you sure you want to delete this image?",
+    ),
+    "cancel": MessageLookupByLibrary.simpleMessage("Cancel"),
+    "classificationCategoryDocuments": MessageLookupByLibrary.simpleMessage(
+      "Documents",
+    ),
+    "classificationCategoryNotClassified": MessageLookupByLibrary.simpleMessage(
+      "Not classified",
+    ),
+    "classificationCategoryNsfw": MessageLookupByLibrary.simpleMessage(
+      "Nudity",
+    ),
+    "classificationCategoryPeople": MessageLookupByLibrary.simpleMessage(
+      "People",
+    ),
+    "classificationCategoryUnrecognized": MessageLookupByLibrary.simpleMessage(
+      "Unrecognized",
+    ),
+    "classificationLoading": MessageLookupByLibrary.simpleMessage("Loading"),
+    "clearImages": MessageLookupByLibrary.simpleMessage("Delete all images"),
+    "confirmDeletion": MessageLookupByLibrary.simpleMessage("Confirm deletion"),
+    "delete": MessageLookupByLibrary.simpleMessage("Delete"),
+    "download": MessageLookupByLibrary.simpleMessage("Begin downloading"),
+    "downloadErrorMakeSureYouUseHttpProxy":
+        MessageLookupByLibrary.simpleMessage(
           "Download error. Make sure you use HTTP proxy.",
         ),
-        "downloadErrorTryToChangeVpn": MessageLookupByLibrary.simpleMessage(
-          "Download error. Try to change VPN",
-        ),
-        "downloadedImagesOfWantednumofimages": m0,
-        "downloadingComplete": MessageLookupByLibrary.simpleMessage(
-          "Downloading Complete",
-        ),
-        "downloadingImages":
-            MessageLookupByLibrary.simpleMessage("Downloading"),
-        "enterTheNumberOfImagesToDownload":
-            MessageLookupByLibrary.simpleMessage(
-          "Enter the number of images to download",
-        ),
-        "enterTheProxyAddress": MessageLookupByLibrary.simpleMessage(
-          "Enter the proxy address",
-        ),
-        "enterTheProxyLogin": MessageLookupByLibrary.simpleMessage(
-          "Enter the proxy login",
-        ),
-        "enterTheProxyPassword": MessageLookupByLibrary.simpleMessage(
-          "Enter the proxy password",
-        ),
-        "enterTheProxyPort": MessageLookupByLibrary.simpleMessage(
-          "Enter the proxy port",
-        ),
-        "enterTheStartingAddress": MessageLookupByLibrary.simpleMessage(
-          "Enter the starting address",
-        ),
-        "errorError": m1,
-        "errorErrorNpleaseTryAgain": m2,
-        "galleryAppBar": MessageLookupByLibrary.simpleMessage("Gallery"),
-        "galleryFilterAll": MessageLookupByLibrary.simpleMessage("All"),
-        "imageDeleted": MessageLookupByLibrary.simpleMessage("Image deleted"),
-        "imageSavedToPath": m3,
-        "mainTitle": MessageLookupByLibrary.simpleMessage("Lightshot Parser"),
-        "noDownloadFolderFound": MessageLookupByLibrary.simpleMessage(
-          "The download folder was not found",
-        ),
-        "noPhotos": MessageLookupByLibrary.simpleMessage("There are no images"),
-        "noPhotosForSelectedFilter": MessageLookupByLibrary.simpleMessage(
-          "No images match the selected type",
-        ),
-        "numberOfImagesToDownload": MessageLookupByLibrary.simpleMessage(
-          "The desired number of images",
-        ),
-        "permissionDenied": MessageLookupByLibrary.simpleMessage(
-          "Permission denied",
-        ),
-        "photoViewer": MessageLookupByLibrary.simpleMessage("Photo Viewer"),
-        "pleaseEnterAAddressWithOnlyAMask": m4,
-        "pleaseEnterAMaxLengthAddress": MessageLookupByLibrary.simpleMessage(
-          "Please enter a max length address",
-        ),
-        "pleaseEnterANumberGreaterThan0": MessageLookupByLibrary.simpleMessage(
-          "Please enter a number greater than 0",
-        ),
-        "pleaseEnterAValidIpAddress": MessageLookupByLibrary.simpleMessage(
-          "Please enter a valid IP address",
-        ),
-        "pleaseEnterAValidNumber": MessageLookupByLibrary.simpleMessage(
-          "Please enter a number",
-        ),
-        "pleaseEnterAValidPort": MessageLookupByLibrary.simpleMessage(
-          "Please enter a valid port",
-        ),
-        "pleaseEnterTheCorrectData": MessageLookupByLibrary.simpleMessage(
-          "Please enter the correct data",
-        ),
-        "pleaseEnterTheNumberOfImagesToDownload":
-            MessageLookupByLibrary.simpleMessage(
+    "downloadErrorTryToChangeVpn": MessageLookupByLibrary.simpleMessage(
+      "Download error. Try to change VPN",
+    ),
+    "downloadedImagesOfWantednumofimages": m0,
+    "downloadingComplete": MessageLookupByLibrary.simpleMessage(
+      "Downloading Complete",
+    ),
+    "downloadingImages": MessageLookupByLibrary.simpleMessage("Downloading"),
+    "enterTheNumberOfImagesToDownload": MessageLookupByLibrary.simpleMessage(
+      "Enter the number of images to download",
+    ),
+    "enterTheProxyAddress": MessageLookupByLibrary.simpleMessage(
+      "Enter the proxy address",
+    ),
+    "enterTheProxyLogin": MessageLookupByLibrary.simpleMessage(
+      "Enter the proxy login",
+    ),
+    "enterTheProxyPassword": MessageLookupByLibrary.simpleMessage(
+      "Enter the proxy password",
+    ),
+    "enterTheProxyPort": MessageLookupByLibrary.simpleMessage(
+      "Enter the proxy port",
+    ),
+    "enterTheStartingAddress": MessageLookupByLibrary.simpleMessage(
+      "Enter the starting address",
+    ),
+    "errorError": m1,
+    "errorErrorNpleaseTryAgain": m2,
+    "galleryAppBar": MessageLookupByLibrary.simpleMessage("Gallery"),
+    "galleryFilterAll": MessageLookupByLibrary.simpleMessage("All"),
+    "imageDeleted": MessageLookupByLibrary.simpleMessage("Image deleted"),
+    "imageSavedToPath": m3,
+    "mainTitle": MessageLookupByLibrary.simpleMessage("Lightshot Parser"),
+    "noDownloadFolderFound": MessageLookupByLibrary.simpleMessage(
+      "The download folder was not found",
+    ),
+    "noPhotos": MessageLookupByLibrary.simpleMessage("There are no images"),
+    "noPhotosForSelectedFilter": MessageLookupByLibrary.simpleMessage(
+      "No images match the selected type",
+    ),
+    "numberOfImagesToDownload": MessageLookupByLibrary.simpleMessage(
+      "The desired number of images",
+    ),
+    "permissionDenied": MessageLookupByLibrary.simpleMessage(
+      "Permission denied",
+    ),
+    "photoViewer": MessageLookupByLibrary.simpleMessage("Photo Viewer"),
+    "pleaseEnterAAddressWithOnlyAMask": m4,
+    "pleaseEnterAMaxLengthAddress": MessageLookupByLibrary.simpleMessage(
+      "Please enter a max length address",
+    ),
+    "pleaseEnterANumberGreaterThan0": MessageLookupByLibrary.simpleMessage(
+      "Please enter a number greater than 0",
+    ),
+    "pleaseEnterAValidIpAddress": MessageLookupByLibrary.simpleMessage(
+      "Please enter a valid IP address",
+    ),
+    "pleaseEnterAValidNumber": MessageLookupByLibrary.simpleMessage(
+      "Please enter a number",
+    ),
+    "pleaseEnterAValidPort": MessageLookupByLibrary.simpleMessage(
+      "Please enter a valid port",
+    ),
+    "pleaseEnterTheCorrectData": MessageLookupByLibrary.simpleMessage(
+      "Please enter the correct data",
+    ),
+    "pleaseEnterTheNumberOfImagesToDownload":
+        MessageLookupByLibrary.simpleMessage(
           "Please enter the number of images to download",
         ),
-        "pleaseEnterTheProxyAddress": MessageLookupByLibrary.simpleMessage(
-          "Please enter the proxy address",
-        ),
-        "pleaseEnterTheProxyLogin": MessageLookupByLibrary.simpleMessage(
-          "Please enter the proxy login",
-        ),
-        "pleaseEnterTheProxyPassword": MessageLookupByLibrary.simpleMessage(
-          "Please enter the proxy password",
-        ),
-        "pleaseEnterTheProxyPort": MessageLookupByLibrary.simpleMessage(
-          "Please enter the proxy port",
-        ),
-        "pleaseEnterTheStartingAddress": MessageLookupByLibrary.simpleMessage(
-          "Please enter the starting address",
-        ),
-        "proxyAddress": MessageLookupByLibrary.simpleMessage("Proxy address"),
-        "proxyLogin": MessageLookupByLibrary.simpleMessage("Proxy login"),
-        "proxyPassword": MessageLookupByLibrary.simpleMessage("Proxy password"),
-        "proxyPort": MessageLookupByLibrary.simpleMessage("Proxy port"),
-        "recreateDatabase": MessageLookupByLibrary.simpleMessage(
-          "Recreate database",
-        ),
-        "reclassifyAllImages": MessageLookupByLibrary.simpleMessage(
-          "Reclassify all images",
-        ),
-        "reclassifyAllImagesConfirmationBody":
-            MessageLookupByLibrary.simpleMessage(
-          "The app will sequentially re-run AI recognition for every saved image and overwrite previous results.",
-        ),
-        "reclassifyDisabledImages": MessageLookupByLibrary.simpleMessage(
-          "Reclassify disabled images",
-        ),
-        "reclassifyDisabledImagesConfirmationBody":
-            MessageLookupByLibrary.simpleMessage(
+    "pleaseEnterTheProxyAddress": MessageLookupByLibrary.simpleMessage(
+      "Please enter the proxy address",
+    ),
+    "pleaseEnterTheProxyLogin": MessageLookupByLibrary.simpleMessage(
+      "Please enter the proxy login",
+    ),
+    "pleaseEnterTheProxyPassword": MessageLookupByLibrary.simpleMessage(
+      "Please enter the proxy password",
+    ),
+    "pleaseEnterTheProxyPort": MessageLookupByLibrary.simpleMessage(
+      "Please enter the proxy port",
+    ),
+    "pleaseEnterTheStartingAddress": MessageLookupByLibrary.simpleMessage(
+      "Please enter the starting address",
+    ),
+    "proxyAddress": MessageLookupByLibrary.simpleMessage("Proxy address"),
+    "proxyLogin": MessageLookupByLibrary.simpleMessage("Proxy login"),
+    "proxyPassword": MessageLookupByLibrary.simpleMessage("Proxy password"),
+    "proxyPort": MessageLookupByLibrary.simpleMessage("Proxy port"),
+    "reclassificationDone": MessageLookupByLibrary.simpleMessage(
+      "Image recognition updated",
+    ),
+    "reclassificationProgress": m5,
+    "reclassifyAllImages": MessageLookupByLibrary.simpleMessage(
+      "Reclassify all images",
+    ),
+    "reclassifyAllImagesConfirmationBody": MessageLookupByLibrary.simpleMessage(
+      "The app will sequentially re-run AI recognition for every saved image and overwrite previous results.",
+    ),
+    "reclassifyDisabledImages": MessageLookupByLibrary.simpleMessage(
+      "Reclassify disabled images",
+    ),
+    "reclassifyDisabledImagesConfirmationBody":
+        MessageLookupByLibrary.simpleMessage(
           "The app will sequentially re-run AI recognition only for saved images whose previous result was marked as disabled.",
         ),
-        "reclassificationDone": MessageLookupByLibrary.simpleMessage(
-          "Image recognition updated",
-        ),
-        "reclassificationProgress": m7,
-        "save": MessageLookupByLibrary.simpleMessage("Save"),
-        "seeAll": MessageLookupByLibrary.simpleMessage("See all"),
-        "settings": MessageLookupByLibrary.simpleMessage("Settings"),
-        "settingsAiRecognitionDescription":
-            MessageLookupByLibrary.simpleMessage(
-          "Automatically analyze newly downloaded images with ONNX models.",
-        ),
-        "settingsAiRecognitionTitle": MessageLookupByLibrary.simpleMessage(
-          "Use AI recognition",
-        ),
-        "settingsSaved": MessageLookupByLibrary.simpleMessage("Settings saved"),
-        "shareImage": MessageLookupByLibrary.simpleMessage(
-          "Check out this image from Lightshot Parser! \n\nhttps://github.com/MaksimLevchenko/lightshot_parser_mobile",
-        ),
-        "startingAddress":
-            MessageLookupByLibrary.simpleMessage("Starting address"),
-        "successfullyDownloadedWantednumImages": m5,
-        "unknownErrorEPleaseContactToTheDev": m6,
-        "useNewAddresses": MessageLookupByLibrary.simpleMessage(
-          "Use new addresses",
-        ),
-        "useProxy": MessageLookupByLibrary.simpleMessage("Use proxy"),
-        "useProxyAuth": MessageLookupByLibrary.simpleMessage("Use proxy auth"),
-        "useRandomAddresses": MessageLookupByLibrary.simpleMessage(
-          "Use random addresses",
-        ),
-      };
+    "recreateDatabase": MessageLookupByLibrary.simpleMessage(
+      "Recreate database",
+    ),
+    "save": MessageLookupByLibrary.simpleMessage("Save"),
+    "seeAll": MessageLookupByLibrary.simpleMessage("See all"),
+    "settings": MessageLookupByLibrary.simpleMessage("Settings"),
+    "settingsAiRecognitionDescription": MessageLookupByLibrary.simpleMessage(
+      "Automatically analyze newly downloaded images with ONNX models.",
+    ),
+    "settingsAiRecognitionTitle": MessageLookupByLibrary.simpleMessage(
+      "Use AI recognition",
+    ),
+    "settingsSaved": MessageLookupByLibrary.simpleMessage("Settings saved"),
+    "shareImage": MessageLookupByLibrary.simpleMessage(
+      "Check out this image from Lightshot Parser! \n\nhttps://github.com/MaksimLevchenko/lightshot_parser_mobile",
+    ),
+    "startingAddress": MessageLookupByLibrary.simpleMessage("Starting address"),
+    "successfullyDownloadedWantednumImages": m6,
+    "unknownErrorEPleaseContactToTheDev": m7,
+    "useNewAddresses": MessageLookupByLibrary.simpleMessage(
+      "Use new addresses",
+    ),
+    "useProxy": MessageLookupByLibrary.simpleMessage("Use proxy"),
+    "useProxyAuth": MessageLookupByLibrary.simpleMessage("Use proxy auth"),
+    "useRandomAddresses": MessageLookupByLibrary.simpleMessage(
+      "Use random addresses",
+    ),
+  };
 }

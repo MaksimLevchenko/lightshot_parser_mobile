@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
 
 import 'package:lightshot_parser_mobile/core/logging/app_logger.dart';
@@ -11,11 +12,15 @@ import 'package:lightshot_parser_mobile/features/image_classification/data/model
 class OnnxInferenceBackend implements InferenceBackend {
   OnnxInferenceBackend({
     OnnxRuntime? runtime,
-  }) : _runtime = runtime ?? OnnxRuntime();
+    Map<String, String>? modelPathOverridesByAssetPath,
+  })  : _runtime = runtime ?? OnnxRuntime(),
+        _modelPathOverridesByAssetPath =
+            modelPathOverridesByAssetPath ?? const <String, String>{};
 
   static const int _cocoPersonClassId = 1;
 
   final OnnxRuntime _runtime;
+  final Map<String, String> _modelPathOverridesByAssetPath;
   final Map<String, Future<OrtSession>> _sessionFutures =
       <String, Future<OrtSession>>{};
 
@@ -79,6 +84,22 @@ class OnnxInferenceBackend implements InferenceBackend {
         scope: 'image_classification',
       );
       return score;
+    } on PlatformException catch (error, stackTrace) {
+      if (_shouldFallbackForKnownUint8Bug(
+        modelSpec: modelSpec,
+        error: error,
+      )) {
+        AppLogger.warning(
+          'Skipping model ${modelSpec.key} because flutter_onnxruntime '
+          'provided tensor(int8) for a tensor(uint8) input on this platform. '
+          'Returning score=0.0 as a safe fallback.',
+          scope: 'image_classification',
+          error: error,
+          stackTrace: stackTrace,
+        );
+        return 0;
+      }
+      rethrow;
     } finally {
       if (outputs != null) {
         for (final value in outputs.values) {
@@ -152,6 +173,10 @@ class OnnxInferenceBackend implements InferenceBackend {
       'Loading ONNX model ${modelSpec.key} from ${modelSpec.assetPath}',
       scope: 'image_classification',
     );
+    final modelPathOverride = _modelPathOverridesByAssetPath[modelSpec.assetPath];
+    if (modelPathOverride != null) {
+      return _runtime.createSession(modelPathOverride);
+    }
     return _runtime.createSessionFromAsset(modelSpec.assetPath);
   }
 
@@ -537,6 +562,20 @@ class OnnxInferenceBackend implements InferenceBackend {
         'ONNX inference backend has already been disposed.',
       );
     }
+  }
+
+  bool _shouldFallbackForKnownUint8Bug({
+    required ModelSpec modelSpec,
+    required PlatformException error,
+  }) {
+    if (modelSpec.taskType != ModelTaskType.personDetector) {
+      return false;
+    }
+
+    final message = '${error.message ?? ''} ${error.details ?? ''}'.toLowerCase();
+    return message.contains('unexpected input data type') &&
+        message.contains('tensor(int8)') &&
+        message.contains('tensor(uint8)');
   }
 }
 

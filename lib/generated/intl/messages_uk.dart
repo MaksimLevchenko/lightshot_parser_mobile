@@ -31,192 +31,185 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m4(mask) => "Будь ласка, введіть адресу лише з a ${mask}";
 
-  static String m5(images) =>
+  static String m5(processed, total) => "${processed} із ${total}";
+
+  static String m6(images) =>
       "${Intl.plural(images, zero: '', one: 'Завантажено 1 зображення', few: 'Завантажено ${images} зображень', many: 'Завантажено ${images} зображень', other: '')}";
 
-  static String m6(e) =>
+  static String m7(e) =>
       "Невідома помилка: ${e}. Будь ласка, зверніться до розробника";
-
-  static String m7(processed, total) => "${processed} із ${total}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
-        "areYouSureYouWantToDeleteThisImage":
-            MessageLookupByLibrary.simpleMessage(
-          "Ви впевнені, що хочете видалити це зображення?",
-        ),
-        "cancel": MessageLookupByLibrary.simpleMessage("Скасувати"),
-        "classificationCategoryDocuments": MessageLookupByLibrary.simpleMessage(
-          "Документи",
-        ),
-        "classificationCategoryNotClassified":
-            MessageLookupByLibrary.simpleMessage(
-          "Не класифікувалося",
-        ),
-        "classificationCategoryNsfw": MessageLookupByLibrary.simpleMessage(
-          "Оголене",
-        ),
-        "classificationCategoryPeople": MessageLookupByLibrary.simpleMessage(
-          "Люди",
-        ),
-        "classificationCategoryUnrecognized":
-            MessageLookupByLibrary.simpleMessage(
-          "Не розпізнано",
-        ),
-        "classificationLoading": MessageLookupByLibrary.simpleMessage(
-          "Завантажується",
-        ),
-        "clearImages": MessageLookupByLibrary.simpleMessage(
-          "Видалити всі зображення",
-        ),
-        "confirmDeletion": MessageLookupByLibrary.simpleMessage(
-          "Підтвердьте видалення",
-        ),
-        "delete": MessageLookupByLibrary.simpleMessage("Видалити"),
-        "download": MessageLookupByLibrary.simpleMessage("Почати скачування"),
-        "downloadErrorMakeSureYouUseHttpProxy":
-            MessageLookupByLibrary.simpleMessage(
-          "Помилка під час завантаження. Переконайтеся, що ви використовуєте HTTP-проксі",
-        ),
-        "downloadErrorTryToChangeVpn": MessageLookupByLibrary.simpleMessage(
-          "Помилка під час завантаження. Спробуйте змінити VPN",
-        ),
-        "downloadedImagesOfWantednumofimages": m0,
-        "downloadingComplete": MessageLookupByLibrary.simpleMessage(
-          "Завантаження завершено",
-        ),
-        "downloadingImages":
-            MessageLookupByLibrary.simpleMessage("Завантаження"),
-        "enterTheNumberOfImagesToDownload":
-            MessageLookupByLibrary.simpleMessage(
-          "Введіть кількість зображень для завантаження",
-        ),
-        "enterTheProxyAddress": MessageLookupByLibrary.simpleMessage(
-          "Введіть адресу проксі",
-        ),
-        "enterTheProxyLogin": MessageLookupByLibrary.simpleMessage(
-          "Введіть логін проксі",
-        ),
-        "enterTheProxyPassword": MessageLookupByLibrary.simpleMessage(
-          "Введіть пароль проксі",
-        ),
-        "enterTheProxyPort": MessageLookupByLibrary.simpleMessage(
-          "Введіть порт проксі",
-        ),
-        "enterTheStartingAddress": MessageLookupByLibrary.simpleMessage(
-          "Введіть початкову адресу",
-        ),
-        "errorError": m1,
-        "errorErrorNpleaseTryAgain": m2,
-        "galleryAppBar": MessageLookupByLibrary.simpleMessage("Галерея"),
-        "imageDeleted":
-            MessageLookupByLibrary.simpleMessage("Зображення видалено"),
-        "imageSavedToPath": m3,
-        "mainTitle": MessageLookupByLibrary.simpleMessage("Lightshot Parser"),
-        "noDownloadFolderFound": MessageLookupByLibrary.simpleMessage(
-          "Папку для завантаження не знайдено",
-        ),
-        "noPhotos": MessageLookupByLibrary.simpleMessage("Зображення немає"),
-        "numberOfImagesToDownload": MessageLookupByLibrary.simpleMessage(
-          "Бажана кількість зображень",
-        ),
-        "permissionDenied": MessageLookupByLibrary.simpleMessage(
-          "Дозвіл відхилено користувачем",
-        ),
-        "photoViewer":
-            MessageLookupByLibrary.simpleMessage("Перегляд зображень"),
-        "pleaseEnterAAddressWithOnlyAMask": m4,
-        "pleaseEnterAMaxLengthAddress": MessageLookupByLibrary.simpleMessage(
-          "Будь ласка, введіть адресу максимальної довжини",
-        ),
-        "pleaseEnterANumberGreaterThan0": MessageLookupByLibrary.simpleMessage(
-          "Будь ласка, введіть число більше 0",
-        ),
-        "pleaseEnterAValidIpAddress": MessageLookupByLibrary.simpleMessage(
-          "Будь ласка, введіть правильну IP-адресу",
-        ),
-        "pleaseEnterAValidNumber": MessageLookupByLibrary.simpleMessage(
-          "Будь ласка, введіть число",
-        ),
-        "pleaseEnterAValidPort": MessageLookupByLibrary.simpleMessage(
-          "Будь ласка, введіть правильний порт",
-        ),
-        "pleaseEnterTheCorrectData": MessageLookupByLibrary.simpleMessage(
-          "Будь ласка, введіть правильні дані",
-        ),
-        "pleaseEnterTheNumberOfImagesToDownload":
-            MessageLookupByLibrary.simpleMessage(
+    "areYouSureYouWantToDeleteThisImage": MessageLookupByLibrary.simpleMessage(
+      "Ви впевнені, що хочете видалити це зображення?",
+    ),
+    "cancel": MessageLookupByLibrary.simpleMessage("Скасувати"),
+    "classificationCategoryDocuments": MessageLookupByLibrary.simpleMessage(
+      "Документи",
+    ),
+    "classificationCategoryNotClassified": MessageLookupByLibrary.simpleMessage(
+      "Не класифікувалося",
+    ),
+    "classificationCategoryNsfw": MessageLookupByLibrary.simpleMessage(
+      "Оголене",
+    ),
+    "classificationCategoryPeople": MessageLookupByLibrary.simpleMessage(
+      "Люди",
+    ),
+    "classificationCategoryUnrecognized": MessageLookupByLibrary.simpleMessage(
+      "Не розпізнано",
+    ),
+    "classificationLoading": MessageLookupByLibrary.simpleMessage(
+      "Завантажується",
+    ),
+    "clearImages": MessageLookupByLibrary.simpleMessage(
+      "Видалити всі зображення",
+    ),
+    "confirmDeletion": MessageLookupByLibrary.simpleMessage(
+      "Підтвердьте видалення",
+    ),
+    "delete": MessageLookupByLibrary.simpleMessage("Видалити"),
+    "download": MessageLookupByLibrary.simpleMessage("Почати скачування"),
+    "downloadErrorMakeSureYouUseHttpProxy": MessageLookupByLibrary.simpleMessage(
+      "Помилка під час завантаження. Переконайтеся, що ви використовуєте HTTP-проксі",
+    ),
+    "downloadErrorTryToChangeVpn": MessageLookupByLibrary.simpleMessage(
+      "Помилка під час завантаження. Спробуйте змінити VPN",
+    ),
+    "downloadedImagesOfWantednumofimages": m0,
+    "downloadingComplete": MessageLookupByLibrary.simpleMessage(
+      "Завантаження завершено",
+    ),
+    "downloadingImages": MessageLookupByLibrary.simpleMessage("Завантаження"),
+    "enterTheNumberOfImagesToDownload": MessageLookupByLibrary.simpleMessage(
+      "Введіть кількість зображень для завантаження",
+    ),
+    "enterTheProxyAddress": MessageLookupByLibrary.simpleMessage(
+      "Введіть адресу проксі",
+    ),
+    "enterTheProxyLogin": MessageLookupByLibrary.simpleMessage(
+      "Введіть логін проксі",
+    ),
+    "enterTheProxyPassword": MessageLookupByLibrary.simpleMessage(
+      "Введіть пароль проксі",
+    ),
+    "enterTheProxyPort": MessageLookupByLibrary.simpleMessage(
+      "Введіть порт проксі",
+    ),
+    "enterTheStartingAddress": MessageLookupByLibrary.simpleMessage(
+      "Введіть початкову адресу",
+    ),
+    "errorError": m1,
+    "errorErrorNpleaseTryAgain": m2,
+    "galleryAppBar": MessageLookupByLibrary.simpleMessage("Галерея"),
+    "galleryFilterAll": MessageLookupByLibrary.simpleMessage("Усі"),
+    "imageDeleted": MessageLookupByLibrary.simpleMessage("Зображення видалено"),
+    "imageSavedToPath": m3,
+    "mainTitle": MessageLookupByLibrary.simpleMessage("Lightshot Parser"),
+    "noDownloadFolderFound": MessageLookupByLibrary.simpleMessage(
+      "Папку для завантаження не знайдено",
+    ),
+    "noPhotos": MessageLookupByLibrary.simpleMessage("Зображення немає"),
+    "noPhotosForSelectedFilter": MessageLookupByLibrary.simpleMessage(
+      "Немає зображень вибраного типу",
+    ),
+    "numberOfImagesToDownload": MessageLookupByLibrary.simpleMessage(
+      "Бажана кількість зображень",
+    ),
+    "permissionDenied": MessageLookupByLibrary.simpleMessage(
+      "Дозвіл відхилено користувачем",
+    ),
+    "photoViewer": MessageLookupByLibrary.simpleMessage("Перегляд зображень"),
+    "pleaseEnterAAddressWithOnlyAMask": m4,
+    "pleaseEnterAMaxLengthAddress": MessageLookupByLibrary.simpleMessage(
+      "Будь ласка, введіть адресу максимальної довжини",
+    ),
+    "pleaseEnterANumberGreaterThan0": MessageLookupByLibrary.simpleMessage(
+      "Будь ласка, введіть число більше 0",
+    ),
+    "pleaseEnterAValidIpAddress": MessageLookupByLibrary.simpleMessage(
+      "Будь ласка, введіть правильну IP-адресу",
+    ),
+    "pleaseEnterAValidNumber": MessageLookupByLibrary.simpleMessage(
+      "Будь ласка, введіть число",
+    ),
+    "pleaseEnterAValidPort": MessageLookupByLibrary.simpleMessage(
+      "Будь ласка, введіть правильний порт",
+    ),
+    "pleaseEnterTheCorrectData": MessageLookupByLibrary.simpleMessage(
+      "Будь ласка, введіть правильні дані",
+    ),
+    "pleaseEnterTheNumberOfImagesToDownload":
+        MessageLookupByLibrary.simpleMessage(
           "Будь ласка, введіть кількість зображень для завантаження",
         ),
-        "pleaseEnterTheProxyAddress": MessageLookupByLibrary.simpleMessage(
-          "Будь ласка, введіть адресу проксі",
-        ),
-        "pleaseEnterTheProxyLogin": MessageLookupByLibrary.simpleMessage(
-          "Будь ласка, введіть логін проксі",
-        ),
-        "pleaseEnterTheProxyPassword": MessageLookupByLibrary.simpleMessage(
-          "Будь ласка, введіть пароль проксі",
-        ),
-        "pleaseEnterTheProxyPort": MessageLookupByLibrary.simpleMessage(
-          "Будь ласка, введіть порт проксі",
-        ),
-        "pleaseEnterTheStartingAddress": MessageLookupByLibrary.simpleMessage(
-          "Будь ласка, введіть початкову адресу",
-        ),
-        "proxyAddress": MessageLookupByLibrary.simpleMessage("Адреса проксі"),
-        "proxyLogin": MessageLookupByLibrary.simpleMessage("Логін проксі"),
-        "proxyPassword": MessageLookupByLibrary.simpleMessage("Пароль проксі"),
-        "proxyPort": MessageLookupByLibrary.simpleMessage("Порт проксі"),
-        "recreateDatabase": MessageLookupByLibrary.simpleMessage(
-          "Перебудувати базу даних",
-        ),
-        "save": MessageLookupByLibrary.simpleMessage("Зберегти"),
-        "seeAll": MessageLookupByLibrary.simpleMessage("Дивитись все"),
-        "settings": MessageLookupByLibrary.simpleMessage("Налаштування"),
-        "settingsSaved": MessageLookupByLibrary.simpleMessage(
-          "Налаштування збережені",
-        ),
-        "shareImage": MessageLookupByLibrary.simpleMessage(
-          "Подивіться на це зображення з Lightshot Parser! \n\nhttps://github.com/MaksimLevchenko/lightshot_parser_mobile",
-        ),
-        "startingAddress":
-            MessageLookupByLibrary.simpleMessage("Початкова адреса"),
-        "successfullyDownloadedWantednumImages": m5,
-        "unknownErrorEPleaseContactToTheDev": m6,
-        "useNewAddresses": MessageLookupByLibrary.simpleMessage(
-          "Використовувати нові адреси",
-        ),
-        "useProxy":
-            MessageLookupByLibrary.simpleMessage("Використовувати проксі"),
-        "useProxyAuth": MessageLookupByLibrary.simpleMessage(
-          "Використовувати автентифікацію проксі",
-        ),
-        "useRandomAddresses": MessageLookupByLibrary.simpleMessage(
-          "Використовуйте випадкові адреси",
-        ),
-        "reclassifyAllImages": MessageLookupByLibrary.simpleMessage(
-          "Перерозпізнати всі файли",
-        ),
-        "reclassifyAllImagesConfirmationBody":
-            MessageLookupByLibrary.simpleMessage(
-          "Застосунок послідовно заново запустить AI-розпізнавання для кожного збереженого зображення та перезапише попередні результати.",
-        ),
-        "reclassifyDisabledImages": MessageLookupByLibrary.simpleMessage(
-          "Перерозпізнати тільки disabled",
-        ),
-        "reclassifyDisabledImagesConfirmationBody":
-            MessageLookupByLibrary.simpleMessage(
+    "pleaseEnterTheProxyAddress": MessageLookupByLibrary.simpleMessage(
+      "Будь ласка, введіть адресу проксі",
+    ),
+    "pleaseEnterTheProxyLogin": MessageLookupByLibrary.simpleMessage(
+      "Будь ласка, введіть логін проксі",
+    ),
+    "pleaseEnterTheProxyPassword": MessageLookupByLibrary.simpleMessage(
+      "Будь ласка, введіть пароль проксі",
+    ),
+    "pleaseEnterTheProxyPort": MessageLookupByLibrary.simpleMessage(
+      "Будь ласка, введіть порт проксі",
+    ),
+    "pleaseEnterTheStartingAddress": MessageLookupByLibrary.simpleMessage(
+      "Будь ласка, введіть початкову адресу",
+    ),
+    "proxyAddress": MessageLookupByLibrary.simpleMessage("Адреса проксі"),
+    "proxyLogin": MessageLookupByLibrary.simpleMessage("Логін проксі"),
+    "proxyPassword": MessageLookupByLibrary.simpleMessage("Пароль проксі"),
+    "proxyPort": MessageLookupByLibrary.simpleMessage("Порт проксі"),
+    "reclassificationDone": MessageLookupByLibrary.simpleMessage(
+      "Результати AI-розпізнавання оновлено",
+    ),
+    "reclassificationProgress": m5,
+    "reclassifyAllImages": MessageLookupByLibrary.simpleMessage(
+      "Перерозпізнати всі файли",
+    ),
+    "reclassifyAllImagesConfirmationBody": MessageLookupByLibrary.simpleMessage(
+      "Застосунок послідовно заново запустить AI-розпізнавання для кожного збереженого зображення та перезапише попередні результати.",
+    ),
+    "reclassifyDisabledImages": MessageLookupByLibrary.simpleMessage(
+      "Перерозпізнати тільки disabled",
+    ),
+    "reclassifyDisabledImagesConfirmationBody":
+        MessageLookupByLibrary.simpleMessage(
           "Застосунок послідовно заново запустить AI-розпізнавання тільки для збережених зображень, у яких попередній результат було позначено як disabled.",
         ),
-        "reclassificationDone": MessageLookupByLibrary.simpleMessage(
-          "Результати AI-розпізнавання оновлено",
-        ),
-        "reclassificationProgress": m7,
-        "galleryFilterAll": MessageLookupByLibrary.simpleMessage(
-          "Усі",
-        ),
-        "noPhotosForSelectedFilter": MessageLookupByLibrary.simpleMessage(
-          "Немає зображень вибраного типу",
-        ),
-      };
+    "recreateDatabase": MessageLookupByLibrary.simpleMessage(
+      "Перебудувати базу даних",
+    ),
+    "save": MessageLookupByLibrary.simpleMessage("Зберегти"),
+    "seeAll": MessageLookupByLibrary.simpleMessage("Дивитись все"),
+    "settings": MessageLookupByLibrary.simpleMessage("Налаштування"),
+    "settingsAiRecognitionDescription": MessageLookupByLibrary.simpleMessage(
+      "Автоматично аналізувати нові завантажені зображення за допомогою ONNX-моделей.",
+    ),
+    "settingsAiRecognitionTitle": MessageLookupByLibrary.simpleMessage(
+      "Використовувати AI-розпізнавання",
+    ),
+    "settingsSaved": MessageLookupByLibrary.simpleMessage(
+      "Налаштування збережені",
+    ),
+    "shareImage": MessageLookupByLibrary.simpleMessage(
+      "Подивіться на це зображення з Lightshot Parser! \n\nhttps://github.com/MaksimLevchenko/lightshot_parser_mobile",
+    ),
+    "startingAddress": MessageLookupByLibrary.simpleMessage("Початкова адреса"),
+    "successfullyDownloadedWantednumImages": m6,
+    "unknownErrorEPleaseContactToTheDev": m7,
+    "useNewAddresses": MessageLookupByLibrary.simpleMessage(
+      "Використовувати нові адреси",
+    ),
+    "useProxy": MessageLookupByLibrary.simpleMessage("Використовувати проксі"),
+    "useProxyAuth": MessageLookupByLibrary.simpleMessage(
+      "Використовувати автентифікацію проксі",
+    ),
+    "useRandomAddresses": MessageLookupByLibrary.simpleMessage(
+      "Використовуйте випадкові адреси",
+    ),
+  };
 }

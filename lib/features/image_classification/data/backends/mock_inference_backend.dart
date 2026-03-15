@@ -3,6 +3,17 @@ import 'package:lightshot_parser_mobile/features/image_classification/data/model
 import 'package:lightshot_parser_mobile/features/image_classification/data/models/preprocessed_image_data.dart';
 
 class MockInferenceBackend implements InferenceBackend {
+  MockInferenceBackend({
+    Map<String, double>? scoresByModelKey,
+    double Function(ModelSpec modelSpec, PreprocessedImageData input)?
+        scoreResolver,
+  })  : _scoresByModelKey = scoresByModelKey ?? const <String, double>{},
+        _scoreResolver = scoreResolver;
+
+  final Map<String, double> _scoresByModelKey;
+  final double Function(ModelSpec modelSpec, PreprocessedImageData input)?
+      _scoreResolver;
+
   bool _isInitialized = false;
 
   @override
@@ -22,7 +33,16 @@ class MockInferenceBackend implements InferenceBackend {
       await initialize();
     }
 
-    // TODO(onnx-runtime): Replace this deterministic stub with a real ONNX Runtime-backed backend.
+    final configuredScore = _scoresByModelKey[modelSpec.key];
+    if (configuredScore != null) {
+      return _clampScore(configuredScore);
+    }
+
+    final resolvedScore = _scoreResolver?.call(modelSpec, input);
+    if (resolvedScore != null) {
+      return _clampScore(resolvedScore);
+    }
+
     final modelSeed = _buildSeed(modelSpec.key);
     final combinedSeed =
         (input.signature * 37 + modelSeed * 17 + input.tensorElementCount) &
@@ -41,5 +61,15 @@ class MockInferenceBackend implements InferenceBackend {
       hash = (hash * 31 + codeUnit) & 0x7fffffff;
     }
     return hash;
+  }
+
+  double _clampScore(double score) {
+    if (score < 0) {
+      return 0;
+    }
+    if (score > 1) {
+      return 1;
+    }
+    return score;
   }
 }

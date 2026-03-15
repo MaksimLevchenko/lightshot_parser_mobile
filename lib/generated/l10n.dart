@@ -461,7 +461,7 @@ class S {
   }
 
   /// `{processed} of {total}`
-  String reclassificationProgress(num processed, num total) {
+  String reclassificationProgress(int processed, int total) {
     return Intl.message(
       '$processed of $total',
       name: 'reclassificationProgress',
