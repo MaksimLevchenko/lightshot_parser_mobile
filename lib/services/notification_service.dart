@@ -10,6 +10,8 @@ enum NotificationAction {
 class NotificationService {
   NotificationService();
 
+  static const String _defaultNotificationIcon =
+      'resource://drawable/ic_notification_download';
   static const String _progressChannelKey = 'download_progress';
   static const String _statusChannelKey = 'download_status';
   static const String _cancelDownloadPayloadKey = 'action';
@@ -25,7 +27,7 @@ class NotificationService {
   Future<void> init() async {
     _activeInstance = this;
     await AwesomeNotifications().initialize(
-      null,
+      _defaultNotificationIcon,
       [
         NotificationChannel(
           channelKey: _progressChannelKey,
@@ -76,6 +78,7 @@ class NotificationService {
       content: NotificationContent(
         id: id,
         channelKey: _progressChannelKey,
+        icon: _defaultNotificationIcon,
         title: title,
         body: body,
         category: NotificationCategory.Progress,
@@ -99,6 +102,7 @@ class NotificationService {
       content: NotificationContent(
         id: id,
         channelKey: _statusChannelKey,
+        icon: _defaultNotificationIcon,
         title: title,
         body: body,
       ),

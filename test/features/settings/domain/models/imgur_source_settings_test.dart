@@ -22,12 +22,26 @@ void main() {
     expect(settings.startingId, 'abcdefg');
   });
 
-  test('copyWith normalizes candidate lengths', () {
+  test('copyWith preserves selected length order while normalizing values', () {
     const settings = ImgurSourceSettings.initial();
 
     final updated = settings.copyWith(candidateLengths: [7, 5, 7, -1]);
 
-    expect(updated.candidateLengths, [5, 7]);
-    expect(updated.idLength, 5);
+    expect(updated.candidateLengths, [7, 5]);
+    expect(updated.idLength, 7);
+  });
+
+  test('toJson and fromJson keep the selected length as the first candidate',
+      () {
+    const settings = ImgurSourceSettings(
+      candidateLengths: [7, 5],
+      useRandomAddress: false,
+      startingId: 'abcdefg',
+    );
+
+    final restored = ImgurSourceSettings.fromJson(settings.toJson());
+
+    expect(restored.candidateLengths, [7, 5]);
+    expect(restored.idLength, 7);
   });
 }

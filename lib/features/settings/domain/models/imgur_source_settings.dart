@@ -63,8 +63,14 @@ class ImgurSourceSettings extends Equatable {
   List<Object?> get props => [candidateLengths, useRandomAddress, startingId];
 
   static List<int> _normalizeCandidateLengths(List<int> values) {
-    final normalized = values.where((value) => value > 0).toSet().toList()
-      ..sort();
+    final normalized = <int>[];
+    final seen = <int>{};
+    for (final value in values) {
+      if (value <= 0 || !seen.add(value)) {
+        continue;
+      }
+      normalized.add(value);
+    }
     return normalized.isEmpty
         ? const [5, 7]
         : List<int>.unmodifiable(normalized);
