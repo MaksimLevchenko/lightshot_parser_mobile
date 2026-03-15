@@ -11,9 +11,9 @@ abstract class BaseImageRemoteDataSource {
   BaseImageRemoteDataSource()
       : _client = Dio(
           BaseOptions(
-            connectTimeout: const Duration(seconds: 8),
-            receiveTimeout: const Duration(seconds: 8),
-            sendTimeout: const Duration(seconds: 8),
+            connectTimeout: const Duration(seconds: 3),
+            receiveTimeout: const Duration(seconds: 3),
+            sendTimeout: const Duration(seconds: 3),
             headers: const {
               'User-Agent':
                   'Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0',
@@ -52,13 +52,13 @@ abstract class BaseImageRemoteDataSource {
         throw const CancelledDownloadException();
       }
       if (_isTimeout(error)) {
-        AppLogger.warning(
-          'Request timed out and will be skipped: $method $uri',
-          scope: 'network',
-          error: error,
-          stackTrace: stackTrace,
-        );
-        throw const NoPhotoException('Request timed out');
+        // AppLogger.warning(
+        //   'Request timed out and will be skipped: $method $uri',
+        //   scope: 'network',
+        //   error: error,
+        //   stackTrace: stackTrace,
+        // );
+        throw const NoPhotoException();
       }
       AppLogger.warning(
         'Failed to perform $method request: $uri',
@@ -120,7 +120,7 @@ abstract class BaseImageRemoteDataSource {
           error: error,
           stackTrace: stackTrace,
         );
-        throw const NoPhotoException('Download timed out');
+        throw const NoPhotoException();
       }
       if (_isMissingResourceStatus(error.response?.statusCode)) {
         await _deleteIfExists(targetPath);

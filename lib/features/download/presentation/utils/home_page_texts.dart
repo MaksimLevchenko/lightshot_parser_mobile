@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:lightshot_parser_mobile/generated/l10n.dart';
 
 class HomePageTexts {
   static bool _isRu(BuildContext context) =>
@@ -9,112 +10,76 @@ class HomePageTexts {
 
   static String subtitle(BuildContext context) {
     if (_isRu(context)) {
-      return 'Запускайте загрузку, следите за прогрессом и открывайте последние изображения без лишних жестов.';
+      return 'Запускайте загрузку и открывайте последние сохранённые изображения.';
     }
     if (_isUk(context)) {
-      return 'Запускайте завантаження, стежте за прогресом і відкривайте останні зображення без зайвих жестів.';
+      return 'Запускайте завантаження та відкривайте останні збережені зображення.';
     }
-    return 'Start downloads, track progress, and open recent images without relying on gestures.';
+    return 'Start downloads and open your latest saved images.';
   }
 
   static String targetCountLabel(BuildContext context) {
-    if (_isRu(context)) {
-      return 'Цель';
-    }
-    if (_isUk(context)) {
-      return 'Ціль';
-    }
-    return 'Target';
+    return S.of(context).numberOfImagesToDownload;
   }
 
   static String proxyStatusLabel(BuildContext context) {
-    if (_isRu(context)) {
-      return 'Прокси';
-    }
-    if (_isUk(context)) {
-      return 'Проксі';
-    }
-    return 'Proxy';
+    return S.of(context).useProxy;
   }
 
   static String proxyEnabled(BuildContext context) {
-    if (_isRu(context)) {
-      return 'Включен';
-    }
-    if (_isUk(context)) {
-      return 'Увімкнено';
-    }
-    return 'Enabled';
+    return S.of(context).useProxy;
   }
 
   static String proxyDisabled(BuildContext context) {
-    if (_isRu(context)) {
-      return 'Выключен';
-    }
-    if (_isUk(context)) {
-      return 'Вимкнено';
-    }
-    return 'Disabled';
+    return '';
   }
 
   static String quickActionsTitle(BuildContext context) {
     if (_isRu(context)) {
-      return 'Быстрые действия';
+      return 'Действия';
     }
     if (_isUk(context)) {
-      return 'Швидкі дії';
+      return 'Дії';
     }
-    return 'Quick actions';
+    return 'Actions';
   }
 
   static String quickActionsBody(BuildContext context) {
     if (_isRu(context)) {
-      return 'Главные действия собраны здесь, чтобы стартовый экран оставался удобным и на телефоне, и на Windows.';
+      return 'Запустите загрузку, откройте настройки или перейдите в галерею.';
     }
     if (_isUk(context)) {
-      return 'Головні дії зібрано тут, щоб стартовий екран залишався зручним і на телефоні, і на Windows.';
+      return 'Запустіть завантаження, відкрийте налаштування або перейдіть до галереї.';
     }
-    return 'The main actions live here so the startup screen stays clear on both phones and Windows.';
+    return 'Start a download, open settings, or go to the gallery.';
   }
 
   static String downloadStatusTitle(BuildContext context) {
     if (_isRu(context)) {
-      return 'Состояние загрузки';
+      return 'Ход загрузки';
     }
     if (_isUk(context)) {
-      return 'Стан завантаження';
+      return 'Хід завантаження';
     }
-    return 'Download status';
+    return 'Download progress';
   }
 
   static String statusReady(BuildContext context) {
     if (_isRu(context)) {
-      return 'Готово к запуску';
+      return 'Готово';
     }
     if (_isUk(context)) {
-      return 'Готово до запуску';
+      return 'Готово';
     }
-    return 'Ready to start';
+    return 'Ready';
   }
 
   static String statusDownloading(BuildContext context) {
-    if (_isRu(context)) {
-      return 'Идёт загрузка';
-    }
-    if (_isUk(context)) {
-      return 'Триває завантаження';
-    }
-    return 'Downloading now';
+    return S.of(context).downloadingImages;
   }
 
   static String statusCompleted(BuildContext context) {
-    if (_isRu(context)) {
-      return 'Загрузка завершена';
-    }
-    if (_isUk(context)) {
-      return 'Завантаження завершено';
-    }
-    return 'Download completed';
+    return S.of(context).downloadingComplete;
   }
 
   static String statusCancelled(BuildContext context) {
@@ -124,7 +89,7 @@ class HomePageTexts {
     if (_isUk(context)) {
       return 'Завантаження зупинено';
     }
-    return 'Download cancelled';
+    return 'Download stopped';
   }
 
   static String statusFailed(BuildContext context) {
@@ -134,116 +99,78 @@ class HomePageTexts {
     if (_isUk(context)) {
       return 'Помилка завантаження';
     }
-    return 'Download failed';
+    return 'Download error';
   }
 
   static String currentSetupTitle(BuildContext context) {
     if (_isRu(context)) {
-      return 'Текущая конфигурация';
+      return 'Параметры загрузки';
     }
     if (_isUk(context)) {
-      return 'Поточна конфігурація';
+      return 'Параметри завантаження';
     }
-    return 'Current setup';
+    return 'Download settings';
   }
 
   static String startPointLabel(BuildContext context) {
-    if (_isRu(context)) {
-      return 'Старт';
-    }
-    if (_isUk(context)) {
-      return 'Старт';
-    }
-    return 'Start point';
+    return S.of(context).startingAddress;
   }
 
-  static String randomStart(BuildContext context) {
-    if (_isRu(context)) {
-      return 'Случайный старт';
-    }
-    if (_isUk(context)) {
-      return 'Випадковий старт';
-    }
-    return 'Random start';
-  }
+  static String randomStart(BuildContext context) => '';
 
   static String recentGalleryTitle(BuildContext context) {
     if (_isRu(context)) {
-      return 'Последние изображения';
+      return 'Галерея';
     }
     if (_isUk(context)) {
-      return 'Останні зображення';
+      return 'Галерея';
     }
-    return 'Recent images';
+    return 'Gallery';
   }
 
   static String recentGalleryBody(BuildContext context) {
     if (_isRu(context)) {
-      return 'Последние сохранённые изображения доступны прямо со стартового экрана.';
+      return 'Последние изображения, сохранённые на этом устройстве.';
     }
     if (_isUk(context)) {
-      return 'Останні збережені зображення доступні прямо зі стартового екрана.';
+      return 'Останні зображення, збережені на цьому пристрої.';
     }
-    return 'Your latest saved images stay available directly from the startup screen.';
+    return 'Recently saved images on this device.';
   }
 
   static String emptyGalleryTitle(BuildContext context) {
-    if (_isRu(context)) {
-      return 'Галерея пока пуста';
-    }
-    if (_isUk(context)) {
-      return 'Галерея поки порожня';
-    }
-    return 'The gallery is still empty';
+    return S.of(context).noPhotos;
   }
 
   static String emptyGalleryBody(BuildContext context) {
     if (_isRu(context)) {
-      return 'Настройте источник и начните загрузку, чтобы здесь появились первые изображения.';
+      return 'После первой успешной загрузки изображения появятся в этой галерее.';
     }
     if (_isUk(context)) {
-      return 'Налаштуйте джерело і почніть завантаження, щоб тут з’явилися перші зображення.';
+      return 'Після першого успішного завантаження зображення з’являться в цій галереї.';
     }
-    return 'Configure your source and start a download to see your first images here.';
+    return 'Images will appear in this gallery after the first successful download.';
   }
 
   static String configureDownload(BuildContext context) {
-    if (_isRu(context)) {
-      return 'Настроить загрузку';
-    }
-    if (_isUk(context)) {
-      return 'Налаштувати завантаження';
-    }
-    return 'Configure download';
+    return S.of(context).settings;
   }
 
   static String openImage(BuildContext context) {
-    if (_isRu(context)) {
-      return 'Открыть';
-    }
-    if (_isUk(context)) {
-      return 'Відкрити';
-    }
-    return 'Open';
+    return S.of(context).photoViewer;
   }
 
   static String loadingGallery(BuildContext context) {
     if (_isRu(context)) {
-      return 'Подготавливаем галерею';
+      return 'Загружаем галерею';
     }
     if (_isUk(context)) {
-      return 'Підготовка галереї';
+      return 'Завантажуємо галерею';
     }
-    return 'Preparing gallery';
+    return 'Loading gallery';
   }
 
   static String openGalleryHint(BuildContext context) {
-    if (_isRu(context)) {
-      return 'Открыть всю галерею';
-    }
-    if (_isUk(context)) {
-      return 'Відкрити всю галерею';
-    }
-    return 'Open full gallery';
+    return S.of(context).galleryAppBar;
   }
 }

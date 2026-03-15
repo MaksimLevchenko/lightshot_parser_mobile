@@ -204,10 +204,9 @@ void main() {
     await pumpHomePage(tester, width: 900);
 
     expect(find.byKey(const ValueKey('home-hero')), findsOneWidget);
-    expect(find.text('Current setup'), findsOneWidget);
     expect(find.text('Imgur'), findsWidgets);
     expect(find.text('42'), findsWidgets);
-    expect(find.text('Enabled'), findsWidgets);
+    expect(find.text('Use proxy'), findsWidgets);
   });
 
   testWidgets('downloading state shows progress and cancel button',
@@ -236,7 +235,7 @@ void main() {
     await prepareApp();
     await pumpHomePage(tester, width: 900);
 
-    expect(find.text('The gallery is still empty'), findsOneWidget);
+    expect(find.text('There are no images'), findsOneWidget);
     expect(find.byKey(const ValueKey('empty-gallery-cta')), findsOneWidget);
   });
 

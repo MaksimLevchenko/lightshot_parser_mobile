@@ -183,14 +183,6 @@ class SplashPage extends StatelessWidget {
                               fontSize: 30,
                             ),
                           ),
-                          const SizedBox(height: AppSpacing.sm),
-                          Text(
-                            'Preparing your desktop-friendly download workspace.',
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: AppColors.textMuted,
-                            ),
-                          ),
                           const SizedBox(height: AppSpacing.xl),
                           const LinearProgressIndicator(minHeight: 6),
                         ],

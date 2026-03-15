@@ -240,9 +240,7 @@ class _HeroSection extends StatelessWidget {
       ),
       (
         HomePageTexts.proxyStatusLabel(context),
-        settings.proxySettings.enabled
-            ? HomePageTexts.proxyEnabled(context)
-            : HomePageTexts.proxyDisabled(context),
+        _proxySummaryValue(settings),
         Icons.shield_outlined,
       ),
     ];
@@ -280,13 +278,15 @@ class _HeroSection extends StatelessWidget {
                     S.of(context).mainTitle,
                     style: theme.textTheme.headlineMedium,
                   ),
-                  const SizedBox(height: AppSpacing.md),
-                  Text(
-                    HomePageTexts.subtitle(context),
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: AppColors.textMuted,
+                  if (HomePageTexts.subtitle(context).isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    Text(
+                      HomePageTexts.subtitle(context),
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: AppColors.textMuted,
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -294,6 +294,7 @@ class _HeroSection extends StatelessWidget {
               spacing: AppSpacing.sm,
               runSpacing: AppSpacing.sm,
               children: chips
+                  .where((chip) => chip.$2.isNotEmpty)
                   .map(
                     (chip) => Container(
                       constraints: const BoxConstraints(minWidth: 150),
@@ -329,6 +330,17 @@ class _HeroSection extends StatelessWidget {
       ),
     );
   }
+
+  String _proxySummaryValue(AppSettings settings) {
+    if (!settings.proxySettings.enabled) {
+      return '';
+    }
+    if (settings.proxySettings.address.isNotEmpty &&
+        settings.proxySettings.port.isNotEmpty) {
+      return '${settings.proxySettings.address}:${settings.proxySettings.port}';
+    }
+    return '';
+  }
 }
 
 class _QuickActionsCard extends StatelessWidget {
@@ -349,18 +361,12 @@ class _QuickActionsCard extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                HomePageTexts.quickActionsTitle(context),
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                HomePageTexts.quickActionsBody(context),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textMuted,
-                    ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
+              if (HomePageTexts.quickActionsTitle(context).isNotEmpty)
+                Text(
+                  HomePageTexts.quickActionsTitle(context),
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              const SizedBox(height: AppSpacing.md),
               ElevatedButton.icon(
                 key: const ValueKey('home-primary-action'),
                 onPressed: () {
@@ -416,6 +422,8 @@ class _DownloadStatusCard extends StatelessWidget {
               ? settings.wantedNumOfImages
               : state.progress.totalCount;
           final status = _statusData(context, state.status);
+          final startValue = _startValue(context, settings);
+          final proxyValue = _proxyValue(settings);
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -435,18 +443,21 @@ class _DownloadStatusCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          HomePageTexts.downloadStatusTitle(context),
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        Text(
-                          status.$1,
-                          style:
-                              Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    color: status.$2,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                        ),
+                        if (HomePageTexts.downloadStatusTitle(context)
+                            .isNotEmpty)
+                          Text(
+                            HomePageTexts.downloadStatusTitle(context),
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                        if (status.$1.isNotEmpty)
+                          Text(
+                            status.$1,
+                            style:
+                                Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                      color: status.$2,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                          ),
                       ],
                     ),
                   ),
@@ -471,11 +482,13 @@ class _DownloadStatusCard extends StatelessWidget {
                 key: const ValueKey('download-progress-text'),
               ),
               const SizedBox(height: AppSpacing.lg),
-              Text(
-                HomePageTexts.currentSetupTitle(context),
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: AppSpacing.md),
+              if (HomePageTexts.currentSetupTitle(context).isNotEmpty) ...[
+                Text(
+                  HomePageTexts.currentSetupTitle(context),
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: AppSpacing.md),
+              ],
               _SummaryRow(
                 label: DownloadSourceTexts.currentSourceLabel(context),
                 value: DownloadSourceTexts.sourceName(
@@ -488,18 +501,20 @@ class _DownloadStatusCard extends StatelessWidget {
                 label: HomePageTexts.targetCountLabel(context),
                 value: '${settings.wantedNumOfImages}',
               ),
-              const Divider(height: AppSpacing.lg),
-              _SummaryRow(
-                label: HomePageTexts.startPointLabel(context),
-                value: _startValue(context, settings),
-              ),
-              const Divider(height: AppSpacing.lg),
-              _SummaryRow(
-                label: HomePageTexts.proxyStatusLabel(context),
-                value: settings.proxySettings.enabled
-                    ? HomePageTexts.proxyEnabled(context)
-                    : HomePageTexts.proxyDisabled(context),
-              ),
+              if (startValue.isNotEmpty) ...[
+                const Divider(height: AppSpacing.lg),
+                _SummaryRow(
+                  label: HomePageTexts.startPointLabel(context),
+                  value: startValue,
+                ),
+              ],
+              if (proxyValue.isNotEmpty) ...[
+                const Divider(height: AppSpacing.lg),
+                _SummaryRow(
+                  label: HomePageTexts.proxyStatusLabel(context),
+                  value: proxyValue,
+                ),
+              ],
             ],
           );
         },
@@ -544,13 +559,22 @@ class _DownloadStatusCard extends StatelessWidget {
     switch (settings.selectedSource) {
       case DownloadSource.lightshot:
         return settings.lightshot.useRandomAddress
-            ? HomePageTexts.randomStart(context)
+            ? ''
             : settings.lightshot.startingId;
       case DownloadSource.imgur:
-        return settings.imgur.useRandomAddress
-            ? HomePageTexts.randomStart(context)
-            : settings.imgur.startingId;
+        return settings.imgur.useRandomAddress ? '' : settings.imgur.startingId;
     }
+  }
+
+  String _proxyValue(AppSettings settings) {
+    if (!settings.proxySettings.enabled) {
+      return '';
+    }
+    if (settings.proxySettings.address.isNotEmpty &&
+        settings.proxySettings.port.isNotEmpty) {
+      return '${settings.proxySettings.address}:${settings.proxySettings.port}';
+    }
+    return '';
   }
 }
 
@@ -590,16 +614,19 @@ class _RecentGallerySection extends StatelessWidget {
                               HomePageTexts.recentGalleryTitle(context),
                               style: Theme.of(context).textTheme.titleLarge,
                             ),
-                            const SizedBox(height: AppSpacing.xs),
-                            Text(
-                              HomePageTexts.recentGalleryBody(context),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                    color: AppColors.textMuted,
-                                  ),
-                            ),
+                            if (HomePageTexts.recentGalleryBody(context)
+                                .isNotEmpty) ...[
+                              const SizedBox(height: AppSpacing.xs),
+                              Text(
+                                HomePageTexts.recentGalleryBody(context),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: AppColors.textMuted,
+                                    ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -708,12 +735,14 @@ class _GalleryStateCard extends StatelessWidget {
       child: Column(
         children: [
           Icon(icon, size: 42, color: AppColors.accent),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
+          if (title.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ],
           if (body.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.sm),
             Text(
