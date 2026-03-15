@@ -333,6 +333,16 @@ class GalleryDatabaseService {
                 jsonDecode(classificationRawJson) as Map<String, dynamic>,
               );
 
+    final backend = row['classification_backend'] as String? ?? 'legacy';
+    final storedCategory = ClassificationCategory.fromStorage(
+      row['classification_category'] as String?,
+    );
+    final resolvedCategory =
+        backend == 'disabled' &&
+                storedCategory == ClassificationCategory.unrecognized
+            ? ClassificationCategory.notClassified
+            : storedCategory;
+
     return GalleryItem(
       path: row['file_path'] as String,
       source: source,
@@ -341,12 +351,10 @@ class GalleryDatabaseService {
         status: ClassificationStatus.fromStorage(
           row['classification_status'] as String?,
         ),
-        category: ClassificationCategory.fromStorage(
-          row['classification_category'] as String?,
-        ),
+        category: resolvedCategory,
         confidence: _readDouble(row['classification_confidence']),
         rawScores: rawScores,
-        backend: row['classification_backend'] as String? ?? 'legacy',
+        backend: backend,
         classifiedAt: _readDateTime(row['classification_updated_at']),
       ),
     );

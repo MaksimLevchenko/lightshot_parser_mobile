@@ -41,22 +41,39 @@ class ImagePreprocessor {
     required DecodedImageData decodedImage,
     required ModelSpec modelSpec,
   }) {
+    return switch (modelSpec.taskType) {
+      ModelTaskType.binaryClassifier => _preprocessClassifierImage(
+          decodedImage: decodedImage,
+          modelSpec: modelSpec,
+        ),
+      ModelTaskType.personDetector => _preprocessPersonDetectorImage(
+          decodedImage: decodedImage,
+        ),
+    };
+  }
+
+  PreprocessedImageData _preprocessClassifierImage({
+    required DecodedImageData decodedImage,
+    required ModelSpec modelSpec,
+  }) {
+    final inputWidth = modelSpec.inputWidth!;
+    final inputHeight = modelSpec.inputHeight!;
     final resizedImage = image_package.copyResize(
       decodedImage.image,
-      width: modelSpec.inputWidth,
-      height: modelSpec.inputHeight,
+      width: inputWidth,
+      height: inputHeight,
       interpolation: image_package.Interpolation.average,
     );
 
-    final tensorLength = modelSpec.inputWidth * modelSpec.inputHeight * 3;
+    final tensorLength = inputWidth * inputHeight * 3;
     final tensor = Float32List(tensorLength);
     var tensorIndex = 0;
 
     for (var channel = 0; channel < 3; channel += 1) {
       final mean = modelSpec.normalizationMean[channel];
       final std = modelSpec.normalizationStd[channel];
-      for (var y = 0; y < modelSpec.inputHeight; y += 1) {
-        for (var x = 0; x < modelSpec.inputWidth; x += 1) {
+      for (var y = 0; y < inputHeight; y += 1) {
+        for (var x = 0; x < inputWidth; x += 1) {
           final pixel = resizedImage.getPixel(x, y);
           final channelValue = switch (channel) {
             0 => pixel.r,
@@ -72,11 +89,42 @@ class ImagePreprocessor {
 
     return PreprocessedImageData(
       tensor: tensor,
-      width: modelSpec.inputWidth,
-      height: modelSpec.inputHeight,
+      width: inputWidth,
+      height: inputHeight,
       channels: 3,
       signature: decodedImage.signature,
-      shape: <int>[1, 3, modelSpec.inputHeight, modelSpec.inputWidth],
+      dataType: TensorDataType.float32,
+      layout: TensorLayout.nchw,
+      shape: <int>[1, 3, inputHeight, inputWidth],
+    );
+  }
+
+  PreprocessedImageData _preprocessPersonDetectorImage({
+    required DecodedImageData decodedImage,
+  }) {
+    final image = decodedImage.image;
+    final tensor = Uint8List(image.width * image.height * 3);
+    var tensorIndex = 0;
+
+    for (var y = 0; y < image.height; y += 1) {
+      for (var x = 0; x < image.width; x += 1) {
+        final pixel = image.getPixel(x, y);
+        tensor[tensorIndex] = pixel.r.toInt();
+        tensor[tensorIndex + 1] = pixel.g.toInt();
+        tensor[tensorIndex + 2] = pixel.b.toInt();
+        tensorIndex += 3;
+      }
+    }
+
+    return PreprocessedImageData(
+      tensor: tensor,
+      width: image.width,
+      height: image.height,
+      channels: 3,
+      signature: decodedImage.signature,
+      dataType: TensorDataType.uint8,
+      layout: TensorLayout.nhwc,
+      shape: <int>[1, image.height, image.width, 3],
     );
   }
 

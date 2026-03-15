@@ -31,6 +31,15 @@ class CascadeClassifier {
         classifiedAt: resolvedClassifiedAt,
       );
     }
+    if (scores.people >= thresholds.peopleThreshold) {
+      return ClassificationResult.completed(
+        category: ClassificationCategory.people,
+        confidence: scores.people,
+        rawScores: scores,
+        backend: backend,
+        classifiedAt: resolvedClassifiedAt,
+      );
+    }
 
     return ClassificationResult.completed(
       category: ClassificationCategory.unrecognized,

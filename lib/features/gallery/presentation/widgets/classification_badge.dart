@@ -56,10 +56,20 @@ class ClassificationBadge extends StatelessWidget {
           const Color(0xFFFDE8E7),
           AppColors.error,
         ),
+      ClassificationCategory.people => (
+          S.of(context).classificationCategoryPeople,
+          const Color(0xFFE8F5EC),
+          AppColors.success,
+        ),
       ClassificationCategory.documents => (
           S.of(context).classificationCategoryDocuments,
           const Color(0xFFF5F0E3),
           AppColors.warning,
+        ),
+      ClassificationCategory.notClassified => (
+          S.of(context).classificationCategoryNotClassified,
+          const Color(0xFFF1F2F6),
+          AppColors.textMuted,
         ),
       ClassificationCategory.unrecognized => (
           S.of(context).classificationCategoryUnrecognized,

@@ -29,41 +29,80 @@ class GalleryPage extends StatelessWidget {
           if (state.items.isEmpty) {
             return StatusView(message: S.of(context).noPhotos);
           }
-          return GridView.builder(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              mainAxisSpacing: AppSpacing.sm,
-              crossAxisSpacing: AppSpacing.sm,
-            ),
-            itemCount: state.items.length,
-            itemBuilder: (context, index) {
-              final item = state.items[index];
-              return InkWell(
-                onTap: () => _openPhotoViewer(context, state.items, index),
-                child: Container(
-                  color: AppColors.imageCard,
-                  padding: const EdgeInsets.all(AppSpacing.sm),
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: Image.file(
-                          item.file,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      Positioned(
-                        left: AppSpacing.sm,
-                        top: AppSpacing.sm,
-                        child: ClassificationBadge(
-                          classificationResult: item.classificationResult,
-                        ),
-                      ),
-                    ],
+          final visibleItems = state.visibleItems;
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.sm,
+                  0,
+                  AppSpacing.sm,
+                  AppSpacing.sm,
+                ),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Wrap(
+                    spacing: AppSpacing.sm,
+                    runSpacing: AppSpacing.sm,
+                    children: GalleryFilter.values.map((filter) {
+                      return ChoiceChip(
+                        key: ValueKey('gallery-filter-${filter.name}'),
+                        label: Text(_filterLabel(context, filter)),
+                        selected: state.selectedFilter == filter,
+                        onSelected: (_) =>
+                            context.read<GalleryCubit>().setFilter(filter),
+                      );
+                    }).toList(growable: false),
                   ),
                 ),
-              );
-            },
+              ),
+              Expanded(
+                child: visibleItems.isEmpty
+                    ? StatusView(
+                        message: S.of(context).noPhotosForSelectedFilter,
+                      )
+                    : GridView.builder(
+                        padding: const EdgeInsets.all(AppSpacing.sm),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          mainAxisSpacing: AppSpacing.sm,
+                          crossAxisSpacing: AppSpacing.sm,
+                        ),
+                        itemCount: visibleItems.length,
+                        itemBuilder: (context, index) {
+                          final item = visibleItems[index];
+                          return InkWell(
+                            key: ValueKey('gallery-grid-item-$index'),
+                            onTap: () =>
+                                _openPhotoViewer(context, visibleItems, index),
+                            child: Container(
+                              color: AppColors.imageCard,
+                              padding: const EdgeInsets.all(AppSpacing.sm),
+                              child: Stack(
+                                children: [
+                                  Positioned.fill(
+                                    child: Image.file(
+                                      item.file,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  Positioned(
+                                    left: AppSpacing.sm,
+                                    top: AppSpacing.sm,
+                                    child: ClassificationBadge(
+                                      classificationResult:
+                                          item.classificationResult,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
           );
         },
       ),
@@ -88,5 +127,18 @@ class GalleryPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _filterLabel(BuildContext context, GalleryFilter filter) {
+    return switch (filter) {
+      GalleryFilter.all => S.of(context).galleryFilterAll,
+      GalleryFilter.nsfw => S.of(context).classificationCategoryNsfw,
+      GalleryFilter.people => S.of(context).classificationCategoryPeople,
+      GalleryFilter.documents => S.of(context).classificationCategoryDocuments,
+      GalleryFilter.notClassified =>
+        S.of(context).classificationCategoryNotClassified,
+      GalleryFilter.unrecognized =>
+        S.of(context).classificationCategoryUnrecognized,
+    };
   }
 }

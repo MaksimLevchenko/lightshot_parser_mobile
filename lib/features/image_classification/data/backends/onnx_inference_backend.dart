@@ -13,6 +13,8 @@ class OnnxInferenceBackend implements InferenceBackend {
     OnnxRuntime? runtime,
   }) : _runtime = runtime ?? OnnxRuntime();
 
+  static const int _cocoPersonClassId = 1;
+
   final OnnxRuntime _runtime;
   final Map<String, Future<OrtSession>> _sessionFutures =
       <String, Future<OrtSession>>{};
@@ -52,7 +54,11 @@ class OnnxInferenceBackend implements InferenceBackend {
 
     AppLogger.info(
       'Running model ${modelSpec.key} from ${modelSpec.assetPath} '
-      'with input=${input.width}x${input.height} shape=${input.shape.join("x")}',
+      'task=${modelSpec.taskType.name} '
+      'with input=${input.width}x${input.height} '
+      'shape=${input.shape.join("x")} '
+      'layout=${input.layout.name} '
+      'dtype=${input.dataType.name}',
       scope: 'image_classification',
     );
 
@@ -64,18 +70,9 @@ class OnnxInferenceBackend implements InferenceBackend {
         },
       );
 
-      final outputValue = outputs[modelSpec.outputName];
-      if (outputValue == null) {
-        throw OnnxInferenceException(
-          'Missing output tensor "${modelSpec.outputName}" for model '
-          '${modelSpec.key} (${modelSpec.assetPath}). '
-          'Available outputs: ${outputs.keys.join(", ")}',
-        );
-      }
-
-      final score = await _extractScore(
+      final score = await _extractModelScore(
         modelSpec: modelSpec,
-        outputValue: outputValue,
+        outputs: outputs,
       );
       AppLogger.info(
         'Extracted score ${score.toStringAsFixed(4)} for model ${modelSpec.key}',
@@ -175,6 +172,13 @@ class OnnxInferenceBackend implements InferenceBackend {
     required List<dynamic> rawOutput,
     required List<int> outputShape,
   }) async {
+    if (modelSpec.taskType != ModelTaskType.binaryClassifier) {
+      throw OnnxInferenceException(
+        'extractScoreForTesting only supports binary classifier models. '
+        'Model ${modelSpec.key} is ${modelSpec.taskType.name}.',
+      );
+    }
+
     final values = _coerceOutputValues(
       modelSpec: modelSpec,
       rawOutput: rawOutput,
@@ -202,6 +206,131 @@ class OnnxInferenceBackend implements InferenceBackend {
           '$backendId (${modelSpec.assetPath}).',
         ),
     };
+  }
+
+  Future<double> _extractModelScore({
+    required ModelSpec modelSpec,
+    required Map<String, OrtValue> outputs,
+  }) async {
+    return switch (modelSpec.taskType) {
+      ModelTaskType.binaryClassifier => _extractClassifierModelScore(
+          modelSpec: modelSpec,
+          outputs: outputs,
+        ),
+      ModelTaskType.personDetector => _extractPersonDetectorModelScore(
+          modelSpec: modelSpec,
+          outputs: outputs,
+        ),
+    };
+  }
+
+  Future<double> _extractClassifierModelScore({
+    required ModelSpec modelSpec,
+    required Map<String, OrtValue> outputs,
+  }) async {
+    final outputValue = outputs[modelSpec.outputName];
+    if (outputValue == null) {
+      throw OnnxInferenceException(
+        'Missing output tensor "${modelSpec.outputName}" for model '
+        '${modelSpec.key} (${modelSpec.assetPath}). '
+        'Available outputs: ${outputs.keys.join(", ")}',
+      );
+    }
+
+    return _extractScore(
+      modelSpec: modelSpec,
+      outputValue: outputValue,
+    );
+  }
+
+  Future<double> _extractPersonDetectorModelScore({
+    required ModelSpec modelSpec,
+    required Map<String, OrtValue> outputs,
+  }) async {
+    final numDetectionsValue = _requireOutput(
+      outputs: outputs,
+      modelSpec: modelSpec,
+      outputName: modelSpec.numDetectionsOutputName!,
+    );
+    final detectionBoxesValue = _requireOutput(
+      outputs: outputs,
+      modelSpec: modelSpec,
+      outputName: modelSpec.detectionBoxesOutputName!,
+    );
+    final detectionScoresValue = _requireOutput(
+      outputs: outputs,
+      modelSpec: modelSpec,
+      outputName: modelSpec.detectionScoresOutputName!,
+    );
+    final detectionClassesValue = _requireOutput(
+      outputs: outputs,
+      modelSpec: modelSpec,
+      outputName: modelSpec.detectionClassesOutputName!,
+    );
+
+    AppLogger.info(
+      'Detector outputs for ${modelSpec.key}: '
+      '${modelSpec.numDetectionsOutputName}=${_describeShape(numDetectionsValue.shape)} '
+      '${modelSpec.detectionBoxesOutputName}=${_describeShape(detectionBoxesValue.shape)} '
+      '${modelSpec.detectionScoresOutputName}=${_describeShape(detectionScoresValue.shape)} '
+      '${modelSpec.detectionClassesOutputName}=${_describeShape(detectionClassesValue.shape)}',
+      scope: 'image_classification',
+    );
+
+    final numDetections = _coerceOutputValues(
+      modelSpec: modelSpec,
+      rawOutput: await numDetectionsValue.asFlattenedList(),
+      outputShape: numDetectionsValue.shape,
+    );
+    final boxes = _coerceOutputValues(
+      modelSpec: modelSpec,
+      rawOutput: await detectionBoxesValue.asFlattenedList(),
+      outputShape: detectionBoxesValue.shape,
+    );
+    final scores = _coerceOutputValues(
+      modelSpec: modelSpec,
+      rawOutput: await detectionScoresValue.asFlattenedList(),
+      outputShape: detectionScoresValue.shape,
+    );
+    final classes = _coerceOutputValues(
+      modelSpec: modelSpec,
+      rawOutput: await detectionClassesValue.asFlattenedList(),
+      outputShape: detectionClassesValue.shape,
+    );
+
+    final detectionCount = _resolveDetectionCount(
+      modelSpec: modelSpec,
+      numDetections: numDetections,
+      boxes: boxes,
+      scores: scores,
+      classes: classes,
+      boxesShape: detectionBoxesValue.shape,
+      scoresShape: detectionScoresValue.shape,
+      classesShape: detectionClassesValue.shape,
+    );
+
+    var personDetections = 0;
+    var peopleScore = 0.0;
+    for (var index = 0; index < detectionCount; index += 1) {
+      final classId = classes[index].round();
+      if (classId != _cocoPersonClassId) {
+        continue;
+      }
+
+      personDetections += 1;
+      final score = scores[index];
+      if (score > peopleScore) {
+        peopleScore = score;
+      }
+    }
+
+    AppLogger.info(
+      'Detector ${modelSpec.key} numDetections=$detectionCount '
+      'personDetections=$personDetections '
+      'peopleScore=${peopleScore.toStringAsFixed(4)}',
+      scope: 'image_classification',
+    );
+    return peopleScore;
   }
 
   double _extractNsfwScore({
@@ -242,6 +371,74 @@ class OnnxInferenceBackend implements InferenceBackend {
 
     final probabilities = _softmax(values);
     return probabilities.first;
+  }
+
+  OrtValue _requireOutput({
+    required Map<String, OrtValue> outputs,
+    required ModelSpec modelSpec,
+    required String outputName,
+  }) {
+    final outputValue = outputs[outputName];
+    if (outputValue != null) {
+      return outputValue;
+    }
+
+    throw OnnxInferenceException(
+      'Missing output tensor "$outputName" for model '
+      '${modelSpec.key} (${modelSpec.assetPath}). '
+      'Available outputs: ${outputs.keys.join(", ")}',
+    );
+  }
+
+  int _resolveDetectionCount({
+    required ModelSpec modelSpec,
+    required List<double> numDetections,
+    required List<double> boxes,
+    required List<double> scores,
+    required List<double> classes,
+    required List<int> boxesShape,
+    required List<int> scoresShape,
+    required List<int> classesShape,
+  }) {
+    if (numDetections.isEmpty) {
+      throw _unexpectedOutputException(
+        modelSpec: modelSpec,
+        outputShape: const <int>[],
+        values: numDetections,
+        reason: 'Detector returned empty num_detections output.',
+      );
+    }
+
+    final requestedCount = numDetections.first.floor();
+    if (requestedCount < 0) {
+      throw _unexpectedOutputException(
+        modelSpec: modelSpec,
+        outputShape: const <int>[],
+        values: numDetections,
+        reason: 'Detector returned a negative num_detections value.',
+      );
+    }
+
+    final availableBoxes = boxes.length ~/ 4;
+    if (boxes.length % 4 != 0 ||
+        scores.length < requestedCount ||
+        classes.length < requestedCount ||
+        availableBoxes < requestedCount) {
+      final message = 'Unexpected detector output for model ${modelSpec.key} '
+          '(${modelSpec.assetPath}). '
+          'numDetections=$requestedCount '
+          'boxesShape=${_describeShape(boxesShape)} '
+          'scoresShape=${_describeShape(scoresShape)} '
+          'classesShape=${_describeShape(classesShape)} '
+          'boxes=${boxes.length} scores=${scores.length} classes=${classes.length}';
+      AppLogger.error(
+        message,
+        scope: 'image_classification',
+      );
+      throw OnnxInferenceException(message);
+    }
+
+    return requestedCount;
   }
 
   List<double> _coerceOutputValues({
@@ -308,7 +505,7 @@ class OnnxInferenceBackend implements InferenceBackend {
     required String reason,
   }) {
     final message = 'Unexpected output for model ${modelSpec.key} '
-        '(${modelSpec.assetPath}), output "${modelSpec.outputName}". '
+        '(${modelSpec.assetPath}), output "${modelSpec.outputName ?? modelSpec.detectionScoresOutputName}". '
         'Reason: $reason '
         'Shape=${_describeShape(outputShape)} '
         'ValueCount=${values.length} '

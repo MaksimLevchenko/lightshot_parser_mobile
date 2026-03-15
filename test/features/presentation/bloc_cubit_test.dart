@@ -13,8 +13,10 @@ import 'package:lightshot_parser_mobile/features/download/presentation/bloc/down
 import 'package:lightshot_parser_mobile/features/download/presentation/bloc/download_state.dart';
 import 'package:lightshot_parser_mobile/features/gallery/data/datasources/gallery_local_data_source.dart';
 import 'package:lightshot_parser_mobile/features/gallery/data/repositories/gallery_repository.dart';
+import 'package:lightshot_parser_mobile/features/gallery/domain/models/gallery_item.dart';
 import 'package:lightshot_parser_mobile/features/gallery/presentation/cubit/gallery_cubit.dart';
 import 'package:lightshot_parser_mobile/features/gallery/presentation/cubit/gallery_state.dart';
+import 'package:lightshot_parser_mobile/features/image_classification/image_classification.dart';
 import 'package:lightshot_parser_mobile/features/settings/data/repositories/settings_repository.dart';
 import 'package:lightshot_parser_mobile/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:lightshot_parser_mobile/features/settings/presentation/cubit/settings_state.dart';
@@ -22,6 +24,18 @@ import 'package:lightshot_parser_mobile/services/notification_service.dart';
 
 import '../../support/test_storage.dart';
 import '../../support/test_image_classifier_service.dart';
+
+SettingsRepository _buildStubSettingsRepository() {
+  return SettingsRepository(
+    TestSettingsLocalDataSource(
+      storagePaths: StoragePaths(
+        photosDirectory: Directory(Directory.systemTemp.path),
+        databaseDirectory: Directory(Directory.systemTemp.path),
+        settingsDirectory: Directory(Directory.systemTemp.path),
+      ),
+    ),
+  );
+}
 
 class StubNotificationService extends NotificationService {
   final StreamController<NotificationAction> _controller =
@@ -75,18 +89,11 @@ class StubDownloadRepository extends DownloadRepository {
       : super(
           sources: const <DownloadSourceEngine>[],
           galleryRepository: GalleryRepository(
-            settingsRepository: SettingsRepository(
-              TestSettingsLocalDataSource(
-                storagePaths: StoragePaths(
-                  photosDirectory: Directory(Directory.systemTemp.path),
-                  databaseDirectory: Directory(Directory.systemTemp.path),
-                  settingsDirectory: Directory(Directory.systemTemp.path),
-                ),
-              ),
-            ),
+            settingsRepository: _buildStubSettingsRepository(),
             localDataSource: GalleryLocalDataSource(),
           ),
           imageClassifierService: buildTestImageClassifierService(),
+          settingsRepository: _buildStubSettingsRepository(),
         );
 
   final StreamController<DownloadUpdate> updatesController =
@@ -119,6 +126,29 @@ void main() {
 
       expect(cubit.state.saveStatus, SettingsSaveStatus.success);
       expect(settingsRepository.currentSettings.wantedNumOfImages, 42);
+
+      await cubit.close();
+      await storageContext.dispose();
+    });
+
+    test('setNeuralRecognitionEnabled updates draft and persists value',
+        () async {
+      final storageContext = await createTestStorageContext();
+      final settingsRepository = SettingsRepository(
+        TestSettingsLocalDataSource(storagePaths: storageContext.storagePaths),
+      );
+      await settingsRepository.ensureInitialized();
+      final cubit = SettingsCubit(settingsRepository);
+
+      cubit.setNeuralRecognitionEnabled(false);
+      expect(cubit.state.draft.isNeuralRecognitionEnabled, isFalse);
+
+      await cubit.save();
+
+      expect(
+        settingsRepository.currentSettings.isNeuralRecognitionEnabled,
+        isFalse,
+      );
 
       await cubit.close();
       await storageContext.dispose();
@@ -158,7 +188,8 @@ void main() {
         localDataSource: GalleryLocalDataSource(),
       );
       await repository.ensureInitialized();
-      final cubit = GalleryCubit(repository);
+      final classifier = buildTestImageClassifierService();
+      final cubit = GalleryCubit(repository, classifier);
       await Future<void>.delayed(const Duration(milliseconds: 10));
 
       await cubit.rebuildIndex();
@@ -168,6 +199,125 @@ void main() {
       expect(cubit.state.feedback, isNull);
 
       await cubit.close();
+      await classifier.dispose();
+      await repository.dispose();
+      await storageContext.dispose();
+    });
+
+    test('reclassifyAllImages emits progress and completion feedback',
+        () async {
+      final storageContext = await createTestStorageContext();
+      final settingsRepository = SettingsRepository(
+        TestSettingsLocalDataSource(storagePaths: storageContext.storagePaths),
+      );
+      await settingsRepository.ensureInitialized();
+      final file = File(
+        '${storageContext.storagePaths.photosDirectory.path}/lightshot@@classified.png',
+      );
+      await file.writeAsBytes(const <int>[
+        0x89,
+        0x50,
+        0x4E,
+        0x47,
+        0x0D,
+        0x0A,
+        0x1A,
+        0x0A,
+      ]);
+      final repository = GalleryRepository(
+        settingsRepository: settingsRepository,
+        localDataSource: GalleryLocalDataSource(),
+      );
+      await repository.ensureInitialized();
+      await repository.addDownloadedFile(item: GalleryItem.fromFile(file));
+      final classifier = DelayedTestImageClassifierService(
+        delay: const Duration(milliseconds: 10),
+        onClassify: (item) => item.copyWith(
+          classificationResult: ClassificationResult.unrecognized(
+            backend: 'mock',
+          ),
+        ),
+      );
+      final cubit = GalleryCubit(repository, classifier);
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      final reclassifyFuture = cubit.reclassifyAllImages();
+      unawaited(reclassifyFuture);
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      expect(cubit.state.isReclassifying, isTrue);
+      expect(cubit.state.reclassificationTotalCount, 1);
+
+      await reclassifyFuture;
+      expect(cubit.state.isReclassifying, isFalse);
+      expect(cubit.state.feedback, GalleryFeedback.reclassified);
+      expect(cubit.state.reclassificationProcessedCount, 1);
+
+      await cubit.close();
+      await classifier.dispose();
+      await repository.dispose();
+      await storageContext.dispose();
+    });
+
+    test('setFilter exposes only matching items in visibleItems', () async {
+      final storageContext = await createTestStorageContext();
+      final settingsRepository = SettingsRepository(
+        TestSettingsLocalDataSource(storagePaths: storageContext.storagePaths),
+      );
+      await settingsRepository.ensureInitialized();
+      final nsfwFile = File(
+        '${storageContext.storagePaths.photosDirectory.path}/lightshot@@nsfw.png',
+      );
+      final documentFile = File(
+        '${storageContext.storagePaths.photosDirectory.path}/lightshot@@document.png',
+      );
+      await nsfwFile.writeAsBytes(const <int>[0x01]);
+      await documentFile.writeAsBytes(const <int>[0x02]);
+
+      final repository = GalleryRepository(
+        settingsRepository: settingsRepository,
+        localDataSource: GalleryLocalDataSource(),
+      );
+      await repository.ensureInitialized();
+      await repository.addDownloadedFile(
+        item: GalleryItem.fromFile(
+          nsfwFile,
+          classificationResult: ClassificationResult.completed(
+            category: ClassificationCategory.nsfw,
+            confidence: 0.91,
+            rawScores: const ClassificationScores.zero(),
+            backend: 'mock',
+            classifiedAt: DateTime(2026, 3, 15),
+          ),
+        ),
+      );
+      await repository.addDownloadedFile(
+        item: GalleryItem.fromFile(
+          documentFile,
+          classificationResult: ClassificationResult.completed(
+            category: ClassificationCategory.documents,
+            confidence: 0.88,
+            rawScores: const ClassificationScores.zero(),
+            backend: 'mock',
+            classifiedAt: DateTime(2026, 3, 15),
+          ),
+        ),
+      );
+
+      final classifier = buildTestImageClassifierService();
+      final cubit = GalleryCubit(repository, classifier);
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      cubit.setFilter(GalleryFilter.documents);
+
+      expect(cubit.state.selectedFilter, GalleryFilter.documents);
+      expect(cubit.state.visibleItems, hasLength(1));
+      expect(
+        cubit.state.visibleItems.single.classificationResult.category,
+        ClassificationCategory.documents,
+      );
+
+      await cubit.close();
+      await classifier.dispose();
       await repository.dispose();
       await storageContext.dispose();
     });

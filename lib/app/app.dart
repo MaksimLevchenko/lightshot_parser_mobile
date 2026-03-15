@@ -94,6 +94,7 @@ class AppView extends StatelessWidget {
                 BlocProvider(
                   create: (_) => GalleryCubit(
                     context.read<GalleryRepository>(),
+                    context.read<ImageClassifierService>(),
                   ),
                 ),
                 BlocProvider(

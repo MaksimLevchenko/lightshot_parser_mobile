@@ -12,21 +12,25 @@ import 'package:lightshot_parser_mobile/features/download/domain/models/download
 import 'package:lightshot_parser_mobile/features/gallery/data/repositories/gallery_repository.dart';
 import 'package:lightshot_parser_mobile/features/gallery/domain/models/gallery_item.dart';
 import 'package:lightshot_parser_mobile/features/image_classification/image_classification.dart';
+import 'package:lightshot_parser_mobile/features/settings/data/repositories/settings_repository.dart';
 
 class DownloadRepository {
   DownloadRepository({
     required List<DownloadSourceEngine> sources,
     required GalleryRepository galleryRepository,
     required ImageClassifierService imageClassifierService,
+    required SettingsRepository settingsRepository,
   })  : _sources = {
           for (final source in sources) source.source: source,
         },
         _galleryRepository = galleryRepository,
-        _imageClassifierService = imageClassifierService;
+        _imageClassifierService = imageClassifierService,
+        _settingsRepository = settingsRepository;
 
   final Map<DownloadSource, DownloadSourceEngine> _sources;
   final GalleryRepository _galleryRepository;
   final ImageClassifierService _imageClassifierService;
+  final SettingsRepository _settingsRepository;
   final Set<Future<void>> _backgroundClassificationTasks = <Future<void>>{};
 
   CancelToken? _cancelToken;
@@ -105,19 +109,28 @@ class DownloadRepository {
             cancelToken: cancelToken,
             proxySettings: request.proxySettings,
           );
+          final isNeuralRecognitionEnabled =
+              _settingsRepository.currentSettings.isNeuralRecognitionEnabled;
           final item = GalleryItem.fromFile(
             downloadedFile,
-            classificationResult: ClassificationResult.pending(
-              backend: _imageClassifierService.backendId,
-            ),
+            classificationResult: isNeuralRecognitionEnabled
+                ? ClassificationResult.pending(
+                    backend: _imageClassifierService.backendId,
+                  )
+                : ClassificationResult.notClassified(
+                    backend: _disabledClassificationBackend,
+                    classifiedAt: DateTime.now(),
+                  ),
           );
           await _galleryRepository.addDownloadedFile(item: item);
-          final backgroundTask = _classifyDownloadedItem(item);
-          _backgroundClassificationTasks.add(backgroundTask);
-          backgroundTask.whenComplete(() {
-            _backgroundClassificationTasks.remove(backgroundTask);
-          });
-          unawaited(backgroundTask);
+          if (isNeuralRecognitionEnabled) {
+            final backgroundTask = _classifyDownloadedItem(item);
+            _backgroundClassificationTasks.add(backgroundTask);
+            backgroundTask.whenComplete(() {
+              _backgroundClassificationTasks.remove(backgroundTask);
+            });
+            unawaited(backgroundTask);
+          }
           downloadedCount += 1;
           yield DownloadUpdate(
             type: DownloadUpdateType.progress,
@@ -259,4 +272,6 @@ class DownloadRepository {
       );
     }
   }
+
+  static const String _disabledClassificationBackend = 'disabled';
 }

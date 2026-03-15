@@ -131,6 +131,11 @@ class _SettingsPageState extends State<SettingsPage> {
                 buildAppSnackBar(message: S.of(context).recreateDatabase),
               );
               context.read<GalleryCubit>().clearFeedback();
+            } else if (state.feedback == GalleryFeedback.reclassified) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                buildAppSnackBar(message: S.of(context).reclassificationDone),
+              );
+              context.read<GalleryCubit>().clearFeedback();
             }
           },
         ),
@@ -210,9 +215,22 @@ class _SettingsPageState extends State<SettingsPage> {
                                   _buildProxyCard(context, state),
                                 ],
                                 const SizedBox(height: AppSpacing.lg),
-                                _MaintenanceCard(
-                                  onRebuildIndex: _confirmRebuildIndex,
-                                  onClearImages: _confirmClearImages,
+                                BlocBuilder<GalleryCubit, GalleryState>(
+                                  builder: (context, galleryState) {
+                                    return _MaintenanceCard(
+                                      isReclassifying:
+                                          galleryState.isReclassifying,
+                                      processedCount: galleryState
+                                          .reclassificationProcessedCount,
+                                      totalCount: galleryState
+                                          .reclassificationTotalCount,
+                                      onReclassifyAll: _confirmReclassifyAll,
+                                      onReclassifyDisabledOnly:
+                                          _confirmReclassifyDisabledOnly,
+                                      onRebuildIndex: _confirmRebuildIndex,
+                                      onClearImages: _confirmClearImages,
+                                    );
+                                  },
                                 ),
                               ],
                             );
@@ -372,6 +390,12 @@ class _SettingsPageState extends State<SettingsPage> {
     await context.read<SettingsCubit>().save();
   }
 
+  Future<void> _onNeuralRecognitionChanged(bool value) async {
+    final cubit = context.read<SettingsCubit>();
+    cubit.setNeuralRecognitionEnabled(value);
+    await cubit.save();
+  }
+
   Future<void> _onUseNewAddressesChanged(bool value) async {
     final maxLength = value ? 12 : 6;
     if (_lightshotStartingIdController.text.length > maxLength) {
@@ -526,6 +550,32 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  Future<void> _confirmReclassifyAll() async {
+    final confirmed = await _showConfirmationDialog(
+      title: S.of(context).reclassifyAllImages,
+      body: S.of(context).reclassifyAllImagesConfirmationBody,
+      confirmLabel: S.of(context).reclassifyAllImages,
+      destructive: false,
+    );
+    if (confirmed && mounted) {
+      await context.read<GalleryCubit>().reclassifyAllImages();
+    }
+  }
+
+  Future<void> _confirmReclassifyDisabledOnly() async {
+    final confirmed = await _showConfirmationDialog(
+      title: S.of(context).reclassifyDisabledImages,
+      body: S.of(context).reclassifyDisabledImagesConfirmationBody,
+      confirmLabel: S.of(context).reclassifyDisabledImages,
+      destructive: false,
+    );
+    if (confirmed && mounted) {
+      await context.read<GalleryCubit>().reclassifyAllImages(
+            disabledOnly: true,
+          );
+    }
+  }
+
   Future<void> _confirmClearImages() async {
     final confirmed = await _showConfirmationDialog(
       title: SettingsPageTexts.confirmClearTitle(context),
@@ -574,8 +624,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _buildGeneralCard(BuildContext context) {
     final wideFields = MediaQuery.sizeOf(context).width >= 720;
-    final selectedSource =
-        context.watch<SettingsCubit>().state.draft.selectedSource;
+    final draft = context.watch<SettingsCubit>().state.draft;
+    final selectedSource = draft.selectedSource;
 
     Widget sourceField() {
       return DropdownButtonFormField<DownloadSource>(
@@ -618,21 +668,33 @@ class _SettingsPageState extends State<SettingsPage> {
       sectionKey: const ValueKey('general-settings-card'),
       title: SettingsPageTexts.generalTitle(context),
       subtitle: SettingsPageTexts.generalBody(context),
-      child: wideFields
-          ? Row(
-              children: [
-                Expanded(child: sourceField()),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(child: wantedNumField()),
-              ],
-            )
-          : Column(
-              children: [
-                sourceField(),
-                const SizedBox(height: AppSpacing.md),
-                wantedNumField(),
-              ],
-            ),
+      child: Column(
+        children: [
+          wideFields
+              ? Row(
+                  children: [
+                    Expanded(child: sourceField()),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(child: wantedNumField()),
+                  ],
+                )
+              : Column(
+                  children: [
+                    sourceField(),
+                    const SizedBox(height: AppSpacing.md),
+                    wantedNumField(),
+                  ],
+                ),
+          const SizedBox(height: AppSpacing.md),
+          _AdaptiveSwitchTile(
+            key: const ValueKey('settings-neural-recognition-switch'),
+            value: draft.isNeuralRecognitionEnabled,
+            onChanged: (value) => unawaited(_onNeuralRecognitionChanged(value)),
+            title: S.of(context).settingsAiRecognitionTitle,
+            subtitle: S.of(context).settingsAiRecognitionDescription,
+          ),
+        ],
+      ),
     );
   }
 
@@ -1007,12 +1069,32 @@ class _AutosaveBadge extends StatelessWidget {
 
 class _MaintenanceCard extends StatelessWidget {
   const _MaintenanceCard({
+    required this.isReclassifying,
+    required this.processedCount,
+    required this.totalCount,
+    required this.onReclassifyAll,
+    required this.onReclassifyDisabledOnly,
     required this.onRebuildIndex,
     required this.onClearImages,
   });
 
+  final bool isReclassifying;
+  final int processedCount;
+  final int totalCount;
+  final Future<void> Function() onReclassifyAll;
+  final Future<void> Function() onReclassifyDisabledOnly;
   final Future<void> Function() onRebuildIndex;
   final Future<void> Function() onClearImages;
+
+  String _reclassificationLabel(BuildContext context) {
+    if (!isReclassifying) {
+      return S.of(context).reclassifyAllImages;
+    }
+    return S.of(context).reclassificationProgress(
+          processedCount,
+          totalCount,
+        );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1025,6 +1107,46 @@ class _MaintenanceCard extends StatelessWidget {
       child: canUseRows
           ? Row(
               children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    key: const ValueKey('maintenance-reclassify-button'),
+                    onPressed: isReclassifying
+                        ? null
+                        : () => unawaited(onReclassifyAll()),
+                    icon: isReclassifying
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.auto_awesome_rounded),
+                    label: Text(_reclassificationLabel(context)),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    key: const ValueKey(
+                      'maintenance-reclassify-disabled-button',
+                    ),
+                    onPressed: isReclassifying
+                        ? null
+                        : () => unawaited(onReclassifyDisabledOnly()),
+                    icon: isReclassifying
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.auto_fix_high_rounded),
+                    label: Text(
+                      isReclassifying
+                          ? _reclassificationLabel(context)
+                          : S.of(context).reclassifyDisabledImages,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: OutlinedButton.icon(
                     key: const ValueKey('maintenance-rebuild-button'),
@@ -1051,6 +1173,40 @@ class _MaintenanceCard extends StatelessWidget {
           : Column(
               children: [
                 OutlinedButton.icon(
+                  key: const ValueKey('maintenance-reclassify-button'),
+                  onPressed: isReclassifying
+                      ? null
+                      : () => unawaited(onReclassifyAll()),
+                  icon: isReclassifying
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.auto_awesome_rounded),
+                  label: Text(_reclassificationLabel(context)),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                OutlinedButton.icon(
+                  key: const ValueKey('maintenance-reclassify-disabled-button'),
+                  onPressed: isReclassifying
+                      ? null
+                      : () => unawaited(onReclassifyDisabledOnly()),
+                  icon: isReclassifying
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.auto_fix_high_rounded),
+                  label: Text(
+                    isReclassifying
+                        ? _reclassificationLabel(context)
+                        : S.of(context).reclassifyDisabledImages,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                OutlinedButton.icon(
                   key: const ValueKey('maintenance-rebuild-button'),
                   onPressed: () => unawaited(onRebuildIndex()),
                   icon: const Icon(Icons.refresh_rounded),
@@ -1075,14 +1231,17 @@ class _MaintenanceCard extends StatelessWidget {
 
 class _AdaptiveSwitchTile extends StatelessWidget {
   const _AdaptiveSwitchTile({
+    super.key,
     required this.value,
     required this.onChanged,
     required this.title,
+    this.subtitle,
   });
 
   final bool value;
   final ValueChanged<bool> onChanged;
   final String title;
+  final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
@@ -1096,6 +1255,7 @@ class _AdaptiveSwitchTile extends StatelessWidget {
         value: value,
         onChanged: onChanged,
         title: Text(title),
+        subtitle: subtitle == null ? null : Text(subtitle!),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
         ),

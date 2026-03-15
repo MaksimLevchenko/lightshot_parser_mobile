@@ -110,6 +110,34 @@ class FakeImgurRemoteDataSource extends ImgurRemoteDataSource {
   }
 }
 
+class CountingImageClassifierService extends ImageClassifierService {
+  CountingImageClassifierService({
+    this.delay = Duration.zero,
+  }) : super(
+          imagePreprocessor: ImagePreprocessor(),
+          inferenceBackend: MockInferenceBackend(),
+          cascadeClassifier: const CascadeClassifier(),
+        );
+
+  final Duration delay;
+  int classifyCalls = 0;
+
+  @override
+  Future<GalleryItem> classifyPendingGalleryItem({
+    required GalleryItem item,
+  }) async {
+    classifyCalls += 1;
+    if (delay > Duration.zero) {
+      await Future<void>.delayed(delay);
+    }
+    return item.copyWith(
+      classificationResult: ClassificationResult.unrecognized(
+        backend: backendId,
+      ),
+    );
+  }
+}
+
 void main() {
   late TestStorageContext storageContext;
   late SettingsRepository settingsRepository;
@@ -162,6 +190,7 @@ void main() {
       sources: [LightshotDownloadSource(remoteDataSource)],
       galleryRepository: galleryRepository,
       imageClassifierService: buildTestImageClassifierService(),
+      settingsRepository: settingsRepository,
     );
 
     final updates = await repository.start(buildRequest()).toList();
@@ -205,6 +234,7 @@ void main() {
       sources: [LightshotDownloadSource(remoteDataSource)],
       galleryRepository: galleryRepository,
       imageClassifierService: buildTestImageClassifierService(),
+      settingsRepository: settingsRepository,
     );
 
     final updates = await repository.start(buildRequest()).toList();
@@ -232,6 +262,7 @@ void main() {
       sources: [LightshotDownloadSource(remoteDataSource)],
       galleryRepository: galleryRepository,
       imageClassifierService: buildTestImageClassifierService(),
+      settingsRepository: settingsRepository,
     );
 
     final updates = await repository.start(buildRequest()).toList();
@@ -272,6 +303,7 @@ void main() {
       sources: [LightshotDownloadSource(remoteDataSource)],
       galleryRepository: galleryRepository,
       imageClassifierService: buildTestImageClassifierService(),
+      settingsRepository: settingsRepository,
     );
 
     final updates = await repository.start(buildRequest()).toList();
@@ -306,6 +338,7 @@ void main() {
       sources: [LightshotDownloadSource(remoteDataSource)],
       galleryRepository: galleryRepository,
       imageClassifierService: buildTestImageClassifierService(),
+      settingsRepository: settingsRepository,
     );
 
     final updatesFuture = repository.start(buildRequest()).toList();
@@ -339,6 +372,7 @@ void main() {
       sources: [LightshotDownloadSource(remoteDataSource)],
       galleryRepository: galleryRepository,
       imageClassifierService: buildTestImageClassifierService(),
+      settingsRepository: settingsRepository,
     );
 
     final updatesFuture = repository.start(buildRequest()).toList();
@@ -365,6 +399,7 @@ void main() {
       sources: [ImgurDownloadSource(remoteDataSource)],
       galleryRepository: galleryRepository,
       imageClassifierService: buildTestImageClassifierService(),
+      settingsRepository: settingsRepository,
     );
     const request = DownloadRequest(
       targetCount: 1,
@@ -436,6 +471,7 @@ void main() {
           );
         },
       ),
+      settingsRepository: settingsRepository,
     );
     final sawPending = Completer<void>();
     final sawCompleted = Completer<void>();
@@ -474,6 +510,85 @@ void main() {
       completedItems.single.classificationResult.category,
       ClassificationCategory.documents,
     );
+  });
+
+  test('auto classification starts in pending state when enabled', () async {
+    final remoteDataSource = FakeLightshotRemoteDataSource(
+      onResolveImageUrl: (pageUrl, _, __) async =>
+          'https://image.example/${pageUrl.pathSegments.first}.png',
+      onDownloadImage: (imageUrl, targetPath, _, __) async {
+        final file = File(targetPath);
+        await file.create(recursive: true);
+        await _writePngBytes(file);
+        return file;
+      },
+    );
+    final classifier = CountingImageClassifierService(
+      delay: const Duration(milliseconds: 200),
+    );
+    final repository = DownloadRepository(
+      sources: [LightshotDownloadSource(remoteDataSource)],
+      galleryRepository: galleryRepository,
+      imageClassifierService: classifier,
+      settingsRepository: settingsRepository,
+    );
+    final sawPending = Completer<void>();
+    final gallerySubscription = galleryRepository.watch().listen((items) {
+      if (items.isNotEmpty &&
+          items.first.classificationResult.status ==
+              ClassificationStatus.pending &&
+          !sawPending.isCompleted) {
+        sawPending.complete();
+      }
+    });
+    addTearDown(() async {
+      await gallerySubscription.cancel();
+      await classifier.dispose();
+    });
+
+    final updatesFuture = repository.start(buildRequest()).toList();
+
+    await sawPending.future.timeout(const Duration(seconds: 2));
+    await updatesFuture;
+
+    expect(classifier.classifyCalls, 1);
+  });
+
+  test('auto classification is skipped when disabled', () async {
+    await settingsRepository.save(
+      settingsRepository.currentSettings.copyWith(
+        isNeuralRecognitionEnabled: false,
+      ),
+    );
+    final remoteDataSource = FakeLightshotRemoteDataSource(
+      onResolveImageUrl: (pageUrl, _, __) async =>
+          'https://image.example/${pageUrl.pathSegments.first}.png',
+      onDownloadImage: (imageUrl, targetPath, _, __) async {
+        final file = File(targetPath);
+        await file.create(recursive: true);
+        await _writePngBytes(file);
+        return file;
+      },
+    );
+    final classifier = CountingImageClassifierService();
+    final repository = DownloadRepository(
+      sources: [LightshotDownloadSource(remoteDataSource)],
+      galleryRepository: galleryRepository,
+      imageClassifierService: classifier,
+      settingsRepository: settingsRepository,
+    );
+    addTearDown(() async {
+      await classifier.dispose();
+    });
+
+    final updates = await repository.start(buildRequest()).toList();
+    final items = await galleryRepository.load();
+
+    expect(updates.last.type, DownloadUpdateType.completed);
+    expect(classifier.classifyCalls, 0);
+    expect(items.single.classificationResult.status,
+        ClassificationStatus.completed);
+    expect(items.single.classificationResult.backend, 'disabled');
   });
 }
 

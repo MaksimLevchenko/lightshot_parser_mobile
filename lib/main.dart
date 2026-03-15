@@ -93,6 +93,7 @@ class _AppBootstrapState extends State<AppBootstrap> {
       ],
       galleryRepository: _galleryRepository,
       imageClassifierService: _imageClassifierService,
+      settingsRepository: _settingsRepository,
     );
     _photoActionsRepository = PhotoActionsRepository(_galleryRepository);
     _notificationService = NotificationService();

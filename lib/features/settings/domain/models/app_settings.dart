@@ -7,6 +7,7 @@ import 'package:lightshot_parser_mobile/features/settings/domain/models/proxy_se
 class AppSettings extends Equatable {
   const AppSettings({
     required this.wantedNumOfImages,
+    required this.isNeuralRecognitionEnabled,
     required this.selectedSource,
     required this.lightshot,
     required this.imgur,
@@ -15,12 +16,14 @@ class AppSettings extends Equatable {
 
   const AppSettings.initial()
       : wantedNumOfImages = 10,
+        isNeuralRecognitionEnabled = true,
         selectedSource = DownloadSource.lightshot,
         lightshot = const LightshotSourceSettings.initial(),
         imgur = const ImgurSourceSettings.initial(),
         proxySettings = const ProxySettings.initial();
 
   final int wantedNumOfImages;
+  final bool isNeuralRecognitionEnabled;
   final DownloadSource selectedSource;
   final LightshotSourceSettings lightshot;
   final ImgurSourceSettings imgur;
@@ -28,6 +31,7 @@ class AppSettings extends Equatable {
 
   AppSettings copyWith({
     int? wantedNumOfImages,
+    bool? isNeuralRecognitionEnabled,
     DownloadSource? selectedSource,
     LightshotSourceSettings? lightshot,
     ImgurSourceSettings? imgur,
@@ -35,6 +39,8 @@ class AppSettings extends Equatable {
   }) {
     return AppSettings(
       wantedNumOfImages: wantedNumOfImages ?? this.wantedNumOfImages,
+      isNeuralRecognitionEnabled:
+          isNeuralRecognitionEnabled ?? this.isNeuralRecognitionEnabled,
       selectedSource: selectedSource ?? this.selectedSource,
       lightshot: lightshot ?? this.lightshot,
       imgur: imgur ?? this.imgur,
@@ -45,6 +51,7 @@ class AppSettings extends Equatable {
   Map<String, dynamic> toJson() {
     return {
       'wantedNumOfImages': wantedNumOfImages,
+      'isNeuralRecognitionEnabled': isNeuralRecognitionEnabled,
       'selectedSource': selectedSource.name,
       'lightshot': lightshot.toJson(),
       'imgur': imgur.toJson(),
@@ -64,6 +71,8 @@ class AppSettings extends Equatable {
         wantedNumOfImages: (json['wantedNumOfImages'] as int?) ??
             (json['numOfImages'] as int?) ??
             10,
+        isNeuralRecognitionEnabled:
+            (json['isNeuralRecognitionEnabled'] as bool?) ?? true,
         selectedSource: selectedSource.isEmpty
             ? DownloadSource.lightshot
             : selectedSource.first,
@@ -83,6 +92,7 @@ class AppSettings extends Equatable {
     final startingUrl = (json['startingUrl'] as String?) ?? '';
     return AppSettings(
       wantedNumOfImages: (json['numOfImages'] as int?) ?? 10,
+      isNeuralRecognitionEnabled: true,
       selectedSource: DownloadSource.lightshot,
       lightshot: LightshotSourceSettings(
         useNewAddresses: (json['newAddresses'] as bool?) ?? false,
@@ -97,6 +107,7 @@ class AppSettings extends Equatable {
   @override
   List<Object?> get props => [
         wantedNumOfImages,
+        isNeuralRecognitionEnabled,
         selectedSource,
         lightshot,
         imgur,

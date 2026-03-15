@@ -21,6 +21,8 @@ void main() {
       height: 224,
       channels: 3,
       signature: 123456,
+      dataType: TensorDataType.float32,
+      layout: TensorLayout.nchw,
       shape: const <int>[1, 3, 1, 3],
     );
 

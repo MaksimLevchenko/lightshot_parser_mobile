@@ -32,8 +32,12 @@
   "@classificationLoading": {},
   "classificationCategoryNsfw": "Оголене",
   "@classificationCategoryNsfw": {},
+  "classificationCategoryPeople": "Люди",
+  "@classificationCategoryPeople": {},
   "classificationCategoryDocuments": "Документи",
   "@classificationCategoryDocuments": {},
+  "classificationCategoryNotClassified": "Не класифікувалося",
+  "@classificationCategoryNotClassified": {},
   "classificationCategoryUnrecognized": "Не розпізнано",
   "@classificationCategoryUnrecognized": {},
   "imageDeleted": "Зображення видалено",
@@ -70,6 +74,27 @@
   "@pleaseEnterTheStartingAddress": {},
   "recreateDatabase": "Перебудувати базу даних",
   "@recreateDatabase": {},
+  "reclassifyAllImages": "Перерозпізнати всі файли",
+  "@reclassifyAllImages": {},
+  "reclassifyAllImagesConfirmationBody": "Застосунок послідовно заново запустить AI-розпізнавання для кожного збереженого зображення та перезапише попередні результати.",
+  "@reclassifyAllImagesConfirmationBody": {},
+  "reclassifyDisabledImages": "Перерозпізнати тільки disabled",
+  "@reclassifyDisabledImages": {},
+  "reclassifyDisabledImagesConfirmationBody": "Застосунок послідовно заново запустить AI-розпізнавання тільки для збережених зображень, у яких попередній результат було позначено як disabled.",
+  "@reclassifyDisabledImagesConfirmationBody": {},
+  "reclassificationDone": "Результати AI-розпізнавання оновлено",
+  "@reclassificationDone": {},
+  "reclassificationProgress": "{processed} із {total}",
+  "@reclassificationProgress": {
+    "placeholders": {
+      "processed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "save": "Зберегти",
   "@save": {},
   "seeAll": "Дивитись все",
@@ -78,6 +103,10 @@
   "@settings": {},
   "settingsSaved": "Налаштування збережені",
   "@settingsSaved": {},
+  "settingsAiRecognitionTitle": "Використовувати AI-розпізнавання",
+  "@settingsAiRecognitionTitle": {},
+  "settingsAiRecognitionDescription": "Автоматично аналізувати нові завантажені зображення за допомогою ONNX-моделей.",
+  "@settingsAiRecognitionDescription": {},
   "shareImage": "Подивіться на це зображення з Lightshot Parser! \n\nhttps://github.com/MaksimLevchenko/lightshot_parser_mobile",
   "@shareImage": {},
   "startingAddress": "Початкова адреса",
@@ -108,4 +137,9 @@
   "successfullyDownloadedWantednumImages": "{images, plural, zero{} one{Завантажено 1 зображення} few{Завантажено {images} зображень} many{Завантажено {images} зображень} other{}}",
   "downloadingImages": "Завантаження",
   "downloadErrorMakeSureYouUseHttpProxy": "Помилка під час завантаження. Переконайтеся, що ви використовуєте HTTP-проксі"
+  ,
+  "galleryFilterAll": "Усі",
+  "@galleryFilterAll": {},
+  "noPhotosForSelectedFilter": "Немає зображень вибраного типу",
+  "@noPhotosForSelectedFilter": {}
 }

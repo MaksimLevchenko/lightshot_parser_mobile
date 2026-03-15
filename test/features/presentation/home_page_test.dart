@@ -19,6 +19,7 @@ import 'package:lightshot_parser_mobile/features/download/presentation/pages/hom
 import 'package:lightshot_parser_mobile/features/gallery/data/datasources/gallery_local_data_source.dart';
 import 'package:lightshot_parser_mobile/features/gallery/data/repositories/gallery_repository.dart';
 import 'package:lightshot_parser_mobile/features/gallery/presentation/cubit/gallery_cubit.dart';
+import 'package:lightshot_parser_mobile/features/image_classification/image_classification.dart';
 import 'package:lightshot_parser_mobile/features/photo_viewer/data/repositories/photo_actions_repository.dart';
 import 'package:lightshot_parser_mobile/features/settings/data/repositories/settings_repository.dart';
 import 'package:lightshot_parser_mobile/features/settings/domain/models/app_settings.dart';
@@ -30,6 +31,18 @@ import 'package:lightshot_parser_mobile/services/notification_service.dart';
 
 import '../../support/test_storage.dart';
 import '../../support/test_image_classifier_service.dart';
+
+SettingsRepository _buildStubSettingsRepository() {
+  return SettingsRepository(
+    TestSettingsLocalDataSource(
+      storagePaths: StoragePaths(
+        photosDirectory: Directory(Directory.systemTemp.path),
+        databaseDirectory: Directory(Directory.systemTemp.path),
+        settingsDirectory: Directory(Directory.systemTemp.path),
+      ),
+    ),
+  );
+}
 
 class StubNotificationService extends NotificationService {
   final StreamController<NotificationAction> _controller =
@@ -68,18 +81,11 @@ class StubDownloadRepository extends DownloadRepository {
       : super(
           sources: const <DownloadSourceEngine>[],
           galleryRepository: GalleryRepository(
-            settingsRepository: SettingsRepository(
-              TestSettingsLocalDataSource(
-                storagePaths: StoragePaths(
-                  photosDirectory: Directory(Directory.systemTemp.path),
-                  databaseDirectory: Directory(Directory.systemTemp.path),
-                  settingsDirectory: Directory(Directory.systemTemp.path),
-                ),
-              ),
-            ),
+            settingsRepository: _buildStubSettingsRepository(),
             localDataSource: GalleryLocalDataSource(),
           ),
           imageClassifierService: buildTestImageClassifierService(),
+          settingsRepository: _buildStubSettingsRepository(),
         );
 
   final StreamController<DownloadUpdate> updatesController =
@@ -96,6 +102,7 @@ void main() {
   late GalleryRepository galleryRepository;
   late PhotoActionsRepository photoActionsRepository;
   late GalleryCubit galleryCubit;
+  late ImageClassifierService imageClassifierService;
   late StubDownloadRepository downloadRepository;
   late StubNotificationService notificationService;
   late DownloadBloc downloadBloc;
@@ -110,6 +117,7 @@ void main() {
     await downloadRepository.updatesController.close();
     await galleryCubit.close();
     await galleryRepository.dispose();
+    await imageClassifierService.dispose();
     await storageContext.dispose();
   });
 
@@ -123,13 +131,14 @@ void main() {
       ),
     );
     await settingsRepository.ensureInitialized();
+    imageClassifierService = buildTestImageClassifierService();
     galleryRepository = GalleryRepository(
       settingsRepository: settingsRepository,
       localDataSource: GalleryLocalDataSource(),
     );
     await galleryRepository.ensureInitialized();
     photoActionsRepository = PhotoActionsRepository(galleryRepository);
-    galleryCubit = GalleryCubit(galleryRepository);
+    galleryCubit = GalleryCubit(galleryRepository, imageClassifierService);
     downloadRepository = StubDownloadRepository();
     notificationService = StubNotificationService();
     downloadBloc = DownloadBloc(
@@ -189,6 +198,7 @@ void main() {
     await prepareApp(
       settings: const AppSettings(
         wantedNumOfImages: 42,
+        isNeuralRecognitionEnabled: true,
         selectedSource: DownloadSource.imgur,
         lightshot: LightshotSourceSettings.initial(),
         imgur: ImgurSourceSettings(

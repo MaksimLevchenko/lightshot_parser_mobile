@@ -32,8 +32,12 @@
   "@classificationLoading": {},
   "classificationCategoryNsfw": "Обнаженка",
   "@classificationCategoryNsfw": {},
+  "classificationCategoryPeople": "Люди",
+  "@classificationCategoryPeople": {},
   "classificationCategoryDocuments": "Документы",
   "@classificationCategoryDocuments": {},
+  "classificationCategoryNotClassified": "Не классифицировалось",
+  "@classificationCategoryNotClassified": {},
   "classificationCategoryUnrecognized": "Нераспознанно",
   "@classificationCategoryUnrecognized": {},
   "imageDeleted": "Изображение удалено",
@@ -70,6 +74,27 @@
   "@pleaseEnterTheStartingAddress": {},
   "recreateDatabase": "Пересоздать базу данных",
   "@recreateDatabase": {},
+  "reclassifyAllImages": "Перераспознать все файлы",
+  "@reclassifyAllImages": {},
+  "reclassifyAllImagesConfirmationBody": "Приложение последовательно заново запустит AI-распознавание для каждого сохранённого изображения и перезапишет старые результаты.",
+  "@reclassifyAllImagesConfirmationBody": {},
+  "reclassifyDisabledImages": "Перераспознать только disabled",
+  "@reclassifyDisabledImages": {},
+  "reclassifyDisabledImagesConfirmationBody": "Приложение последовательно заново запустит AI-распознавание только для сохранённых изображений, у которых предыдущий результат был помечен как disabled.",
+  "@reclassifyDisabledImagesConfirmationBody": {},
+  "reclassificationDone": "Результаты AI-распознавания обновлены",
+  "@reclassificationDone": {},
+  "reclassificationProgress": "{processed} из {total}",
+  "@reclassificationProgress": {
+    "placeholders": {
+      "processed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "save": "Сохранить",
   "@save": {},
   "seeAll": "Смотреть все",
@@ -78,6 +103,10 @@
   "@settings": {},
   "settingsSaved": "Настройки сохранены",
   "@settingsSaved": {},
+  "settingsAiRecognitionTitle": "Использовать AI-распознавание",
+  "@settingsAiRecognitionTitle": {},
+  "settingsAiRecognitionDescription": "Автоматически анализировать новые загруженные изображения с помощью ONNX-моделей.",
+  "@settingsAiRecognitionDescription": {},
   "shareImage": "Посмотрите на это изображение из Lightshot Parser! \n\nhttps://github.com/MaksimLevchenko/lightshot_parser_mobile",
   "@shareImage": {},
   "startingAddress": "Начальный адрес",
@@ -111,4 +140,9 @@
   },
   "downloadingImages": "Скачивание",
   "downloadErrorMakeSureYouUseHttpProxy": "Ошибка при загрузке. Убедитесь, что Вы используете HTTP-прокси."
+  ,
+  "galleryFilterAll": "Все",
+  "@galleryFilterAll": {},
+  "noPhotosForSelectedFilter": "Нет изображений выбранного типа",
+  "@noPhotosForSelectedFilter": {}
 }

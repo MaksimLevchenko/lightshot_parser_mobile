@@ -43,6 +43,7 @@ class ImageClassifierService {
       return _buildResult(
         scores: ClassificationScores(
           nsfw: nsfwScore,
+          people: 0,
           documents: 0,
         ),
       );
@@ -52,9 +53,24 @@ class ImageClassifierService {
       decodedImage: decodedImage,
       modelSpec: _documentsModelSpec,
     );
+    if (documentsScore >= _modelThresholds.documentThreshold) {
+      return _buildResult(
+        scores: ClassificationScores(
+          nsfw: nsfwScore,
+          people: 0,
+          documents: documentsScore,
+        ),
+      );
+    }
+
+    final peopleScore = await _runModel(
+      decodedImage: decodedImage,
+      modelSpec: _peopleModelSpec,
+    );
     return _buildResult(
       scores: ClassificationScores(
         nsfw: nsfwScore,
+        people: peopleScore,
         documents: documentsScore,
       ),
     );
@@ -86,6 +102,7 @@ class ImageClassifierService {
     AppLogger.info(
       'Classification completed with backend=${_inferenceBackend.backendId} '
       'nsfw=${scores.nsfw.toStringAsFixed(4)} '
+      'people=${scores.people.toStringAsFixed(4)} '
       'documents=${scores.documents.toStringAsFixed(4)} '
       'category=${result.category.name}',
       scope: 'image_classification',
@@ -134,12 +151,24 @@ class ImageClassifierService {
   static const ModelSpec _documentsModelSpec = ModelSpec(
     key: 'documents',
     category: ClassificationCategory.documents,
-    assetPath: 'assets/ml/models/documents.onnx',
+    assetPath: 'assets/ml/models/documents_float.onnx',
     inputName: 'input',
     outputName: 'output',
     inputWidth: 224,
     inputHeight: 224,
     normalizationMean: <double>[0, 0, 0],
     normalizationStd: <double>[1, 1, 1],
+  );
+
+  static const ModelSpec _peopleModelSpec = ModelSpec(
+    key: 'people',
+    category: ClassificationCategory.people,
+    assetPath: 'assets/ml/models/people.onnx',
+    inputName: 'inputs',
+    taskType: ModelTaskType.personDetector,
+    numDetectionsOutputName: 'num_detections',
+    detectionBoxesOutputName: 'detection_boxes',
+    detectionScoresOutputName: 'detection_scores',
+    detectionClassesOutputName: 'detection_classes',
   );
 }

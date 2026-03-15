@@ -38,6 +38,8 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m6(e) =>
       "Неизвестная ошибка: ${e}. Пожалуйста, обратитесь к разработчику";
 
+  static String m7(processed, total) => "${processed} из ${total}";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
         "areYouSureYouWantToDeleteThisImage":
@@ -48,8 +50,15 @@ class MessageLookup extends MessageLookupByLibrary {
         "classificationCategoryDocuments": MessageLookupByLibrary.simpleMessage(
           "Документы",
         ),
+        "classificationCategoryNotClassified":
+            MessageLookupByLibrary.simpleMessage(
+          "Не классифицировалось",
+        ),
         "classificationCategoryNsfw": MessageLookupByLibrary.simpleMessage(
           "Обнаженка",
+        ),
+        "classificationCategoryPeople": MessageLookupByLibrary.simpleMessage(
+          "Люди",
         ),
         "classificationCategoryUnrecognized":
             MessageLookupByLibrary.simpleMessage(
@@ -182,6 +191,30 @@ class MessageLookup extends MessageLookupByLibrary {
         ),
         "useRandomAddresses": MessageLookupByLibrary.simpleMessage(
           "Использовать случайные адреса",
+        ),
+        "reclassifyAllImages": MessageLookupByLibrary.simpleMessage(
+          "Перераспознать все файлы",
+        ),
+        "reclassifyAllImagesConfirmationBody":
+            MessageLookupByLibrary.simpleMessage(
+          "Приложение последовательно заново запустит AI-распознавание для каждого сохранённого изображения и перезапишет старые результаты.",
+        ),
+        "reclassifyDisabledImages": MessageLookupByLibrary.simpleMessage(
+          "Перераспознать только disabled",
+        ),
+        "reclassifyDisabledImagesConfirmationBody":
+            MessageLookupByLibrary.simpleMessage(
+          "Приложение последовательно заново запустит AI-распознавание только для сохранённых изображений, у которых предыдущий результат был помечен как disabled.",
+        ),
+        "reclassificationDone": MessageLookupByLibrary.simpleMessage(
+          "Результаты AI-распознавания обновлены",
+        ),
+        "reclassificationProgress": m7,
+        "galleryFilterAll": MessageLookupByLibrary.simpleMessage(
+          "Все",
+        ),
+        "noPhotosForSelectedFilter": MessageLookupByLibrary.simpleMessage(
+          "Нет изображений выбранного типа",
         ),
       };
 }

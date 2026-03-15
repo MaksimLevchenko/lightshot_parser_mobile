@@ -68,6 +68,21 @@ class ClassificationResult extends Equatable {
     );
   }
 
+  factory ClassificationResult.notClassified({
+    required String backend,
+    ClassificationScores rawScores = const ClassificationScores.zero(),
+    DateTime? classifiedAt,
+  }) {
+    final resolvedClassifiedAt = classifiedAt ?? DateTime.now();
+    return ClassificationResult.completed(
+      category: ClassificationCategory.notClassified,
+      confidence: 0,
+      rawScores: rawScores,
+      backend: backend,
+      classifiedAt: resolvedClassifiedAt,
+    );
+  }
+
   factory ClassificationResult.legacy() {
     return ClassificationResult.unrecognized(
       backend: 'legacy',

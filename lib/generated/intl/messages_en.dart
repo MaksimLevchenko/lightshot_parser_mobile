@@ -36,6 +36,8 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m6(e) => "Unknown error: ${e}. Please contact to the dev";
 
+  static String m7(processed, total) => "${processed} of ${total}";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
         "areYouSureYouWantToDeleteThisImage":
@@ -46,8 +48,15 @@ class MessageLookup extends MessageLookupByLibrary {
         "classificationCategoryDocuments": MessageLookupByLibrary.simpleMessage(
           "Documents",
         ),
+        "classificationCategoryNotClassified":
+            MessageLookupByLibrary.simpleMessage(
+          "Not classified",
+        ),
         "classificationCategoryNsfw": MessageLookupByLibrary.simpleMessage(
           "Nudity",
+        ),
+        "classificationCategoryPeople": MessageLookupByLibrary.simpleMessage(
+          "People",
         ),
         "classificationCategoryUnrecognized":
             MessageLookupByLibrary.simpleMessage(
@@ -96,6 +105,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "errorError": m1,
         "errorErrorNpleaseTryAgain": m2,
         "galleryAppBar": MessageLookupByLibrary.simpleMessage("Gallery"),
+        "galleryFilterAll": MessageLookupByLibrary.simpleMessage("All"),
         "imageDeleted": MessageLookupByLibrary.simpleMessage("Image deleted"),
         "imageSavedToPath": m3,
         "mainTitle": MessageLookupByLibrary.simpleMessage("Lightshot Parser"),
@@ -103,6 +113,9 @@ class MessageLookup extends MessageLookupByLibrary {
           "The download folder was not found",
         ),
         "noPhotos": MessageLookupByLibrary.simpleMessage("There are no images"),
+        "noPhotosForSelectedFilter": MessageLookupByLibrary.simpleMessage(
+          "No images match the selected type",
+        ),
         "numberOfImagesToDownload": MessageLookupByLibrary.simpleMessage(
           "The desired number of images",
         ),
@@ -155,9 +168,34 @@ class MessageLookup extends MessageLookupByLibrary {
         "recreateDatabase": MessageLookupByLibrary.simpleMessage(
           "Recreate database",
         ),
+        "reclassifyAllImages": MessageLookupByLibrary.simpleMessage(
+          "Reclassify all images",
+        ),
+        "reclassifyAllImagesConfirmationBody":
+            MessageLookupByLibrary.simpleMessage(
+          "The app will sequentially re-run AI recognition for every saved image and overwrite previous results.",
+        ),
+        "reclassifyDisabledImages": MessageLookupByLibrary.simpleMessage(
+          "Reclassify disabled images",
+        ),
+        "reclassifyDisabledImagesConfirmationBody":
+            MessageLookupByLibrary.simpleMessage(
+          "The app will sequentially re-run AI recognition only for saved images whose previous result was marked as disabled.",
+        ),
+        "reclassificationDone": MessageLookupByLibrary.simpleMessage(
+          "Image recognition updated",
+        ),
+        "reclassificationProgress": m7,
         "save": MessageLookupByLibrary.simpleMessage("Save"),
         "seeAll": MessageLookupByLibrary.simpleMessage("See all"),
         "settings": MessageLookupByLibrary.simpleMessage("Settings"),
+        "settingsAiRecognitionDescription":
+            MessageLookupByLibrary.simpleMessage(
+          "Automatically analyze newly downloaded images with ONNX models.",
+        ),
+        "settingsAiRecognitionTitle": MessageLookupByLibrary.simpleMessage(
+          "Use AI recognition",
+        ),
         "settingsSaved": MessageLookupByLibrary.simpleMessage("Settings saved"),
         "shareImage": MessageLookupByLibrary.simpleMessage(
           "Check out this image from Lightshot Parser! \n\nhttps://github.com/MaksimLevchenko/lightshot_parser_mobile",

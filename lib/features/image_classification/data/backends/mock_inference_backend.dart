@@ -25,7 +25,7 @@ class MockInferenceBackend implements InferenceBackend {
     // TODO(onnx-runtime): Replace this deterministic stub with a real ONNX Runtime-backed backend.
     final modelSeed = _buildSeed(modelSpec.key);
     final combinedSeed =
-        (input.signature * 37 + modelSeed * 17 + input.tensor.length) &
+        (input.signature * 37 + modelSeed * 17 + input.tensorElementCount) &
             0x7fffffff;
     return (combinedSeed % 1000) / 1000;
   }

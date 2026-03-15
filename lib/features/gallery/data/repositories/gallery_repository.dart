@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:lightshot_parser_mobile/core/errors/app_exception.dart';
 import 'package:lightshot_parser_mobile/features/gallery/data/datasources/gallery_local_data_source.dart';
 import 'package:lightshot_parser_mobile/features/gallery/domain/models/gallery_item.dart';
+import 'package:lightshot_parser_mobile/features/image_classification/image_classification.dart';
 import 'package:lightshot_parser_mobile/features/settings/data/repositories/settings_repository.dart';
 
 class GalleryRepository {
@@ -79,6 +80,32 @@ class GalleryRepository {
       item: item,
     );
     await refresh();
+  }
+
+  Future<void> reclassifyAllImages({
+    required ImageClassifierService imageClassifierService,
+    void Function(int processedCount, int totalCount)? onProgress,
+    bool disabledOnly = false,
+  }) async {
+    final items = await load();
+    final itemsToReclassify = disabledOnly
+        ? items
+            .where(
+              (item) => item.classificationResult.backend == 'disabled',
+            )
+            .toList(growable: false)
+        : items;
+    final totalCount = itemsToReclassify.length;
+    onProgress?.call(0, totalCount);
+
+    var processedCount = 0;
+    for (final item in itemsToReclassify) {
+      final classifiedItem =
+          await imageClassifierService.classifyPendingGalleryItem(item: item);
+      await updateClassification(item: classifiedItem);
+      processedCount += 1;
+      onProgress?.call(processedCount, totalCount);
+    }
   }
 
   Future<void> deleteItem(GalleryItem item) async {

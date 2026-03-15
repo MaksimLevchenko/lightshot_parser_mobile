@@ -22,6 +22,14 @@ class SettingsCubit extends Cubit<SettingsState> {
     emit(state.copyWith(draft: state.draft.copyWith(wantedNumOfImages: value)));
   }
 
+  void setNeuralRecognitionEnabled(bool value) {
+    emit(
+      state.copyWith(
+        draft: state.draft.copyWith(isNeuralRecognitionEnabled: value),
+      ),
+    );
+  }
+
   void setUseNewAddresses(bool value) {
     final maxLength = value ? 12 : 6;
     var startingId = state.draft.lightshot.startingId;

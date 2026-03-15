@@ -37,6 +37,8 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m6(e) =>
       "Невідома помилка: ${e}. Будь ласка, зверніться до розробника";
 
+  static String m7(processed, total) => "${processed} із ${total}";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
         "areYouSureYouWantToDeleteThisImage":
@@ -47,8 +49,15 @@ class MessageLookup extends MessageLookupByLibrary {
         "classificationCategoryDocuments": MessageLookupByLibrary.simpleMessage(
           "Документи",
         ),
+        "classificationCategoryNotClassified":
+            MessageLookupByLibrary.simpleMessage(
+          "Не класифікувалося",
+        ),
         "classificationCategoryNsfw": MessageLookupByLibrary.simpleMessage(
           "Оголене",
+        ),
+        "classificationCategoryPeople": MessageLookupByLibrary.simpleMessage(
+          "Люди",
         ),
         "classificationCategoryUnrecognized":
             MessageLookupByLibrary.simpleMessage(
@@ -184,6 +193,30 @@ class MessageLookup extends MessageLookupByLibrary {
         ),
         "useRandomAddresses": MessageLookupByLibrary.simpleMessage(
           "Використовуйте випадкові адреси",
+        ),
+        "reclassifyAllImages": MessageLookupByLibrary.simpleMessage(
+          "Перерозпізнати всі файли",
+        ),
+        "reclassifyAllImagesConfirmationBody":
+            MessageLookupByLibrary.simpleMessage(
+          "Застосунок послідовно заново запустить AI-розпізнавання для кожного збереженого зображення та перезапише попередні результати.",
+        ),
+        "reclassifyDisabledImages": MessageLookupByLibrary.simpleMessage(
+          "Перерозпізнати тільки disabled",
+        ),
+        "reclassifyDisabledImagesConfirmationBody":
+            MessageLookupByLibrary.simpleMessage(
+          "Застосунок послідовно заново запустить AI-розпізнавання тільки для збережених зображень, у яких попередній результат було позначено як disabled.",
+        ),
+        "reclassificationDone": MessageLookupByLibrary.simpleMessage(
+          "Результати AI-розпізнавання оновлено",
+        ),
+        "reclassificationProgress": m7,
+        "galleryFilterAll": MessageLookupByLibrary.simpleMessage(
+          "Усі",
+        ),
+        "noPhotosForSelectedFilter": MessageLookupByLibrary.simpleMessage(
+          "Немає зображень вибраного типу",
         ),
       };
 }

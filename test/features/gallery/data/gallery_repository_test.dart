@@ -9,6 +9,7 @@ import 'package:lightshot_parser_mobile/features/settings/data/repositories/sett
 import 'package:lightshot_parser_mobile/features/image_classification/image_classification.dart';
 
 import '../../../support/test_storage.dart';
+import '../../../support/test_image_classifier_service.dart';
 
 void main() {
   late TestStorageContext storageContext;
@@ -162,6 +163,137 @@ void main() {
       completedItems.single.classificationResult.confidence,
       0.93,
     );
+  });
+
+  test('reclassifyAllImages updates every stored item sequentially', () async {
+    final fileA = File(
+      '${storageContext.storagePaths.photosDirectory.path}/lightshot@@a.png',
+    );
+    final fileB = File(
+      '${storageContext.storagePaths.photosDirectory.path}/imgur@@b.png',
+    );
+    await _writePngFile(fileA);
+    await _writePngFile(fileB);
+    await galleryRepository.addDownloadedFile(
+      item: GalleryItem.fromFile(
+        fileA,
+        classificationResult: ClassificationResult.pending(backend: 'mock'),
+      ),
+    );
+    await galleryRepository.addDownloadedFile(
+      item: GalleryItem.fromFile(
+        fileB,
+        classificationResult: ClassificationResult.pending(backend: 'mock'),
+      ),
+    );
+
+    final progressUpdates = <String>[];
+    final classifier = DelayedTestImageClassifierService(
+      delay: const Duration(milliseconds: 5),
+      onClassify: (item) {
+        progressUpdates.add(item.trackingKey);
+        return item.copyWith(
+          classificationResult: ClassificationResult.unrecognized(
+            backend: 'mock',
+            classifiedAt: DateTime(2026, 3, 15),
+          ),
+        );
+      },
+    );
+
+    await galleryRepository.reclassifyAllImages(
+      imageClassifierService: classifier,
+      onProgress: (processedCount, totalCount) {
+        progressUpdates.add('$processedCount/$totalCount');
+      },
+    );
+
+    final items = await galleryRepository.load();
+    expect(progressUpdates.first, '0/2');
+    expect(progressUpdates.where((entry) => entry.contains('/')), <String>[
+      '0/2',
+      '1/2',
+      '2/2',
+    ]);
+    expect(
+      items.every(
+        (item) => item.classificationResult.backend == 'mock',
+      ),
+      isTrue,
+    );
+    expect(
+      items.every(
+        (item) =>
+            item.classificationResult.status == ClassificationStatus.completed,
+      ),
+      isTrue,
+    );
+
+    await classifier.dispose();
+  });
+
+  test('reclassifyAllImages can update only items with disabled backend',
+      () async {
+    final disabledFile = File(
+      '${storageContext.storagePaths.photosDirectory.path}/lightshot@@disabled.png',
+    );
+    final completedFile = File(
+      '${storageContext.storagePaths.photosDirectory.path}/imgur@@completed.png',
+    );
+    await _writePngFile(disabledFile);
+    await _writePngFile(completedFile);
+    await galleryRepository.addDownloadedFile(
+      item: GalleryItem.fromFile(
+        disabledFile,
+        classificationResult: ClassificationResult.unrecognized(
+          backend: 'disabled',
+          classifiedAt: DateTime(2026, 3, 15),
+        ),
+      ),
+    );
+    await galleryRepository.addDownloadedFile(
+      item: GalleryItem.fromFile(
+        completedFile,
+        classificationResult: ClassificationResult.unrecognized(
+          backend: 'mock',
+          classifiedAt: DateTime(2026, 3, 15),
+        ),
+      ),
+    );
+
+    final classifier = DelayedTestImageClassifierService(
+      delay: const Duration(milliseconds: 5),
+      onClassify: (item) => item.copyWith(
+        classificationResult: ClassificationResult.unrecognized(
+          backend: 'mock',
+          classifiedAt: DateTime(2026, 3, 16),
+        ),
+      ),
+    );
+
+    final progressUpdates = <String>[];
+    await galleryRepository.reclassifyAllImages(
+      imageClassifierService: classifier,
+      disabledOnly: true,
+      onProgress: (processedCount, totalCount) {
+        progressUpdates.add('$processedCount/$totalCount');
+      },
+    );
+
+    final items = await galleryRepository.load();
+    final disabledItem = items.firstWhere((item) => item.sourceId == 'disabled');
+    final completedItem =
+        items.firstWhere((item) => item.sourceId == 'completed');
+
+    expect(progressUpdates, <String>['0/1', '1/1']);
+    expect(disabledItem.classificationResult.backend, 'mock');
+    expect(completedItem.classificationResult.backend, 'mock');
+    expect(
+      completedItem.classificationResult.classifiedAt,
+      DateTime(2026, 3, 15),
+    );
+
+    await classifier.dispose();
   });
 }
 

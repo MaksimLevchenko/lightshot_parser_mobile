@@ -175,6 +175,11 @@ class S {
     return Intl.message('Gallery', name: 'galleryAppBar', desc: '', args: []);
   }
 
+  /// `All`
+  String get galleryFilterAll {
+    return Intl.message('All', name: 'galleryFilterAll', desc: '', args: []);
+  }
+
   /// `Loading`
   String get classificationLoading {
     return Intl.message(
@@ -195,11 +200,31 @@ class S {
     );
   }
 
+  /// `People`
+  String get classificationCategoryPeople {
+    return Intl.message(
+      'People',
+      name: 'classificationCategoryPeople',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Documents`
   String get classificationCategoryDocuments {
     return Intl.message(
       'Documents',
       name: 'classificationCategoryDocuments',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not classified`
+  String get classificationCategoryNotClassified {
+    return Intl.message(
+      'Not classified',
+      name: 'classificationCategoryNotClassified',
       desc: '',
       args: [],
     );
@@ -260,6 +285,16 @@ class S {
     return Intl.message(
       'There are no images',
       name: 'noPhotos',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No images match the selected type`
+  String get noPhotosForSelectedFilter {
+    return Intl.message(
+      'No images match the selected type',
+      name: 'noPhotosForSelectedFilter',
       desc: '',
       args: [],
     );
@@ -375,6 +410,66 @@ class S {
     );
   }
 
+  /// `Reclassify all images`
+  String get reclassifyAllImages {
+    return Intl.message(
+      'Reclassify all images',
+      name: 'reclassifyAllImages',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The app will sequentially re-run AI recognition for every saved image and overwrite previous results.`
+  String get reclassifyAllImagesConfirmationBody {
+    return Intl.message(
+      'The app will sequentially re-run AI recognition for every saved image and overwrite previous results.',
+      name: 'reclassifyAllImagesConfirmationBody',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reclassify disabled images`
+  String get reclassifyDisabledImages {
+    return Intl.message(
+      'Reclassify disabled images',
+      name: 'reclassifyDisabledImages',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The app will sequentially re-run AI recognition only for saved images whose previous result was marked as disabled.`
+  String get reclassifyDisabledImagesConfirmationBody {
+    return Intl.message(
+      'The app will sequentially re-run AI recognition only for saved images whose previous result was marked as disabled.',
+      name: 'reclassifyDisabledImagesConfirmationBody',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Image recognition updated`
+  String get reclassificationDone {
+    return Intl.message(
+      'Image recognition updated',
+      name: 'reclassificationDone',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{processed} of {total}`
+  String reclassificationProgress(num processed, num total) {
+    return Intl.message(
+      '$processed of $total',
+      name: 'reclassificationProgress',
+      desc: '',
+      args: [processed, total],
+    );
+  }
+
   /// `Save`
   String get save {
     return Intl.message('Save', name: 'save', desc: '', args: []);
@@ -395,6 +490,26 @@ class S {
     return Intl.message(
       'Settings saved',
       name: 'settingsSaved',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Use AI recognition`
+  String get settingsAiRecognitionTitle {
+    return Intl.message(
+      'Use AI recognition',
+      name: 'settingsAiRecognitionTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Automatically analyze newly downloaded images with ONNX models.`
+  String get settingsAiRecognitionDescription {
+    return Intl.message(
+      'Automatically analyze newly downloaded images with ONNX models.',
+      name: 'settingsAiRecognitionDescription',
       desc: '',
       args: [],
     );
