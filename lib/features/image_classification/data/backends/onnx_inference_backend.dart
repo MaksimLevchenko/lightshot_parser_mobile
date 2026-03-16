@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
 
 import 'package:lightshot_parser_mobile/core/logging/app_logger.dart';
@@ -45,6 +44,25 @@ class OnnxInferenceBackend implements InferenceBackend {
   }
 
   @override
+  Future<void> preloadModels(Iterable<ModelSpec> modelSpecs) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+
+    for (final modelSpec in modelSpecs) {
+      AppLogger.info(
+        'Warmup started for model ${modelSpec.key}',
+        scope: 'image_classification',
+      );
+      await _getOrCreateSession(modelSpec);
+      AppLogger.info(
+        'Warmup completed for model ${modelSpec.key}',
+        scope: 'image_classification',
+      );
+    }
+  }
+
+  @override
   Future<double> runModel({
     required ModelSpec modelSpec,
     required PreprocessedImageData input,
@@ -84,22 +102,6 @@ class OnnxInferenceBackend implements InferenceBackend {
         scope: 'image_classification',
       );
       return score;
-    } on PlatformException catch (error, stackTrace) {
-      if (_shouldFallbackForKnownUint8Bug(
-        modelSpec: modelSpec,
-        error: error,
-      )) {
-        AppLogger.warning(
-          'Skipping model ${modelSpec.key} because flutter_onnxruntime '
-          'provided tensor(int8) for a tensor(uint8) input on this platform. '
-          'Returning score=0.0 as a safe fallback.',
-          scope: 'image_classification',
-          error: error,
-          stackTrace: stackTrace,
-        );
-        return 0;
-      }
-      rethrow;
     } finally {
       if (outputs != null) {
         for (final value in outputs.values) {
@@ -246,6 +248,10 @@ class OnnxInferenceBackend implements InferenceBackend {
           modelSpec: modelSpec,
           outputs: outputs,
         ),
+      ModelTaskType.personDetectorYolo => _extractYoloPersonDetectorModelScore(
+          modelSpec: modelSpec,
+          outputs: outputs,
+        ),
     };
   }
 
@@ -352,6 +358,65 @@ class OnnxInferenceBackend implements InferenceBackend {
     AppLogger.info(
       'Detector ${modelSpec.key} numDetections=$detectionCount '
       'personDetections=$personDetections '
+      'peopleScore=${peopleScore.toStringAsFixed(4)}',
+      scope: 'image_classification',
+    );
+    return peopleScore;
+  }
+
+  Future<double> _extractYoloPersonDetectorModelScore({
+    required ModelSpec modelSpec,
+    required Map<String, OrtValue> outputs,
+  }) async {
+    final outputValue = _requireOutput(
+      outputs: outputs,
+      modelSpec: modelSpec,
+      outputName: modelSpec.outputName!,
+    );
+    final values = _coerceOutputValues(
+      modelSpec: modelSpec,
+      rawOutput: await outputValue.asFlattenedList(),
+      outputShape: outputValue.shape,
+    );
+    final outputShape = outputValue.shape;
+
+    if (outputShape.length != 3 ||
+        outputShape[0] != 1 ||
+        outputShape[1] != 84 ||
+        outputShape[2] <= 0) {
+      throw _unexpectedOutputException(
+        modelSpec: modelSpec,
+        outputShape: outputShape,
+        values: values,
+        reason: 'Expected YOLO output shape [1, 84, N].',
+      );
+    }
+
+    final predictionCount = outputShape[2];
+    final expectedValueCount = 84 * predictionCount;
+    if (values.length != expectedValueCount) {
+      throw _unexpectedOutputException(
+        modelSpec: modelSpec,
+        outputShape: outputShape,
+        values: values,
+        reason:
+            'Unexpected YOLO output value count. Expected $expectedValueCount values.',
+      );
+    }
+
+    var peopleScore = 0.0;
+    for (var predictionIndex = 0;
+        predictionIndex < predictionCount;
+        predictionIndex += 1) {
+      final personClassOffset = predictionCount * 4 + predictionIndex;
+      final personScore = values[personClassOffset];
+      if (personScore > peopleScore) {
+        peopleScore = personScore;
+      }
+    }
+
+    AppLogger.info(
+      'YOLO detector ${modelSpec.key} predictionCount=$predictionCount '
       'peopleScore=${peopleScore.toStringAsFixed(4)}',
       scope: 'image_classification',
     );
@@ -562,20 +627,6 @@ class OnnxInferenceBackend implements InferenceBackend {
         'ONNX inference backend has already been disposed.',
       );
     }
-  }
-
-  bool _shouldFallbackForKnownUint8Bug({
-    required ModelSpec modelSpec,
-    required PlatformException error,
-  }) {
-    if (modelSpec.taskType != ModelTaskType.personDetector) {
-      return false;
-    }
-
-    final message = '${error.message ?? ''} ${error.details ?? ''}'.toLowerCase();
-    return message.contains('unexpected input data type') &&
-        message.contains('tensor(int8)') &&
-        message.contains('tensor(uint8)');
   }
 }
 

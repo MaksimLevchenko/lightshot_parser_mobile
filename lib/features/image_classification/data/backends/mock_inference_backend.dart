@@ -25,6 +25,13 @@ class MockInferenceBackend implements InferenceBackend {
   }
 
   @override
+  Future<void> preloadModels(Iterable<ModelSpec> modelSpecs) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+  }
+
+  @override
   Future<double> runModel({
     required ModelSpec modelSpec,
     required PreprocessedImageData input,

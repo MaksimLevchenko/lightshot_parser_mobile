@@ -5,6 +5,7 @@ import 'package:lightshot_parser_mobile/features/image_classification/domain/mod
 enum ModelTaskType {
   binaryClassifier,
   personDetector,
+  personDetectorYolo,
 }
 
 class ModelSpec extends Equatable {
@@ -24,7 +25,8 @@ class ModelSpec extends Equatable {
     this.normalizationMean = const <double>[0, 0, 0],
     this.normalizationStd = const <double>[1, 1, 1],
   }) : assert(
-          taskType == ModelTaskType.binaryClassifier
+          taskType == ModelTaskType.binaryClassifier ||
+                  taskType == ModelTaskType.personDetectorYolo
               ? outputName != null && inputWidth != null && inputHeight != null
               : numDetectionsOutputName != null &&
                   detectionBoxesOutputName != null &&
@@ -48,7 +50,9 @@ class ModelSpec extends Equatable {
   final List<double> normalizationMean;
   final List<double> normalizationStd;
 
-  bool get usesFixedInputSize => taskType == ModelTaskType.binaryClassifier;
+  bool get usesFixedInputSize =>
+      taskType == ModelTaskType.binaryClassifier ||
+      taskType == ModelTaskType.personDetectorYolo;
 
   @override
   List<Object?> get props => <Object?>[

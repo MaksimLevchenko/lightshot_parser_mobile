@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:lightshot_parser_mobile/core/errors/app_exception.dart';
+import 'package:lightshot_parser_mobile/core/logging/app_logger.dart';
 import 'package:lightshot_parser_mobile/features/gallery/data/datasources/gallery_local_data_source.dart';
 import 'package:lightshot_parser_mobile/features/gallery/domain/models/gallery_item.dart';
 import 'package:lightshot_parser_mobile/features/image_classification/image_classification.dart';
@@ -105,6 +106,30 @@ class GalleryRepository {
       await updateClassification(item: classifiedItem);
       processedCount += 1;
       onProgress?.call(processedCount, totalCount);
+    }
+  }
+
+  Future<void> resumePendingClassifications({
+    required ImageClassifierService imageClassifierService,
+  }) async {
+    final items = await load();
+    final pendingItems = items
+        .where((item) => item.classificationResult.isPending)
+        .toList(growable: false);
+
+    if (pendingItems.isEmpty) {
+      return;
+    }
+
+    AppLogger.info(
+      'Resuming ${pendingItems.length} pending image classifications.',
+      scope: 'image_classification',
+    );
+
+    for (final item in pendingItems) {
+      final classifiedItem =
+          await imageClassifierService.classifyPendingGalleryItem(item: item);
+      await updateClassification(item: classifiedItem);
     }
   }
 

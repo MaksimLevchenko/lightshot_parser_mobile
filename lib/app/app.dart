@@ -51,6 +51,7 @@ class App extends StatelessWidget {
           settingsRepository: settingsRepository,
           galleryRepository: galleryRepository,
           notificationService: notificationService,
+          imageClassifierService: imageClassifierService,
         ),
         child: MaterialApp(
           debugShowCheckedModeBanner: false,

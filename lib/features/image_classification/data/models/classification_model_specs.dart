@@ -28,13 +28,12 @@ const ModelSpec documentsClassificationModelSpec = ModelSpec(
 const ModelSpec peopleClassificationModelSpec = ModelSpec(
   key: 'people',
   category: ClassificationCategory.people,
-  assetPath: 'assets/ml/models/people_qdq.onnx',
-  inputName: 'inputs',
-  taskType: ModelTaskType.personDetector,
-  numDetectionsOutputName: 'num_detections',
-  detectionBoxesOutputName: 'detection_boxes',
-  detectionScoresOutputName: 'detection_scores',
-  detectionClassesOutputName: 'detection_classes',
+  assetPath: 'assets/ml/models/people_yolo.onnx',
+  inputName: 'images',
+  outputName: 'output0',
+  inputWidth: 320,
+  inputHeight: 320,
+  taskType: ModelTaskType.personDetectorYolo,
 );
 
 const List<ModelSpec> cascadeClassificationModelSpecs = <ModelSpec>[

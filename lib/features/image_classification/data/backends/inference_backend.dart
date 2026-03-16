@@ -6,6 +6,8 @@ abstract class InferenceBackend {
 
   Future<void> initialize();
 
+  Future<void> preloadModels(Iterable<ModelSpec> modelSpecs);
+
   Future<double> runModel({
     required ModelSpec modelSpec,
     required PreprocessedImageData input,

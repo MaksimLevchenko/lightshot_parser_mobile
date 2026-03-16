@@ -31,7 +31,7 @@ class DownloadRepository {
   final GalleryRepository _galleryRepository;
   final ImageClassifierService _imageClassifierService;
   final SettingsRepository _settingsRepository;
-  final Set<Future<void>> _backgroundClassificationTasks = <Future<void>>{};
+  Future<void> _classificationQueue = Future<void>.value();
 
   CancelToken? _cancelToken;
   bool _cancelRequested = false;
@@ -124,12 +124,7 @@ class DownloadRepository {
           );
           await _galleryRepository.addDownloadedFile(item: item);
           if (isNeuralRecognitionEnabled) {
-            final backgroundTask = _classifyDownloadedItem(item);
-            _backgroundClassificationTasks.add(backgroundTask);
-            backgroundTask.whenComplete(() {
-              _backgroundClassificationTasks.remove(backgroundTask);
-            });
-            unawaited(backgroundTask);
+            _enqueueClassification(item);
           }
           downloadedCount += 1;
           yield DownloadUpdate(
@@ -209,9 +204,7 @@ class DownloadRepository {
         generator.moveNext();
       }
 
-      if (_backgroundClassificationTasks.isNotEmpty) {
-        await Future.wait(_backgroundClassificationTasks.toList());
-      }
+      await _classificationQueue.catchError((Object _) {});
 
       yield DownloadUpdate(
         type: DownloadUpdateType.completed,
@@ -271,6 +264,13 @@ class DownloadRepository {
         ),
       );
     }
+  }
+
+  void _enqueueClassification(GalleryItem item) {
+    _classificationQueue = _classificationQueue
+        .catchError((Object _) {})
+        .then((_) => _classifyDownloadedItem(item));
+    unawaited(_classificationQueue);
   }
 
   static const String _disabledClassificationBackend = 'disabled';

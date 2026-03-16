@@ -27,12 +27,12 @@ class ClassificationExecutionResult {
   final String? fallbackReason;
 }
 
-bool _hasLoggedAndroidPeopleDetectorSkip = false;
-
 abstract class ClassificationExecutionBackend {
   String get backendId;
 
   Future<void> initialize();
+
+  Future<void> warmUp();
 
   Future<ClassificationExecutionResult> executeClassification({
     required String imagePath,
@@ -61,6 +61,12 @@ class LocalClassificationExecutionBackend
   @override
   Future<void> initialize() {
     return _inferenceBackend.initialize();
+  }
+
+  @override
+  Future<void> warmUp() async {
+    await _inferenceBackend.initialize();
+    await _inferenceBackend.preloadModels(cascadeClassificationModelSpecs);
   }
 
   @override
@@ -119,6 +125,15 @@ class IsolateClassificationExecutionBackend
   }
 
   @override
+  Future<void> warmUp() async {
+    final workerClient = await _ensureWorkerInitialized();
+    if (workerClient == null) {
+      await _fallbackBackend.warmUp();
+      return;
+    }
+  }
+
+  @override
   Future<ClassificationExecutionResult> executeClassification({
     required String imagePath,
   }) async {
@@ -129,7 +144,8 @@ class IsolateClassificationExecutionBackend
     }
 
     try {
-      final workerResult = await workerClient.classifyFile(imagePath: imagePath);
+      final workerResult =
+          await workerClient.classifyFile(imagePath: imagePath);
       return ClassificationExecutionResult(
         scores: workerResult.scores!,
         backendId: workerResult.backendId,
@@ -178,8 +194,7 @@ class IsolateClassificationExecutionBackend
       return existingClient;
     }
 
-    final workerClient =
-        _workerClient ??
+    final workerClient = _workerClient ??
         NativeClassificationWorkerClient(
           _rootIsolateToken,
           modelThresholds: _modelThresholds,
@@ -355,7 +370,8 @@ class NativeClassificationWorkerClient implements ClassificationWorkerClient {
 
     final modelPathsByAssetPath = <String, String>{};
     for (final modelSpec in cascadeClassificationModelSpecs) {
-      final fileName = '${modelSpec.key}_${modelSpec.assetPath.split('/').last}';
+      final fileName =
+          '${modelSpec.key}_${modelSpec.assetPath.split('/').last}';
       final filePath =
           '${modelsDirectory.path}${Platform.pathSeparator}$fileName';
       final file = File(filePath);
@@ -570,6 +586,7 @@ Future<void> _classificationWorkerMain(
             documentThreshold: thresholdValues['documentThreshold']! as double,
           );
           await inferenceBackend.initialize();
+          await inferenceBackend.preloadModels(cascadeClassificationModelSpecs);
           replyPort.send(
             const ClassificationWorkerSuccessResponse(
               backendId: 'onnx_runtime_worker',
@@ -659,10 +676,11 @@ Future<ClassificationScores> runCascadeClassification({
     );
   }
 
-  final peopleScore = await _runPeopleModelWithKnownFallback(
+  final peopleScore = await _runModel(
     decodedImage: decodedImage,
     imagePreprocessor: imagePreprocessor,
     inferenceBackend: inferenceBackend,
+    modelSpec: peopleClassificationModelSpec,
   );
   return ClassificationScores(
     nsfw: nsfwScore,
@@ -685,59 +703,4 @@ Future<double> _runModel({
     modelSpec: modelSpec,
     input: preprocessedImage,
   );
-}
-
-Future<double> _runPeopleModelWithKnownFallback({
-  required DecodedImageData decodedImage,
-  required ImagePreprocessor imagePreprocessor,
-  required InferenceBackend inferenceBackend,
-}) async {
-  if (_shouldSkipPeopleModelOnCurrentPlatform(inferenceBackend)) {
-    if (!_hasLoggedAndroidPeopleDetectorSkip) {
-      _hasLoggedAndroidPeopleDetectorSkip = true;
-      AppLogger.warning(
-        'People detector is disabled on Android for the current '
-        'flutter_onnxruntime backend because uint8 image tensors are '
-        'interpreted as int8 by the plugin. Returning peopleScore=0.0.',
-        scope: 'image_classification',
-      );
-    }
-    return 0;
-  }
-
-  try {
-    return await _runModel(
-      decodedImage: decodedImage,
-      imagePreprocessor: imagePreprocessor,
-      inferenceBackend: inferenceBackend,
-      modelSpec: peopleClassificationModelSpec,
-    );
-  } on PlatformException catch (error, stackTrace) {
-    if (!_isKnownAndroidUint8TensorBug(error)) {
-      rethrow;
-    }
-
-    AppLogger.warning(
-      'People detector is skipped because flutter_onnxruntime produced '
-      'tensor(int8) instead of tensor(uint8) on this platform. '
-      'Returning peopleScore=0.0 as a safe fallback.',
-      scope: 'image_classification',
-      error: error,
-      stackTrace: stackTrace,
-    );
-    return 0;
-  }
-}
-
-bool _shouldSkipPeopleModelOnCurrentPlatform(
-  InferenceBackend inferenceBackend,
-) {
-  return Platform.isAndroid && inferenceBackend is OnnxInferenceBackend;
-}
-
-bool _isKnownAndroidUint8TensorBug(PlatformException error) {
-  final message = '${error.message ?? ''} ${error.details ?? ''}'.toLowerCase();
-  return message.contains('unexpected input data type') &&
-      message.contains('tensor(int8)') &&
-      message.contains('tensor(uint8)');
 }

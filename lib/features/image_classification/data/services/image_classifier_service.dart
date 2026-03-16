@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
@@ -34,20 +35,29 @@ class ImageClassifierService {
   final CascadeClassifier _cascadeClassifier;
   final ModelThresholds _modelThresholds;
   final ClassificationExecutionBackend _executionBackend;
+  Future<void> _classificationQueue = Future<void>.value();
+  Future<void>? _warmUpFuture;
 
   String get backendId => _executionBackend.backendId;
+
+  Future<void> warmUp() {
+    return _warmUpFuture ??= _executionBackend.warmUp();
+  }
 
   Future<ClassificationResult> classifyFile({
     required String imagePath,
   }) async {
-    final executionResult =
-        await _executionBackend.executeClassification(imagePath: imagePath);
-    return _buildResult(
-      scores: executionResult.scores,
-      backendId: executionResult.backendId,
-      executionPath: executionResult.executionPath,
-      fallbackReason: executionResult.fallbackReason,
-    );
+    return _enqueueClassification<ClassificationResult>(() async {
+      await warmUp();
+      final executionResult =
+          await _executionBackend.executeClassification(imagePath: imagePath);
+      return _buildResult(
+        scores: executionResult.scores,
+        backendId: executionResult.backendId,
+        executionPath: executionResult.executionPath,
+        fallbackReason: executionResult.fallbackReason,
+      );
+    });
   }
 
   ClassificationResult _buildResult({
@@ -99,6 +109,23 @@ class ImageClassifierService {
 
   Future<void> dispose() {
     return _executionBackend.dispose();
+  }
+
+  Future<T> _enqueueClassification<T>(
+    Future<T> Function() operation,
+  ) {
+    final completer = Completer<T>();
+    _classificationQueue = _classificationQueue
+        .catchError((Object _) {})
+        .then((_) async {
+      try {
+        final result = await operation();
+        completer.complete(result);
+      } on Object catch (error, stackTrace) {
+        completer.completeError(error, stackTrace);
+      }
+    });
+    return completer.future;
   }
 
   static ClassificationExecutionBackend _buildExecutionBackend({
