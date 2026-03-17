@@ -1,0 +1,4 @@
+storePassword=change_me
+keyPassword=change_me
+keyAlias=lightshot_release
+storeFile=../../keys/lightshot-release.jks

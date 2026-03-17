@@ -1,0 +1,12 @@
+inno_bundle:
+  id: 70d2d8ca-2eb4-47cb-94f8-e59d8e5d4cf1
+  name: Lightshot Parser
+  publisher: MaksimLevchenko
+  description: Program for parsing photos from prnt.sc and imgur
+  license_file: LICENSE
+  languages:
+    - english
+    - russian
+    - ukrainian
+  admin: auto
+  arch: x64_compatible
